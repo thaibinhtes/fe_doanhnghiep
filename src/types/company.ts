@@ -22,9 +22,9 @@ export interface Company {
   vonDieuLe: string | null
   trangThai: string | null
   dienThoai: string | null
-  nguoiDaiDien: string | null
+  nguoiDaiDien_id: number | null
   ngaySinhNguoiDaiDien: string | null
-  chuSoHuu: string | null
+  chuSoHuu_id: number | null
   nganhNgheKDChinh: string | null
   nganhNgheKD: string | null
   ngayCap: string | null

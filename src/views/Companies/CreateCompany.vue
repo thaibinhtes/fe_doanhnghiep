@@ -239,12 +239,22 @@
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Chủ sở hữu
               </label>
-              <input
-                type="text"
-                v-model="form.chuSoHuu"
-                placeholder="Nhập chủ sở hữu"
-                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              />
+              <div class="relative z-20 bg-transparent">
+                <select
+                  v-model="form.chuSoHuu_id"
+                  class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                >
+                  <option :value="null">-- Chọn thành viên --</option>
+                  <option v-for="m in membersStore.members" :key="m.id || m.cccd" :value="m.id">
+                    {{ m.full_name }} · {{ m.cccd }}
+                  </option>
+                </select>
+                <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
+                  <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+              </div>
             </div>
 
             <!-- Ngành nghề KD chính -->
@@ -384,9 +394,10 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
+import { useMembersStore } from '@/stores/members'
 import { formatVND } from '@/utils/formatters'
 import type { Member } from '@/types/company'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
@@ -395,6 +406,7 @@ import ComponentCard from '@/components/common/ComponentCard.vue'
 
 const router = useRouter()
 const store = useCompaniesStore()
+const membersStore = useMembersStore()
 const currentPageTitle = 'Tạo doanh nghiệp'
 
 const form = reactive({
@@ -406,9 +418,9 @@ const form = reactive({
   vonDieuLe: '',
   trangThai: 'Đang hoạt động',
   dienThoai: '',
-  nguoiDaiDien: '',
+  nguoiDaiDien_id: null,
   ngaySinhNguoiDaiDien: '',
-  chuSoHuu: '',
+  chuSoHuu_id: null,
   nganhNgheKDChinh: '',
   nganhNgheKD: '',
   ngayCap: '',
@@ -435,6 +447,10 @@ const addMember = () => {
 const removeMember = (idx: number) => {
   form.dsThanhVienGopVon.splice(idx, 1)
 }
+
+onMounted(() => {
+  membersStore.fetchMembers({ per_page: 100 })
+})
 
 const handleSubmit = async () => {
   try {

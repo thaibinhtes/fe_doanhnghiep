@@ -140,9 +140,9 @@
                   </span>
                 </div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.dienThoai }}</div>
-                <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nguoiDaiDien }}</div>
+                <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ memberName(company.nguoiDaiDien_id) }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngaySinhNguoiDaiDien }}</div>
-                <div class="flex-none w-[160px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.chuSoHuu }}</div>
+                <div class="flex-none w-[160px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ memberName(company.chuSoHuu_id) }}</div>
                 <div class="flex-none w-[200px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nganhNgheKDChinh }}</div>
                 <div class="flex-none w-[260px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nganhNgheKD }}</div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngayCap }}</div>
@@ -498,11 +498,22 @@
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Chủ sở hữu
                 </label>
-                <input
-                  type="text"
-                  v-model="editForm.chuSoHuu"
-                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                />
+                <div class="relative z-20 bg-transparent">
+                  <select
+                    v-model="editForm.chuSoHuu_id"
+                    class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                  >
+                    <option :value="null">-- Chọn thành viên --</option>
+                    <option v-for="m in membersStore.members" :key="m.id || m.cccd" :value="m.id">
+                      {{ m.full_name }} · {{ m.cccd }}
+                    </option>
+                  </select>
+                  <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
+                    <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </span>
+                </div>
               </div>
 
               <!-- Ngành nghề KD chính -->
@@ -635,6 +646,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useCompaniesStore } from '@/stores/companies'
+import { useMembersStore } from '@/stores/members'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
@@ -643,6 +655,7 @@ import type { Company, Member } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 
 const store = useCompaniesStore()
+const membersStore = useMembersStore()
 const currentPageTitle = ref('Danh sách doanh nghiệp')
 
 const filter = reactive({
@@ -665,9 +678,9 @@ const editForm = reactive<Company>({
   vonDieuLe: '',
   trangThai: 'Đang hoạt động',
   dienThoai: '',
-  nguoiDaiDien: '',
+  nguoiDaiDien_id: null,
   ngaySinhNguoiDaiDien: '',
-  chuSoHuu: '',
+  chuSoHuu_id: null,
   nganhNgheKDChinh: '',
   nganhNgheKD: '',
   ngayCap: '',
@@ -715,6 +728,7 @@ const resetFilters = () => {
 const openEditModal = (company: Company) => {
   selectedCompanyId.value = company.id
   Object.assign(editForm, company)
+  membersStore.fetchMembers({ per_page: 100 })
   isEditModalOpen.value = true
 }
 
@@ -754,6 +768,12 @@ const removeEditMember = (idx: number) => {
   editForm.dsThanhVienGopVon.splice(idx, 1)
 }
 
+const memberName = (id: number | null) => {
+  if (id === null) return '-'
+  const member = membersStore.members.find((m: any) => m.id === id)
+  return member ? member.full_name : '-'
+}
+
 const statusClass = (status: string | null) => {
   switch (status) {
     case 'Đang hoạt động':
@@ -784,5 +804,6 @@ watch(
 
 onMounted(() => {
   store.fetchCompanies()
+  membersStore.fetchMembers({ per_page: 100 })
 })
 </script>
