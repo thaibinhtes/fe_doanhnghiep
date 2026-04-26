@@ -476,7 +476,7 @@
                 </label>
                 <input
                   type="text"
-                  v-model="editForm.nguoiDaiDien"
+                  v-model="editForm.nguoiDaiDien_id"
                   class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                 />
               </div>
@@ -572,7 +572,7 @@
                     Thêm
                   </button>
                 </div>
-                <div v-if="editForm.dsThanhVienGopVon.length === 0" class="text-sm text-gray-400 py-2">Chưa có thành viên</div>
+                <div v-if="!editForm.dsThanhVienGopVon || editForm.dsThanhVienGopVon.length === 0" class="text-sm text-gray-400 py-2">Chưa có thành viên</div>
                 <div v-else class="space-y-2">
                   <div
                     v-for="(member, idx) in editForm.dsThanhVienGopVon"
@@ -666,6 +666,7 @@ const filter = reactive({
 
 const isEditModalOpen = ref(false)
 const selectedCompanyId = ref<number | null>(null)
+const selectedMemberId = ref<number | null>(null)
 
 const editForm = reactive<Company>({
   id: 0,
@@ -753,19 +754,36 @@ const handleDelete = async (id: number) => {
 }
 
 const addEditMember = () => {
-  editForm.dsThanhVienGopVon.push({
-    full_name: '',
-    birthday: null,
-    gender: null,
-    date_join: null,
-    status: true,
-    position: null,
-    investment_amount: null,
-  })
+  if (!editForm.dsThanhVienGopVon) editForm.dsThanhVienGopVon = []
+  const found = membersStore.members.find((m: any) => m.id === selectedMemberId.value)
+  if (found) {
+    editForm.dsThanhVienGopVon.push({
+      cccd: found.cccd || '',
+      full_name: found.full_name || '',
+      birthday: found.birthday || null,
+      gender: found.gender || null,
+      date_join: found.date_join || null,
+      status: found.status ?? true,
+      position: found.position || null,
+      investment_amount: found.investment_amount || null,
+    })
+  } else {
+    editForm.dsThanhVienGopVon.push({
+      cccd: '',
+      full_name: '',
+      birthday: null,
+      gender: null,
+      date_join: null,
+      status: true,
+      position: null,
+      investment_amount: null,
+    })
+  }
+  selectedMemberId.value = null
 }
 
 const removeEditMember = (idx: number) => {
-  editForm.dsThanhVienGopVon.splice(idx, 1)
+  editForm.dsThanhVienGopVon?.splice(idx, 1)
 }
 
 const memberName = (id: number | null) => {
