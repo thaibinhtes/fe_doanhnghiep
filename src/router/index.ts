@@ -63,6 +63,22 @@ const router = createRouter({
       },
     },
     {
+      path: '/members',
+      name: 'Members',
+      component: () => import('../views/Members.vue'),
+      meta: {
+        title: 'Members',
+      },
+    },
+    {
+      path: '/members/create',
+      name: 'Create Member',
+      component: () => import('../views/Members/CreateMember.vue'),
+      meta: {
+        title: 'Create Member',
+      },
+    },
+    {
       path: '/line-chart',
       name: 'Line Chart',
       component: () => import('../views/Chart/LineChart/LineChart.vue'),

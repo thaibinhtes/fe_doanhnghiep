@@ -208,29 +208,40 @@
               </div>
             </div>
 
-            <!-- Người đại diện theo pháp luật -->
+            <!-- Ngườ i đại diện theo pháp luật -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Người đại diện theo pháp luật
               </label>
-              <input
-                type="text"
-                v-model="form.nguoiDaiDien_id"
-                placeholder="Nhập họ tên"
-                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              />
+              <div class="relative z-20 bg-transparent">
+                <select
+                  v-model="form.nguoi_dai_dien_id"
+                  class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                >
+                  <option :value="null">-- Chọn thành viên --</option>
+                  <option v-for="m in membersStore.members" :key="m.id || m.cccd" :value="m.id">
+                    {{ m.fullName }} · {{ m.cccd }}
+                  </option>
+                </select>
+                <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
+                  <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+              </div>
             </div>
 
-            <!-- Ngày sinh người đại diện -->
+            <!-- Ngày sinh ngườ i đại diện -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Ngày sinh ngườ i đại diện
+                Ngày sinh người đại diện
               </label>
               <input
                 type="text"
-                v-model="form.ngaySinhNguoiDaiDien"
-                placeholder="DD/MM/YYYY"
-                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                :value="selectedNguoiDaiDien?.birthday || ''"
+                readonly
+                placeholder="Tự động từ thành viên"
+                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-800 dark:text-white/90"
               />
             </div>
 
@@ -241,12 +252,12 @@
               </label>
               <div class="relative z-20 bg-transparent">
                 <select
-                  v-model="form.chuSoHuu_id"
+                  v-model="form.nguoi_dai_dien_id"
                   class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                 >
                   <option :value="null">-- Chọn thành viên --</option>
                   <option v-for="m in membersStore.members" :key="m.id || m.cccd" :value="m.id">
-                    {{ m.full_name }} · {{ m.cccd }}
+                    {{ m.fullName }} · {{ m.cccd }}
                   </option>
                 </select>
                 <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
@@ -315,43 +326,68 @@
                       Xóa
                     </button>
                   </div>
-                  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <div>
-                      <label class="mb-1 block text-xs text-gray-500 dark:text-gray-400">Họ tên</label>
-                      <input v-model="member.full_name" type="text" class="dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-                    </div>
-                    <div>
-                      <label class="mb-1 block text-xs text-gray-500 dark:text-gray-400">Ngày sinh</label>
-                      <input v-model="member.birthday" type="text" placeholder="DD/MM/YYYY" class="dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-                    </div>
-                    <div>
-                      <label class="mb-1 block text-xs text-gray-500 dark:text-gray-400">Giới tính</label>
-                      <select v-model="member.gender" class="dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                        <option value="">Chọn</option>
-                        <option value="Nam">Nam</option>
-                        <option value="Nữ">Nữ</option>
-                        <option value="Khác">Khác</option>
+                  <div class="space-y-3">
+                    <!-- Select existing member -->
+                    <div class="relative z-20 bg-transparent">
+                      <select
+                        @change="selectMember(idx, ($event.target as HTMLSelectElement).value)"
+                        class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                      >
+                        <option value="">-- Chọn thành viên --</option>
+                        <option v-for="m in membersStore.members" :key="m.id" :value="m.id">
+                          {{ m.fullName }} · CCCD: {{ m.cccd }}
+                        </option>
                       </select>
+                      <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
+                        <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                      </span>
                     </div>
+
+                    <!-- Member info display -->
+                    <MemberItem v-if="member.cccd" :member="member" />
+
+                    <!-- Date join input -->
                     <div>
-                      <label class="mb-1 block text-xs text-gray-500 dark:text-gray-400">Ngày gia nhập</label>
-                      <input v-model="member.date_join" type="text" placeholder="DD/MM/YYYY" class="dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                      <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">
+                        Ngày tham gia
+                      </label>
+                      <input
+                        v-model="member.date_join"
+                        type="text"
+                        placeholder="DD/MM/YYYY"
+                        class="dark:bg-dark-900 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                      />
                     </div>
+
+                    <!-- Position -->
                     <div>
-                      <label class="mb-1 block text-xs text-gray-500 dark:text-gray-400">Trạng thái</label>
-                      <select v-model="member.status" class="dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                        <option :value="true">Đang hoạt động</option>
-                        <option :value="false">Ngừng hoạt động</option>
-                      </select>
+                      <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">
+                        Vị trí
+                      </label>
+                      <input
+                        v-model="member.position"
+                        type="text"
+                        placeholder="Nhập vị trí"
+                        class="dark:bg-dark-900 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                      />
                     </div>
+
+                    <!-- Investment amount -->
                     <div>
-                      <label class="mb-1 block text-xs text-gray-500 dark:text-gray-400">Chức vụ</label>
-                      <input v-model="member.position" type="text" class="dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-                    </div>
-                    <div>
-                      <label class="mb-1 block text-xs text-gray-500 dark:text-gray-400">Số tiền góp vốn</label>
-                      <input v-model="member.investment_amount" type="number" class="dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-                      <p class="mt-0.5 text-[11px] text-gray-400">{{ formatVND(member.investment_amount) }}</p>
+                      <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">
+                        Số tiền góp vốn
+                      </label>
+                      <input
+                        v-model="member.investmentAmount"
+                        type="number"
+                        placeholder="Nhập số tiền"
+                        class="dark:bg-dark-900 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                      />
+                      <p v-if="member.investmentAmount" class="mt-0.5 text-[11px] text-gray-400">
+                        {{ formatVND(Number(member.investmentAmount)) }}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -394,7 +430,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
 import { useMembersStore } from '@/stores/members'
@@ -403,6 +439,7 @@ import type { Member } from '@/types/company'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import MemberItem from '@/components/members/MemberItem.vue'
 
 const router = useRouter()
 const store = useCompaniesStore()
@@ -418,9 +455,8 @@ const form = reactive({
   vonDieuLe: '',
   trangThai: 'Đang hoạt động',
   dienThoai: '',
-  nguoiDaiDien_id: null,
-  ngaySinhNguoiDaiDien: '',
-  chuSoHuu_id: null,
+  nguoi_dai_dien_id: null,
+  chu_so_hu_id: null,
   nganhNgheKDChinh: '',
   nganhNgheKD: '',
   ngayCap: '',
@@ -432,21 +468,39 @@ const form = reactive({
   loaiDN: 'TN',
 })
 
+const selectedNguoiDaiDien = computed(() => {
+  if (!form.nguoi_dai_dien_id) return null
+  return membersStore.members.find((m) => m.id === form.nguoi_dai_dien_id) || null
+})
+
 const addMember = () => {
   form.dsThanhVienGopVon.push({
     cccd: '',
-    full_name: '',
+    fullName: '',
     birthday: null,
     gender: null,
-    date_join: null,
+    dateJoin: null,
     status: true,
     position: null,
-    investment_amount: null,
+    investmentAmount: null,
   })
 }
 
 const removeMember = (idx: number) => {
   form.dsThanhVienGopVon.splice(idx, 1)
+}
+
+const selectMember = (idx: number, memberId: string) => {
+  const id = Number(memberId)
+  if (!id) return
+  const found = membersStore.members.find((m) => m.id === id)
+  if (found) {
+    const currentDateJoin = form.dsThanhVienGopVon[idx].dateJoin
+    form.dsThanhVienGopVon[idx] = {
+      ...found,
+      dateJoin: currentDateJoin || null,
+    }
+  }
 }
 
 onMounted(() => {

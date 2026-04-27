@@ -32,13 +32,10 @@ export const useMembersStore = defineStore('members', () => {
       members.value = response.data.map((m) => ({
         ...m,
         cccd: m.cccd || '',
-        full_name: m.full_name || '',
+        fullName: m.fullName || '',
         birthday: m.birthday || null,
         gender: m.gender || null,
-        date_join: m.date_join || null,
         status: m.status ?? true,
-        position: m.position || null,
-        investment_amount: m.investment_amount ?? null,
       }))
       // meta.value = response.meta
     } catch (err: any) {
@@ -71,7 +68,7 @@ export const useMembersStore = defineStore('members', () => {
     error.value = null
     try {
       const updated = await memberService.update(id, memberData)
-      const index = members.value.findIndex((m) => m.full_name === updated.full_name && m.birthday === updated.birthday)
+      const index = members.value.findIndex((m) => m.fullName === updated.fullName && m.birthday === updated.birthday)
       if (index !== -1) {
         members.value[index] = updated
       }

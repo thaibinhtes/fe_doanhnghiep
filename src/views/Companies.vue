@@ -140,9 +140,9 @@
                   </span>
                 </div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.dienThoai }}</div>
-                <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ memberName(company.nguoiDaiDien_id) }}</div>
-                <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngaySinhNguoiDaiDien }}</div>
-                <div class="flex-none w-[160px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ memberName(company.chuSoHuu_id) }}</div>
+                <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nguoiDaiDien?.fullName || '-' }}</div>
+                <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nguoiDaiDien?.birthday || '-' }}</div>
+                <div class="flex-none w-[160px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.chuSoHuu?.fullName || '-' }}</div>
                 <div class="flex-none w-[200px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nganhNgheKDChinh }}</div>
                 <div class="flex-none w-[260px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nganhNgheKD }}</div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngayCap }}</div>
@@ -152,8 +152,8 @@
                 <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">
                   <div v-if="company.dsThanhVienGopVon && company.dsThanhVienGopVon.length" class="space-y-1">
                     <div v-for="(member, idx) in company.dsThanhVienGopVon.slice(0, 2)" :key="idx" class="text-xs">
-                      <span class="font-medium">{{ member.full_name }}</span>
-                      <span v-if="member.investment_amount" class="text-gray-500"> — {{ formatVND(member.investment_amount) }}</span>
+                      <span class="font-medium">{{ member.fullName }}</span>
+                      <span v-if="member.investmentAmount" class="text-gray-500"> — {{ formatVND(member.investmentAmount) }}</span>
                     </div>
                     <div v-if="company.dsThanhVienGopVon.length > 2" class="text-xs text-gray-500">+{{ company.dsThanhVienGopVon.length - 2 }} thành viên</div>
                   </div>
@@ -469,16 +469,28 @@
                 </div>
               </div>
 
-              <!-- Người đại diện -->
+              <!-- Ngườ i đại diện -->
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Người đại diện theo pháp luật
                 </label>
-                <input
-                  type="text"
-                  v-model="editForm.nguoiDaiDien_id"
-                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                />
+                <div class="relative z-20 bg-transparent">
+                  <select
+                    :value="editForm.nguoiDaiDienID || ''"
+                    @change="selectNguoiDaiDien(($event.target as HTMLSelectElement).value)"
+                    class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                  >
+                    <option value="">-- Chọn thành viên --</option>
+                    <option v-for="m in membersStore.members" :key="m.id || m.cccd" :value="m.id">
+                      {{ m.fullName }} · {{ m.cccd }}
+                    </option>
+                  </select>
+                  <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
+                    <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </span>
+                </div>
               </div>
 
               <!-- Ngày sinh ngườ i đại diện -->
@@ -488,8 +500,9 @@
                 </label>
                 <input
                   type="text"
-                  v-model="editForm.ngaySinhNguoiDaiDien"
-                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                  :value="editForm.nguoiDaiDien?.birthday || ''"
+                  readonly
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-800 dark:text-white/90"
                 />
               </div>
 
@@ -500,12 +513,13 @@
                 </label>
                 <div class="relative z-20 bg-transparent">
                   <select
-                    v-model="editForm.chuSoHuu_id"
+                    :value="editForm.chuSoHuu?.id || ''"
+                    @change="selectChuSoHuu(($event.target as HTMLSelectElement).value)"
                     class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                   >
-                    <option :value="null">-- Chọn thành viên --</option>
+                    <option value="">-- Chọn thành viên --</option>
                     <option v-for="m in membersStore.members" :key="m.id || m.cccd" :value="m.id">
-                      {{ m.full_name }} · {{ m.cccd }}
+                      {{ m.fullName }} · {{ m.cccd }}
                     </option>
                   </select>
                   <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
@@ -553,7 +567,7 @@
                     >
                       <option :value="null">-- Chọn thành viên --</option>
                       <option v-for="m in membersStore.members" :key="m.id || m.cccd" :value="m.id">
-                        {{ m.full_name }} · CCCD: {{ m.cccd }}
+                        {{ m.fullName }} · CCCD: {{ m.cccd }}
                       </option>
                     </select>
                     <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
@@ -581,12 +595,12 @@
                   >
                     <div class="flex items-center gap-3">
                       <div class="h-8 w-8 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-xs font-semibold text-brand-600 dark:text-brand-400">
-                        {{ member.full_name.charAt(0).toUpperCase() }}
+                        {{ member.fullName.charAt(0).toUpperCase() }}
                       </div>
                       <div>
-                        <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ member.full_name }}</p>
+                        <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ member.fullName }}</p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                          CCCD: {{ member.cccd }} · {{ member.position || 'Chưa có chức vụ' }} · {{ formatVND(member.investment_amount) }}
+                          CCCD: {{ member.cccd }} · {{ member.position || 'Chưa có chức vụ' }} · {{ formatVND(member.investmentAmount) }}
                           <span
                             :class="[
                               'ml-1 inline-block w-2 h-2 rounded-full',
@@ -679,9 +693,8 @@ const editForm = reactive<Company>({
   vonDieuLe: '',
   trangThai: 'Đang hoạt động',
   dienThoai: '',
-  nguoiDaiDien_id: null,
-  ngaySinhNguoiDaiDien: '',
-  chuSoHuu_id: null,
+  nguoiDaiDienID: null,
+  chuSoHuuID: null,
   nganhNgheKDChinh: '',
   nganhNgheKD: '',
   ngayCap: '',
@@ -691,6 +704,8 @@ const editForm = reactive<Company>({
   dsThanhVienGopVon: [] as Member[],
   dsCoDong: '',
   loaiDN: 'TN',
+  nguoiDaiDien: null,
+  chuSoHuu: null
 })
 
 const visiblePages = computed(() => {
@@ -729,6 +744,12 @@ const resetFilters = () => {
 const openEditModal = (company: Company) => {
   selectedCompanyId.value = company.id
   Object.assign(editForm, company)
+  if (company?.nguoiDaiDien) {
+    Object.assign(editForm, {
+      ...editForm,
+      nguoiDaiDienID: company?.nguoiDaiDien.id
+    })
+  }
   membersStore.fetchMembers({ per_page: 100 })
   isEditModalOpen.value = true
 }
@@ -740,7 +761,16 @@ const closeEditModal = () => {
 
 const handleUpdate = async () => {
   if (selectedCompanyId.value !== null) {
-    await store.updateCompany(selectedCompanyId.value, { ...editForm })
+    const payload = {
+      ...editForm,
+      nguoiDaiDien_id: editForm.nguoiDaiDien?.id ?? null,
+      nguoiDaiDienID: editForm.nguoiDaiDien?.id ?? null,
+      chuSoHuuID: editForm.chuSoHuu?.id ?? null,
+    }
+    // Remove full objects before sending; backend expects IDs
+    delete (payload as any).nguoiDaiDien
+    delete (payload as any).chuSoHuu
+    await store.updateCompany(selectedCompanyId.value, payload)
     await store.fetchCompanies()
   }
   closeEditModal()
@@ -759,24 +789,24 @@ const addEditMember = () => {
   if (found) {
     editForm.dsThanhVienGopVon.push({
       cccd: found.cccd || '',
-      full_name: found.full_name || '',
+      fullName: found.fullName || '',
       birthday: found.birthday || null,
       gender: found.gender || null,
-      date_join: found.date_join || null,
+      dateJoin: found.dateJoin || null,
       status: found.status ?? true,
       position: found.position || null,
-      investment_amount: found.investment_amount || null,
+      investmentAmount: found.investmentAmount || null,
     })
   } else {
     editForm.dsThanhVienGopVon.push({
       cccd: '',
-      full_name: '',
+      fullName: '',
       birthday: null,
       gender: null,
-      date_join: null,
+      dateJoin: null,
       status: true,
       position: null,
-      investment_amount: null,
+      investmentAmount: null,
     })
   }
   selectedMemberId.value = null
@@ -786,10 +816,26 @@ const removeEditMember = (idx: number) => {
   editForm.dsThanhVienGopVon?.splice(idx, 1)
 }
 
-const memberName = (id: number | null) => {
-  if (id === null) return '-'
-  const member = membersStore.members.find((m: any) => m.id === id)
-  return member ? member.full_name : '-'
+const selectNguoiDaiDien = (memberId: string) => {
+  const id = Number(memberId)
+  if (!id) {
+    editForm.nguoiDaiDien = null
+    return
+  }
+  const found = membersStore.members.find((m) => m.id === id)
+  editForm.nguoiDaiDien = found || null
+  editForm.nguoi_dai_dien_id = found?.id || null
+}
+
+const selectChuSoHuu = (memberId: string) => {
+  const id = Number(memberId)
+  if (!id) {
+    editForm.chuSoHuu = null
+    return
+  }
+  const found = membersStore.members.find((m) => m.id === id)
+  editForm.chuSoHuu = found || null
+  editForm.chu_so_huu_id = found?.id || null
 }
 
 const statusClass = (status: string | null) => {

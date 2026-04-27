@@ -229,6 +229,7 @@ import {
   TableIcon,
   ListIcon,
   PlugInIcon,
+  UserGroupIcon,
 } from "../../icons";
 // import SidebarWidget from "./SidebarWidget.vue";
 import BoxCubeIcon from "@/icons/BoxCubeIcon.vue";
@@ -270,6 +271,14 @@ const menuGroups = [
         subItems: [
           { name: "All Company", path: "/companies", pro: false },
           { name: "Create Company", path: "/companies/create", pro: false },
+        ],
+      },
+      {
+        name: "Members",
+        icon: UserGroupIcon,
+        subItems: [
+          { name: "All Members", path: "/members", pro: false },
+          { name: "Create Member", path: "/members/create", pro: false },
         ],
       },
       // {

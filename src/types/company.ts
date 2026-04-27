@@ -1,13 +1,25 @@
 export interface Member {
   id?: number
   cccd: string
-  full_name: string
-  birthday: string | null
-  gender: string | null
-  date_join: string | null
+  fullName: string
+  birthday?: string | null
+  gender?: string | null
+  dateJoin?: string | null
   status: boolean
-  position: string | null
-  investment_amount: number | null
+  position?: string | null
+  investmentAmount?: number | null
+  createdAt?: string
+  updatedAt?: string
+  member_company?: MemberCompany
+}
+
+export interface MemberCompany {
+  id?: number
+  member_id?: number
+  doanh_nghiep_id?: number
+  date_join?: string
+  position?: string
+  investment_amount?: number
 }
 
 // Company model — backend trả về đúng tên field tiếng Việt
@@ -22,17 +34,18 @@ export interface Company {
   vonDieuLe: string | null
   trangThai: string | null
   dienThoai: string | null
-  nguoiDaiDien_id: number | null
-  ngaySinhNguoiDaiDien: string | null
-  chuSoHuu_id: number | null
+  nguoiDaiDienID: number | null
+  nguoiDaiDien: Member | null
+  chuSoHuuID: number | null
+  chuSoHuu: Member | null
   nganhNgheKDChinh: string | null
   nganhNgheKD: string | null
   ngayCap: string | null
   ngayDangKyThayDoi: string | null
   loaiHinhDN: string | null
   soLuongLaoDong: number | null
-  dsThanhVienGopVon: Member[] | null
-  dsCoDong: string | null
+  dsThanhVienGopVon?: Member[] | null
+  dsCoDong?: string | null
   loaiDN: string | null
   createdAt?: string
   updatedAt?: string
