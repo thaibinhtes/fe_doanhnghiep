@@ -177,7 +177,7 @@
                                 },
                               ]"
                             >
-                              new
+                              mới
                             </span>
                             <span
                               v-if="subItem.pro"
@@ -193,7 +193,7 @@
                                 },
                               ]"
                             >
-                              pro
+                              cao cấp
                             </span>
                           </span>
                         </router-link>
@@ -241,12 +241,12 @@ const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
 
 const menuGroups = [
   {
-    title: "Menu",
+    title: "Danh mục",
     items: [
       {
         icon: GridIcon,
-        name: "Dashboard",
-        subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+        name: "Bảng điều khiển",
+        subItems: [{ name: "Tổng quan", path: "/", pro: false }],
       },
       // {
       //   icon: CalenderIcon,
@@ -266,19 +266,19 @@ const menuGroups = [
       //   ],
       // },
       {
-        name: "Companies",
+        name: "Công ty",
         icon: TableIcon,
         subItems: [
-          { name: "All Company", path: "/companies", pro: false },
-          { name: "Create Company", path: "/companies/create", pro: false },
+          { name: "Danh sách công ty", path: "/companies", pro: false },
+          { name: "Tạo công ty", path: "/companies/create", pro: false },
         ],
       },
       {
-        name: "Members",
+        name: "Thành viên",
         icon: UserGroupIcon,
         subItems: [
-          { name: "All Members", path: "/members", pro: false },
-          { name: "Create Member", path: "/members/create", pro: false },
+          { name: "Danh sách thành viên", path: "/members", pro: false },
+          { name: "Tạo thành viên", path: "/members/create", pro: false },
         ],
       },
       // {
