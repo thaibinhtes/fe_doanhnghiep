@@ -102,6 +102,7 @@
             :index="index"
             :status-class="statusClass"
             @edit="openEditModal"
+            @toggle-dinh-danh="toggleDinhDanh"
             @delete="handleDelete"
           />
         </div>
@@ -135,8 +136,9 @@
               <div class="flex-none w-[100px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Số lượng lao động</div>
               <div class="flex-none w-[180px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">DS thành viên góp vốn</div>
               <div class="flex-none w-[180px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">DS cổ đông</div>
+              <div class="flex-none w-[170px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Định danh</div>
               <div class="flex-none w-[80px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Loại DN</div>
-              <div class="flex-none w-[100px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Actions</div>
+              <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Actions</div>
             </div>
             <!-- Body -->
             <div class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -184,8 +186,18 @@
                   <span v-else class="text-gray-400">-</span>
                 </div>
                 <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.dsCoDong }}</div>
+                <div class="flex-none w-[170px] p-[5px]">
+                  <span
+                    :class="[
+                      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                      dinhDanhClass(company.daCapNhatDinhDanh),
+                    ]"
+                  >
+                    {{ company.daCapNhatDinhDanh ? 'Đã cập nhật định danh' : 'Chưa cập nhật định danh' }}
+                  </span>
+                </div>
                 <div class="flex-none w-[80px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.loaiDN }}</div>
-                <div class="flex-none w-[100px] p-[5px]">
+                <div class="flex-none w-[220px] p-[5px]">
                   <div class="flex items-center gap-2">
                     <button
                       @click="openEditModal(company)"
@@ -195,6 +207,13 @@
                       <svg class="fill-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
                         <path d="M17.4111 2.58332C17.1875 2.35974 16.875 2.23401 16.5488 2.23401C16.2227 2.23401 15.9102 2.35974 15.6865 2.58332L14.7334 3.53638L16.4639 5.26692L17.4169 4.31387C17.6405 4.09029 17.7663 3.77783 17.7663 3.45166C17.7663 3.12549 17.6405 2.81303 17.4169 2.58945L17.4111 2.58332ZM15.4043 6.32666L13.6738 4.59613L6.80859 11.4614C6.67969 11.5903 6.58301 11.7485 6.52637 11.9233L5.60156 14.7485C5.57031 14.8452 5.60156 14.9487 5.67578 15.0229C5.75 15.0972 5.85352 15.1284 5.9502 15.0972L8.77539 14.1724C8.9502 14.1157 9.1084 14.019 9.2373 13.8901L16.1025 7.0249L15.4043 6.32666ZM4.0625 3.43701C2.91602 3.43701 1.98438 4.36865 1.98438 5.51514V15.2651C1.98438 16.4116 2.91602 17.3433 4.0625 17.3433H13.8125C14.959 17.3433 15.8906 16.4116 15.8906 15.2651V9.39014C15.8906 9.05225 15.6162 8.77783 15.2783 8.77783C14.9404 8.77783 14.666 9.05225 14.666 9.39014V15.2651C14.666 15.7349 14.2822 16.1187 13.8125 16.1187H4.0625C3.59277 16.1187 3.20898 15.7349 3.20898 15.2651V5.51514C3.20898 5.04541 3.59277 4.66162 4.0625 4.66162H9.9375C10.2754 4.66162 10.5498 4.38721 10.5498 4.04932C10.5498 3.71143 10.2754 3.43701 9.9375 3.43701H4.0625Z"/>
                       </svg>
+                    </button>
+                    <button
+                      @click="toggleDinhDanh(company)"
+                      class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-2 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-700"
+                      :title="company.daCapNhatDinhDanh ? 'Đánh dấu chưa cập nhật định danh' : 'Đánh dấu đã cập nhật định danh'"
+                    >
+                      {{ company.daCapNhatDinhDanh ? 'Đặt chưa cập nhật' : 'Cập nhật định danh' }}
                     </button>
                     <button
                       @click="handleDelete(company.id)"
@@ -793,6 +812,10 @@ const handleDelete = async (id: number) => {
   }
 }
 
+const toggleDinhDanh = async (company: Company) => {
+  await store.updateCompanyDinhDanh(company.id, !company.daCapNhatDinhDanh)
+}
+
 const addEditMember = () => {
   if (!editForm.dsThanhVienGopVon) editForm.dsThanhVienGopVon = []
   editForm.dsThanhVienGopVon.push({
@@ -818,6 +841,11 @@ const statusClass = (status: string | null) => {
       return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
   }
 }
+
+const dinhDanhClass = (isUpdated?: boolean) =>
+  isUpdated
+    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'
+    : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
 
 // Fetch when filters or page changes
 watch(

@@ -243,11 +243,6 @@ const menuGroups = [
   {
     title: "Danh mục",
     items: [
-      {
-        icon: GridIcon,
-        name: "Bảng điều khiển",
-        subItems: [{ name: "Tổng quan", path: "/", pro: false }],
-      },
       // {
       //   icon: CalenderIcon,
       //   name: "Calendar",
@@ -270,6 +265,7 @@ const menuGroups = [
         icon: TableIcon,
         subItems: [
           { name: "Danh sách công ty", path: "/companies", pro: false },
+          { name: "Định danh công ty", path: "/companies/identity", pro: false },
           { name: "Tạo công ty", path: "/companies/create", pro: false },
         ],
       },

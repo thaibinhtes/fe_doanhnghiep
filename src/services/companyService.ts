@@ -78,6 +78,13 @@ export const companyService = {
     return normalizeCompany(data.data)
   },
 
+  async updateDinhDanhStatus(id: number, daCapNhatDinhDanh: boolean): Promise<Company> {
+    const { data } = await api.patch<{ data: Company }>(`${BASE_PATH}/${id}/dinh-danh`, {
+      daCapNhatDinhDanh,
+    })
+    return normalizeCompany(data.data)
+  },
+
   async delete(id: number): Promise<void> {
     await api.delete(`${BASE_PATH}/${id}`)
   },

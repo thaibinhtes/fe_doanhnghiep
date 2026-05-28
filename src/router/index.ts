@@ -63,6 +63,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/companies/identity',
+      name: 'Identity Companies',
+      component: () => import('../views/Companies/IdentityCompanies.vue'),
+      meta: {
+        title: 'Identity Companies',
+      },
+    },
+    {
       path: '/members',
       name: 'Members',
       component: () => import('../views/Members.vue'),

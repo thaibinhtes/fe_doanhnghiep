@@ -41,6 +41,8 @@ export const useCompaniesStore = defineStore('companies', () => {
         phuongXa: c.phuongXa || '-',
         vonDieuLe: c.vonDieuLe || '-',
         trangThai: c.trangThai || '-',
+        daCapNhatDinhDanh: !!c.daCapNhatDinhDanh,
+        trangThaiDinhDanh: c.trangThaiDinhDanh || (c.daCapNhatDinhDanh ? 'Đã cập nhật định danh' : 'Chưa cập nhật định danh'),
         dienThoai: c.dienThoai || '-',
         nguoiDaiDienTen: c.nguoiDaiDienTen || c.nguoiDaiDien?.fullName || null,
         ngaySinhNguoiDaiDien: c.ngaySinhNguoiDaiDien || c.nguoiDaiDien?.birthday || null,
@@ -118,6 +120,30 @@ export const useCompaniesStore = defineStore('companies', () => {
     }
   }
 
+  async function updateCompanyDinhDanh(id: number, daCapNhatDinhDanh: boolean) {
+    loading.value = true
+    error.value = null
+    try {
+      const updated = await companyService.updateDinhDanhStatus(id, daCapNhatDinhDanh)
+      const index = companies.value.findIndex((c) => c.id === id)
+      if (index !== -1) {
+        companies.value[index] = {
+          ...companies.value[index],
+          ...updated,
+          daCapNhatDinhDanh: !!updated.daCapNhatDinhDanh,
+          trangThaiDinhDanh: updated.trangThaiDinhDanh || (updated.daCapNhatDinhDanh ? 'Đã cập nhật định danh' : 'Chưa cập nhật định danh'),
+        }
+      }
+      return updated
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Không thể cập nhật định danh'
+      console.error('updateCompanyDinhDanh error:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   function setPage(newPage: number) {
     meta.value.current_page = newPage
   }
@@ -138,6 +164,7 @@ export const useCompaniesStore = defineStore('companies', () => {
     fetchCompanies,
     createCompany,
     updateCompany,
+    updateCompanyDinhDanh,
     deleteCompany,
     setPage,
     resetError,

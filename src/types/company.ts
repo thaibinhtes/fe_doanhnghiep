@@ -41,6 +41,8 @@ export interface Company {
   phuongXa: string | null
   vonDieuLe: string | null
   trangThai: string | null
+  daCapNhatDinhDanh?: boolean
+  trangThaiDinhDanh?: string
   dienThoai: string | null
   nguoiDaiDienTen?: string | null
   ngaySinhNguoiDaiDien?: string | null

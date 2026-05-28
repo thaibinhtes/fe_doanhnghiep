@@ -47,6 +47,21 @@
         <dt class="shrink-0 text-gray-500 dark:text-gray-400 w-24">Loại hình</dt>
         <dd class="text-gray-800 dark:text-gray-200">{{ company.loaiHinhDN }}</dd>
       </div>
+      <div class="flex gap-2">
+        <dt class="shrink-0 text-gray-500 dark:text-gray-400 w-24">Định danh</dt>
+        <dd>
+          <span
+            :class="[
+              'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+              company.daCapNhatDinhDanh
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'
+                : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+            ]"
+          >
+            {{ company.daCapNhatDinhDanh ? 'Đã cập nhật định danh' : 'Chưa cập nhật định danh' }}
+          </span>
+        </dd>
+      </div>
       <div v-if="company.dsThanhVienGopVon?.length" class="flex gap-2">
         <dt class="shrink-0 text-gray-500 dark:text-gray-400 w-24">Góp vốn</dt>
         <dd class="min-w-0 flex-1 space-y-1 text-gray-800 dark:text-gray-200">
@@ -72,6 +87,13 @@
     </dl>
 
     <div class="mt-4 flex gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
+      <button
+        type="button"
+        @click="$emit('toggle-dinh-danh', company)"
+        class="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-3 text-xs font-medium text-white transition hover:bg-emerald-700"
+      >
+        {{ company.daCapNhatDinhDanh ? 'Đặt chưa cập nhật' : 'Cập nhật định danh' }}
+      </button>
       <button
         type="button"
         @click="$emit('edit', company)"
@@ -106,6 +128,7 @@ const props = defineProps<{
 
 defineEmits<{
   edit: [company: Company]
+  'toggle-dinh-danh': [company: Company]
   delete: [id: number]
 }>()
 
