@@ -1,7 +1,6 @@
 <template>
-  <router-link to="/" class="lg:hidden">
-    <img class="dark:hidden" src="/images/logo/logo.svg" alt="Logo" />
-    <img class="hidden dark:block" src="/images/logo/logo-dark.svg" alt="Logo" />
+  <router-link to="/" class="lg:hidden text-sm font-semibold text-gray-900 dark:text-white">
+    HTQLDN
   </router-link>
 </template>
 

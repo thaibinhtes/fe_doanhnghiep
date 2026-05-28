@@ -50,9 +50,9 @@
               >
                 <option value="">Tất cả</option>
                 <option value="Công ty TNHH">Công ty TNHH</option>
-                <option value="Công ty Cổ phần">Công ty Cổ phần</option>
-                <option value="Doanh nghiệp tư nhân">Doanh nghiệp tư nhân</option>
-                <option value="Hợp danh">Hợp danh</option>
+                <option value="Công ty Cổ phần">Công ty Cổ Phần</option>
+                <option value="Doanh nghiệp tư nhân">Doanh nghiệp Tư Nhân</option>
+                <option value="Hợp danh">Hợp Danh</option>
               </select>
               <span
                 class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
@@ -193,7 +193,7 @@
                       dinhDanhClass(company.daCapNhatDinhDanh),
                     ]"
                   >
-                    {{ company.daCapNhatDinhDanh ? 'Đã cập nhật định danh' : 'Chưa cập nhật định danh' }}
+                    {{ company.daCapNhatDinhDanh ? 'Đã đăng ký định danh' : 'Chưa đăng ký định danh' }}
                   </span>
                 </div>
                 <div class="flex-none w-[80px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.loaiDN }}</div>
@@ -211,9 +211,9 @@
                     <button
                       @click="toggleDinhDanh(company)"
                       class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-2 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-700"
-                      :title="company.daCapNhatDinhDanh ? 'Đánh dấu chưa cập nhật định danh' : 'Đánh dấu đã cập nhật định danh'"
+                      :title="company.daCapNhatDinhDanh ? 'Huỷ đăng ký định danh' : 'Đăng ký định danh'"
                     >
-                      {{ company.daCapNhatDinhDanh ? 'Đặt chưa cập nhật' : 'Cập nhật định danh' }}
+                      {{ company.daCapNhatDinhDanh ? 'Huỷ đăng ký định danh' : 'Đăng ký định danh' }}
                     </button>
                     <button
                       @click="handleDelete(company.id)"

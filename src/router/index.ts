@@ -8,10 +8,10 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'Ecommerce',
-      component: () => import('../views/Ecommerce.vue'),
+      name: 'Companies Index',
+      component: () => import('../views/Companies.vue'),
       meta: {
-        title: 'eCommerce Dashboard',
+        title: 'Danh sách doanh nghiệp',
       },
     },
     {
@@ -186,6 +186,6 @@ const router = createRouter({
 export default router
 
 router.beforeEach((to, from, next) => {
-  document.title = `Vue.js ${to.meta.title} | TailAdmin - Vue.js Tailwind CSS Dashboard Template`
+  document.title = `${to.meta.title} | Hệ Thống Quản Lý Doanh Nghiệp (HTQLDN)`
   next()
 })

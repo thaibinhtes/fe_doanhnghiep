@@ -19,30 +19,19 @@
         !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start',
       ]"
     >
-      <router-link to="/">
-        <img
+      <router-link to="/" class="flex items-center">
+        <span
           v-if="isExpanded || isHovered || isMobileOpen"
-          class="dark:hidden"
-          src="/images/logo/logo.svg"
-          alt="Logo"
-          width="150"
-          height="40"
-        />
-        <img
-          v-if="isExpanded || isHovered || isMobileOpen"
-          class="hidden dark:block"
-          src="/images/logo/logo-dark.svg"
-          alt="Logo"
-          width="150"
-          height="40"
-        />
-        <img
+          class="text-sm font-semibold text-gray-900 dark:text-white"
+        >
+          Hệ Thống Quản Lý Doanh Nghiệp (HTQLDN)
+        </span>
+        <span
           v-else
-          src="/images/logo/logo-icon.svg"
-          alt="Logo"
-          width="32"
-          height="32"
-        />
+          class="text-xs font-bold text-gray-900 dark:text-white"
+        >
+          HTQLDN
+        </span>
       </router-link>
     </div>
     <div
@@ -243,30 +232,13 @@ const menuGroups = [
   {
     title: "Danh mục",
     items: [
-      // {
-      //   icon: CalenderIcon,
-      //   name: "Calendar",
-      //   path: "/calendar",
-      // },
-      // {
-      //   icon: UserCircleIcon,
-      //   name: "User Profile",
-      //   path: "/profile",
-      // },
-      // {
-      //   name: "Forms",
-      //   icon: ListIcon,
-      //   subItems: [
-      //     { name: "Form Elements", path: "/form-elements", pro: false },
-      //   ],
-      // },
       {
-        name: "Công ty",
+        name: "Quản lý doanh nghiệp",
         icon: TableIcon,
         subItems: [
-          { name: "Danh sách công ty", path: "/companies", pro: false },
-          { name: "Định danh công ty", path: "/companies/identity", pro: false },
-          { name: "Tạo công ty", path: "/companies/create", pro: false },
+          { name: "Danh sách doanh nghiệp", path: "/companies", pro: false },
+          { name: "Định danh doanh nghiệp", path: "/companies/identity", pro: false },
+          { name: "Tạo doanh nghiệp", path: "/companies/create", pro: false },
         ],
       },
       {
