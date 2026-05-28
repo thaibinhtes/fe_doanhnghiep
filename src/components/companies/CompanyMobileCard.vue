@@ -92,7 +92,7 @@
         @click="$emit('toggle-dinh-danh', company)"
         class="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-3 text-xs font-medium text-white transition hover:bg-emerald-700"
       >
-        {{ company.daCapNhatDinhDanh ? 'Đặt chưa cập nhật' : 'Cập nhật định danh' }}
+        {{ company.daCapNhatDinhDanh ? 'Huỷ đăng ký định danh' : 'Đăng ký định danh' }}
       </button>
       <button
         type="button"
