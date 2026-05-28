@@ -4,8 +4,8 @@
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Danh sách doanh nghiệp" className="overflow-hidden">
         <!-- Filters -->
-        <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end">
-          <div class="w-[200px]">
+        <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
+          <div class="w-full sm:flex-1 sm:min-w-[200px]">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Tìm kiếm
             </label>
@@ -65,13 +65,13 @@
           </div>
           <button
             @click="resetFilters"
-            class="h-11 inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            class="h-11 w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             Đặt lại
           </button>
           <router-link
             to="/companies/create"
-            class="h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition hover:bg-brand-600"
+            class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition hover:bg-brand-600"
           >
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
               <path d="M10 4.16669V15.8334M4.16669 10H15.8334" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -84,7 +84,30 @@
           {{ store.error }}
         </div>
 
-        <div class="overflow-x-auto">
+        <!-- Mobile: card list -->
+        <div v-if="store.loading" class="flex items-center justify-center py-12 lg:hidden">
+          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
+        </div>
+        <div
+          v-else-if="store.companies.length === 0"
+          class="py-10 text-center text-sm text-gray-400 lg:hidden"
+        >
+          Chưa có doanh nghiệp nào
+        </div>
+        <div v-else class="grid gap-3 lg:hidden">
+          <CompanyMobileCard
+            v-for="(company, index) in store.companies"
+            :key="company.id"
+            :company="company"
+            :index="index"
+            :status-class="statusClass"
+            @edit="openEditModal"
+            @delete="handleDelete"
+          />
+        </div>
+
+        <!-- Desktop: wide table -->
+        <div class="hidden lg:block overflow-x-auto">
           <div v-if="store.loading" class="flex items-center justify-center py-12">
             <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
           </div>
@@ -190,11 +213,12 @@
         </div>
 
         <!-- Total & Pagination -->
-        <div class="mt-5 flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+        <div class="mt-5 flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-center">
+          <p class="text-center text-sm text-gray-500 dark:text-gray-400 sm:text-left">
             Tổng số: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ store.total }}</span> bản ghi
+            <span class="lg:hidden text-gray-400"> · Trang {{ store.page }}/{{ store.totalPages || 1 }}</span>
           </p>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
             <button
               @click="prevPage"
               :disabled="store.page === 1"
@@ -214,7 +238,7 @@
               :key="page"
               @click="goToPage(page)"
               :class="[
-                'inline-flex h-9 min-w-[36px] items-center justify-center rounded-lg border px-3 text-sm font-medium transition',
+                'hidden sm:inline-flex h-9 min-w-[36px] items-center justify-center rounded-lg border px-3 text-sm font-medium transition',
                 store.page === page
                   ? 'border-brand-500 bg-brand-500 text-white'
                   : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
@@ -245,7 +269,7 @@
     <Modal v-if="isEditModalOpen" @close="closeEditModal">
       <template #body>
         <div
-          class="no-scrollbar relative w-full max-w-[800px] max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 dark:bg-gray-900 lg:p-10"
+          class="no-scrollbar relative w-full max-w-[800px] max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6 lg:p-10"
         >
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -623,19 +647,19 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
-                type="submit"
-                class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 focus:outline-hidden focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-              >
-                Cập nhật
-              </button>
+            <div class="flex flex-col-reverse gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 sm:flex-row sm:items-center">
               <button
                 type="button"
                 @click="closeEditModal"
-                class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-900"
+                class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-900"
               >
                 Hủy
+              </button>
+              <button
+                type="submit"
+                class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 focus:outline-hidden focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+              >
+                Cập nhật
               </button>
             </div>
           </form>
@@ -652,6 +676,7 @@ import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import Modal from '@/components/profile/Modal.vue'
+import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
 import type { Company, CapitalMemberInput } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 

@@ -16,10 +16,10 @@
               class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
             />
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <button
               @click="handleSearch"
-              class="h-11 inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 text-sm font-medium text-white transition hover:bg-brand-600"
+              class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-5 text-sm font-medium text-white transition hover:bg-brand-600"
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                 <path d="M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -28,7 +28,7 @@
             </button>
             <router-link
               to="/members/create"
-              class="h-11 inline-flex items-center gap-2 rounded-lg bg-success-500 px-5 text-sm font-medium text-white transition hover:bg-success-600"
+              class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-success-500 px-5 text-sm font-medium text-white transition hover:bg-success-600"
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                 <path d="M10 4.16669V15.8334M4.16669 10H15.8334" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -65,12 +65,13 @@
         <!-- Pagination -->
         <div
           v-if="membersStore.meta.last_page > 1"
-          class="mt-6 flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700"
+          class="mt-6 flex flex-col items-stretch gap-3 border-t border-gray-200 pt-4 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between"
         >
-          <span class="text-sm text-gray-500 dark:text-gray-400">
-            Hiển thị {{ membersStore.meta.from }}–{{ membersStore.meta.to }} / {{ membersStore.meta.total }} bản ghi
+          <span class="text-center text-sm text-gray-500 dark:text-gray-400 sm:text-left">
+            {{ membersStore.meta.from }}–{{ membersStore.meta.to }} / {{ membersStore.meta.total }}
+            <span class="text-gray-400"> · Trang {{ membersStore.meta.current_page }}/{{ membersStore.meta.last_page }}</span>
           </span>
-          <div class="flex items-center gap-1">
+          <div class="flex items-center justify-center gap-1">
             <button
               :disabled="membersStore.meta.current_page === 1"
               @click="changePage(membersStore.meta.current_page - 1)"
@@ -83,7 +84,7 @@
               :key="p"
               @click="changePage(p)"
               :class="[
-                'inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition',
+                'hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition',
                 p === membersStore.meta.current_page
                   ? 'bg-brand-500 text-white'
                   : 'border border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800',

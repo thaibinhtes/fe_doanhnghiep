@@ -6,7 +6,7 @@
     ]"
   >
     <!-- Card Header -->
-    <div class="px-6 py-5">
+    <div class="px-4 py-4 sm:px-6 sm:py-5">
       <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
         {{ title }}
       </h3>
@@ -16,7 +16,7 @@
     </div>
 
     <!-- Card Body -->
-    <div class="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
+    <div class="p-3 border-t border-gray-100 dark:border-gray-800 sm:p-4 md:p-6">
       <div class="space-y-5">
         <slot></slot>
       </div>

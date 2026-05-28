@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-    <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90" x-text="pageTitle">
+  <div class="flex flex-col gap-2 mb-4 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
+    <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90 sm:text-xl" x-text="pageTitle">
       {{ pageTitle }}
     </h2>
     <nav>

@@ -95,17 +95,17 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center justify-end gap-3 pt-2">
+          <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
             <router-link
               to="/members"
-              class="h-11 inline-flex items-center rounded-lg border border-gray-300 px-5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+              class="h-11 w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
             >
               Hủy
             </router-link>
             <button
               type="submit"
               :disabled="membersStore.loading"
-              class="h-11 inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
+              class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
             >
               <span v-if="membersStore.loading">Đang lưu...</span>
               <span v-else>Lưu</span>
