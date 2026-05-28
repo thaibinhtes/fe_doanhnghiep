@@ -12,6 +12,10 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# Force Docker builds to use the Docker-specific env file.
+ARG ENV_FILE=.env.docker
+RUN if [ -f "$ENV_FILE" ]; then cp "$ENV_FILE" .env; fi
+
 # Build the app
 RUN npm run build-only
 
