@@ -3,17 +3,32 @@
     <PageBreadcrumb :pageTitle="currentPageTitle" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Định danh công ty">
-        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="mb-4 flex flex-col gap-3">
           <p class="text-sm text-gray-500 dark:text-gray-400">
             Chọn công ty và cập nhật trạng thái định danh.
           </p>
-          <button
-            type="button"
-            @click="store.fetchCompanies({ page: store.page, per_page: store.perPage })"
-            class="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-          >
-            Tải lại
-          </button>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              v-model="search"
+              type="text"
+              placeholder="Tìm theo tên công ty hoặc MST..."
+              class="dark:bg-dark-900 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+            />
+            <button
+              type="button"
+              @click="handleSearch"
+              class="inline-flex h-10 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition hover:bg-brand-600"
+            >
+              Tìm kiếm
+            </button>
+            <button
+              type="button"
+              @click="handleReset"
+              class="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              Đặt lại
+            </button>
+          </div>
         </div>
 
         <div v-if="store.loading" class="py-10 text-center text-sm text-gray-500">Đang tải...</div>
@@ -65,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
@@ -73,9 +88,19 @@ import { useCompaniesStore } from '@/stores/companies'
 
 const store = useCompaniesStore()
 const currentPageTitle = computed(() => 'Định danh công ty')
+const search = ref('')
 
 const toggleDinhDanh = async (id: number, currentStatus: boolean) => {
   await store.updateCompanyDinhDanh(id, !currentStatus)
+}
+
+const handleSearch = async () => {
+  await store.fetchCompanies({ page: 1, per_page: 20, search: search.value.trim() })
+}
+
+const handleReset = async () => {
+  search.value = ''
+  await store.fetchCompanies({ page: 1, per_page: 20 })
 }
 
 onMounted(() => {
