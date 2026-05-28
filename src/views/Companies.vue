@@ -140,9 +140,9 @@
                   </span>
                 </div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.dienThoai }}</div>
-                <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nguoiDaiDien?.fullName || '-' }}</div>
-                <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nguoiDaiDien?.birthday || '-' }}</div>
-                <div class="flex-none w-[160px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.chuSoHuu?.fullName || '-' }}</div>
+                <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nguoiDaiDienTen || company.nguoiDaiDien?.fullName || '-' }}</div>
+                <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngaySinhNguoiDaiDien || company.nguoiDaiDien?.birthday || '-' }}</div>
+                <div class="flex-none w-[160px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.chuSoHuuTen || company.chuSoHuu?.fullName || '-' }}</div>
                 <div class="flex-none w-[200px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nganhNgheKDChinh }}</div>
                 <div class="flex-none w-[260px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nganhNgheKD }}</div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngayCap }}</div>
@@ -153,6 +153,7 @@
                   <div v-if="company.dsThanhVienGopVon && company.dsThanhVienGopVon.length" class="space-y-1">
                     <div v-for="(member, idx) in company.dsThanhVienGopVon.slice(0, 2)" :key="idx" class="text-xs">
                       <span class="font-medium">{{ member.fullName }}</span>
+                      <span v-if="member.position" class="text-gray-500"> · {{ member.position }}</span>
                       <span v-if="member.investmentAmount" class="text-gray-500"> — {{ formatVND(member.investmentAmount) }}</span>
                     </div>
                     <div v-if="company.dsThanhVienGopVon.length > 2" class="text-xs text-gray-500">+{{ company.dsThanhVienGopVon.length - 2 }} thành viên</div>
@@ -469,40 +470,29 @@
                 </div>
               </div>
 
-              <!-- Ngườ i đại diện -->
+              <!-- Người đại diện -->
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Người đại diện theo pháp luật
                 </label>
-                <div class="relative z-20 bg-transparent">
-                  <select
-                    :value="editForm.nguoiDaiDienID || ''"
-                    @change="selectNguoiDaiDien(($event.target as HTMLSelectElement).value)"
-                    class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                  >
-                    <option value="">-- Chọn thành viên --</option>
-                    <option v-for="m in membersStore.members" :key="m.id || m.cccd" :value="m.id">
-                      {{ m.fullName }} · {{ m.cccd }}
-                    </option>
-                  </select>
-                  <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
-                    <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </span>
-                </div>
+                <input
+                  type="text"
+                  v-model="editForm.nguoiDaiDienTen"
+                  placeholder="Nhập họ tên người đại diện"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                />
               </div>
 
-              <!-- Ngày sinh ngườ i đại diện -->
+              <!-- Ngày sinh người đại diện -->
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Ngày sinh ngườ i đại diện
+                  Ngày sinh người đại diện
                 </label>
                 <input
                   type="text"
-                  :value="editForm.nguoiDaiDien?.birthday || ''"
-                  readonly
-                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs dark:border-gray-700 dark:bg-gray-800 dark:text-white/90"
+                  v-model="editForm.ngaySinhNguoiDaiDien"
+                  placeholder="DD/MM/YYYY"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                 />
               </div>
 
@@ -511,23 +501,12 @@
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Chủ sở hữu
                 </label>
-                <div class="relative z-20 bg-transparent">
-                  <select
-                    :value="editForm.chuSoHuu?.id || ''"
-                    @change="selectChuSoHuu(($event.target as HTMLSelectElement).value)"
-                    class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                  >
-                    <option value="">-- Chọn thành viên --</option>
-                    <option v-for="m in membersStore.members" :key="m.id || m.cccd" :value="m.id">
-                      {{ m.fullName }} · {{ m.cccd }}
-                    </option>
-                  </select>
-                  <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
-                    <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </span>
-                </div>
+                <input
+                  type="text"
+                  v-model="editForm.chuSoHuuTen"
+                  placeholder="Nhập họ tên chủ sở hữu"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                />
               </div>
 
               <!-- Ngành nghề KD chính -->
@@ -556,67 +535,76 @@
 
               <!-- DS Thành viên góp vốn -->
               <div class="sm:col-span-2 lg:col-span-3">
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Danh sách thành viên góp vốn
-                </label>
-                <div class="flex items-center gap-2 mb-3">
-                  <div class="relative z-20 flex-1 bg-transparent">
-                    <select
-                      v-model="selectedMemberId"
-                      class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                    >
-                      <option :value="null">-- Chọn thành viên --</option>
-                      <option v-for="m in membersStore.members" :key="m.id || m.cccd" :value="m.id">
-                        {{ m.fullName }} · CCCD: {{ m.cccd }}
-                      </option>
-                    </select>
-                    <span class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400">
-                      <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                      </svg>
-                    </span>
-                  </div>
+                <div class="flex items-center justify-between mb-3">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Danh sách thành viên góp vốn
+                  </label>
                   <button
                     type="button"
                     @click="addEditMember"
-                    :disabled="selectedMemberId === null"
-                    class="h-11 inline-flex items-center gap-1 rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="inline-flex items-center gap-1 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-brand-600"
                   >
                     <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M10 4.16669V15.8334M4.16669 10H15.8334" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    Thêm
+                    Thêm thành viên
                   </button>
                 </div>
                 <div v-if="!editForm.dsThanhVienGopVon || editForm.dsThanhVienGopVon.length === 0" class="text-sm text-gray-400 py-2">Chưa có thành viên</div>
-                <div v-else class="space-y-2">
+                <div v-else class="space-y-3">
                   <div
                     v-for="(member, idx) in editForm.dsThanhVienGopVon"
                     :key="idx"
-                    class="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2.5"
+                    class="rounded-lg border border-gray-200 dark:border-gray-700 p-4"
                   >
-                    <div class="flex items-center gap-3">
-                      <div class="h-8 w-8 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-xs font-semibold text-brand-600 dark:text-brand-400">
-                        {{ member.fullName.charAt(0).toUpperCase() }}
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Thành viên {{ idx + 1 }}</span>
+                      <button
+                        type="button"
+                        @click="removeEditMember(idx)"
+                        class="text-red-500 hover:text-red-600 text-xs"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <div class="sm:col-span-2">
+                        <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">
+                          Họ và tên <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                          v-model="member.fullName"
+                          type="text"
+                          required
+                          placeholder="Nhập họ tên thành viên"
+                          class="dark:bg-dark-900 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                        />
                       </div>
                       <div>
-                        <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ member.fullName }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                          CCCD: {{ member.cccd }} · {{ member.position || 'Chưa có chức vụ' }} · {{ formatVND(member.investmentAmount) }}
-                          <span
-                            :class="[
-                              'ml-1 inline-block w-2 h-2 rounded-full',
-                              member.status ? 'bg-green-500' : 'bg-gray-400',
-                            ]"
-                          />
+                        <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">
+                          Vị trí
+                        </label>
+                        <input
+                          v-model="member.position"
+                          type="text"
+                          placeholder="Nhập vị trí (nếu có)"
+                          class="dark:bg-dark-900 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                        />
+                      </div>
+                      <div>
+                        <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-400">
+                          Số tiền góp vốn / cổ phần
+                        </label>
+                        <input
+                          v-model.number="member.investmentAmount"
+                          type="number"
+                          min="0"
+                          placeholder="Nhập số tiền (nếu có)"
+                          class="dark:bg-dark-900 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                        />
+                        <p v-if="member.investmentAmount" class="mt-0.5 text-[11px] text-gray-400">
+                          {{ formatVND(Number(member.investmentAmount)) }}
                         </p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      @click="removeEditMember(idx)"
-                      class="text-red-500 hover:text-red-600 text-xs px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                    >
-                      Xóa
-                    </button>
                   </div>
                 </div>
               </div>
@@ -660,16 +648,14 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useCompaniesStore } from '@/stores/companies'
-import { useMembersStore } from '@/stores/members'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import Modal from '@/components/profile/Modal.vue'
-import type { Company, Member } from '@/types/company'
+import type { Company, CapitalMemberInput } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 
 const store = useCompaniesStore()
-const membersStore = useMembersStore()
 const currentPageTitle = ref('Danh sách doanh nghiệp')
 
 const filter = reactive({
@@ -680,7 +666,6 @@ const filter = reactive({
 
 const isEditModalOpen = ref(false)
 const selectedCompanyId = ref<number | null>(null)
-const selectedMemberId = ref<number | null>(null)
 
 const editForm = reactive<Company>({
   id: 0,
@@ -693,6 +678,9 @@ const editForm = reactive<Company>({
   vonDieuLe: '',
   trangThai: 'Đang hoạt động',
   dienThoai: '',
+  nguoiDaiDienTen: '',
+  ngaySinhNguoiDaiDien: '',
+  chuSoHuuTen: '',
   nguoiDaiDienID: null,
   chuSoHuuID: null,
   nganhNgheKDChinh: '',
@@ -701,11 +689,11 @@ const editForm = reactive<Company>({
   ngayDangKyThayDoi: '',
   loaiHinhDN: 'Công ty TNHH',
   soLuongLaoDong: 0,
-  dsThanhVienGopVon: [] as Member[],
+  dsThanhVienGopVon: [] as CapitalMemberInput[],
   dsCoDong: '',
   loaiDN: 'TN',
   nguoiDaiDien: null,
-  chuSoHuu: null
+  chuSoHuu: null,
 })
 
 const visiblePages = computed(() => {
@@ -743,14 +731,19 @@ const resetFilters = () => {
 
 const openEditModal = (company: Company) => {
   selectedCompanyId.value = company.id
-  Object.assign(editForm, company)
-  if (company?.nguoiDaiDien) {
-    Object.assign(editForm, {
-      ...editForm,
-      nguoiDaiDienID: company?.nguoiDaiDien.id
-    })
-  }
-  membersStore.fetchMembers({ per_page: 100 })
+  Object.assign(editForm, {
+    ...company,
+    nguoiDaiDienTen: company.nguoiDaiDienTen || company.nguoiDaiDien?.fullName || '',
+    ngaySinhNguoiDaiDien: company.ngaySinhNguoiDaiDien || company.nguoiDaiDien?.birthday || '',
+    chuSoHuuTen: company.chuSoHuuTen || company.chuSoHuu?.fullName || '',
+    dsThanhVienGopVon: (company.dsThanhVienGopVon ?? []).map((m) => ({
+      fullName: m.fullName ?? '',
+      position: m.position ?? null,
+      investmentAmount: m.investmentAmount ?? null,
+      dateJoin: m.dateJoin ?? null,
+      memberId: m.memberId ?? null,
+    })),
+  })
   isEditModalOpen.value = true
 }
 
@@ -761,15 +754,7 @@ const closeEditModal = () => {
 
 const handleUpdate = async () => {
   if (selectedCompanyId.value !== null) {
-    const payload = {
-      ...editForm,
-      nguoiDaiDien_id: editForm.nguoiDaiDien?.id ?? null,
-      nguoiDaiDienID: editForm.nguoiDaiDien?.id ?? null,
-      chuSoHuuID: editForm.chuSoHuu?.id ?? null,
-    }
-    // Remove full objects before sending; backend expects IDs
-    delete (payload as any).nguoiDaiDien
-    delete (payload as any).chuSoHuu
+    const { nguoiDaiDien, chuSoHuu, ...payload } = editForm
     await store.updateCompany(selectedCompanyId.value, payload)
     await store.fetchCompanies()
   }
@@ -785,57 +770,15 @@ const handleDelete = async (id: number) => {
 
 const addEditMember = () => {
   if (!editForm.dsThanhVienGopVon) editForm.dsThanhVienGopVon = []
-  const found = membersStore.members.find((m: any) => m.id === selectedMemberId.value)
-  if (found) {
-    editForm.dsThanhVienGopVon.push({
-      cccd: found.cccd || '',
-      fullName: found.fullName || '',
-      birthday: found.birthday || null,
-      gender: found.gender || null,
-      dateJoin: found.dateJoin || null,
-      status: found.status ?? true,
-      position: found.position || null,
-      investmentAmount: found.investmentAmount || null,
-    })
-  } else {
-    editForm.dsThanhVienGopVon.push({
-      cccd: '',
-      fullName: '',
-      birthday: null,
-      gender: null,
-      dateJoin: null,
-      status: true,
-      position: null,
-      investmentAmount: null,
-    })
-  }
-  selectedMemberId.value = null
+  editForm.dsThanhVienGopVon.push({
+    fullName: '',
+    position: null,
+    investmentAmount: null,
+  })
 }
 
 const removeEditMember = (idx: number) => {
   editForm.dsThanhVienGopVon?.splice(idx, 1)
-}
-
-const selectNguoiDaiDien = (memberId: string) => {
-  const id = Number(memberId)
-  if (!id) {
-    editForm.nguoiDaiDien = null
-    return
-  }
-  const found = membersStore.members.find((m) => m.id === id)
-  editForm.nguoiDaiDien = found || null
-  editForm.nguoi_dai_dien_id = found?.id || null
-}
-
-const selectChuSoHuu = (memberId: string) => {
-  const id = Number(memberId)
-  if (!id) {
-    editForm.chuSoHuu = null
-    return
-  }
-  const found = membersStore.members.find((m) => m.id === id)
-  editForm.chuSoHuu = found || null
-  editForm.chu_so_huu_id = found?.id || null
 }
 
 const statusClass = (status: string | null) => {
@@ -868,6 +811,5 @@ watch(
 
 onMounted(() => {
   store.fetchCompanies()
-  membersStore.fetchMembers({ per_page: 100 })
 })
 </script>

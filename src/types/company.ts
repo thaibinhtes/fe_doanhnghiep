@@ -22,6 +22,14 @@ export interface MemberCompany {
   investment_amount?: number
 }
 
+export interface CapitalMemberInput {
+  fullName: string
+  position?: string | null
+  investmentAmount?: number | null
+  dateJoin?: string | null
+  memberId?: number | null
+}
+
 // Company model — backend trả về đúng tên field tiếng Việt
 export interface Company {
   id: number
@@ -34,17 +42,21 @@ export interface Company {
   vonDieuLe: string | null
   trangThai: string | null
   dienThoai: string | null
-  nguoiDaiDienID: number | null
-  nguoiDaiDien: Member | null
-  chuSoHuuID: number | null
-  chuSoHuu: Member | null
+  nguoiDaiDienTen?: string | null
+  ngaySinhNguoiDaiDien?: string | null
+  chuSoHuuTen?: string | null
+  nguoiDaiDienID?: number | null
+  nguoiDaiDien?: Member | null
+  chuSoHuuID?: number | null
+  chuSoHuu?: Member | null
   nganhNgheKDChinh: string | null
   nganhNgheKD: string | null
   ngayCap: string | null
   ngayDangKyThayDoi: string | null
   loaiHinhDN: string | null
   soLuongLaoDong: number | null
-  dsThanhVienGopVon?: Member[] | null
+  dsThanhVienGopVon?: CapitalMemberInput[] | null
+  danhSachThanhVienGopVon?: CapitalMemberInput[] | null
   dsCoDong?: string | null
   loaiDN: string | null
   createdAt?: string
