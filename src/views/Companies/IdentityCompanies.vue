@@ -51,6 +51,15 @@
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   MST: {{ company.maSoDoanhNghiep || '-' }}
                 </p>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  Người đại diện: {{ company.nguoiDaiDienTen || company.nguoiDaiDien?.fullName || '-' }}
+                </p>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  Số điện thoại: {{ company.dienThoai || '-' }}
+                </p>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-300 break-words">
+                  Địa chỉ: {{ company.diaChi || '-' }}
+                </p>
               </div>
               <div class="flex flex-col items-start gap-2 sm:items-end">
                 <span
@@ -61,14 +70,14 @@
                       : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
                   ]"
                 >
-                  {{ company.daCapNhatDinhDanh ? 'Đã cập nhật định danh' : 'Chưa cập nhật định danh' }}
+                  {{ company.daCapNhatDinhDanh ? 'Đã đăng ký định danh' : 'Chưa đăng ký định danh' }}
                 </span>
                 <button
                   type="button"
                   @click="toggleDinhDanh(company.id, !!company.daCapNhatDinhDanh)"
-                  class="inline-flex h-9 items-center justify-center rounded-lg bg-brand-500 px-3 text-sm font-medium text-white transition hover:bg-brand-600"
+                  :class="company.daCapNhatDinhDanh ? 'inline-flex h-9 items-center justify-center rounded-lg bg-red-500 px-3 text-sm font-medium text-white transition hover:bg-red-600' : 'inline-flex h-9 items-center justify-center rounded-lg bg-brand-500 px-3 text-sm font-medium text-white transition hover:bg-brand-600' "
                 >
-                  {{ company.daCapNhatDinhDanh ? 'Đặt chưa cập nhật' : 'Cập nhật định danh' }}
+                  {{ company.daCapNhatDinhDanh ? 'Huỷ đăng ký định danh' : 'Đăng ký định danh' }}
                 </button>
               </div>
             </div>
