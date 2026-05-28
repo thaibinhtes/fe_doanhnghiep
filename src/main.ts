@@ -1,4 +1,5 @@
 import './assets/main.css'
+import './pwa'
 // Import Swiper styles
 import 'swiper/css'
 import 'swiper/css/navigation'

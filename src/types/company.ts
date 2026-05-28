@@ -98,6 +98,7 @@ export interface CompanyFilters {
   search?: string
   trangThai?: string
   loaiHinhDN?: string
+  daCapNhatDinhDanh?: boolean
   page?: number
   per_page?: number
 }

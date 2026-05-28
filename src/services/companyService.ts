@@ -55,6 +55,9 @@ export const companyService = {
         ...(filters?.search ? { search: filters.search } : {}),
         ...(filters?.trangThai ? { trangThai: filters.trangThai } : {}),
         ...(filters?.loaiHinhDN ? { loaiHinhDN: filters.loaiHinhDN } : {}),
+        ...(filters?.daCapNhatDinhDanh !== undefined
+          ? { daCapNhatDinhDanh: filters.daCapNhatDinhDanh }
+          : {}),
       },
     })
     return {
