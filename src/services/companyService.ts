@@ -58,6 +58,9 @@ export const companyService = {
         ...(filters?.daCapNhatDinhDanh !== undefined
           ? { daCapNhatDinhDanh: filters.daCapNhatDinhDanh }
           : {}),
+        ...(filters?.hasCoordinates !== undefined
+          ? { hasCoordinates: filters.hasCoordinates }
+          : {}),
       },
     })
     return {

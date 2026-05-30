@@ -37,6 +37,8 @@ export interface Company {
   maSoDoanhNghiep: string
   tenDoanhNghiep: string
   diaChi: string | null
+  long?: number | null
+  lat?: number | null
   quanHuyen: string | null
   phuongXa: string | null
   vonDieuLe: string | null
@@ -99,6 +101,7 @@ export interface CompanyFilters {
   trangThai?: string
   loaiHinhDN?: string
   daCapNhatDinhDanh?: boolean
+  hasCoordinates?: boolean
   page?: number
   per_page?: number
 }

@@ -12,7 +12,7 @@ const pwaPlugin = VitePWA({
   devOptions: {
     enabled: true,
   },
-  includeAssets: ['favicon.ico', 'pwa/apple-touch-icon.png'],
+  includeAssets: ['favicon.ico', 'pwa/apple-touch-icon.png', 'leaflet/marker-icon.png', 'leaflet/marker-icon-2x.png', 'leaflet/marker-shadow.png'],
   manifest: {
     name: 'Hệ Thống Quản Lý Doanh Nghiệp (HTQLDN)',
     short_name: 'HTQLDN',

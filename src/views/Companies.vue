@@ -70,6 +70,15 @@
             Đặt lại
           </button>
           <router-link
+            to="/companies/map"
+            class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-brand-500 bg-white px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-400 dark:bg-gray-900 dark:text-brand-400 dark:hover:bg-brand-500/10"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor"/>
+            </svg>
+            Xem bản đồ
+          </router-link>
+          <router-link
             to="/companies/create"
             class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition hover:bg-brand-600"
           >
@@ -102,6 +111,7 @@
             :index="index"
             :status-class="statusClass"
             @edit="openEditModal"
+            @update-map="goToMapUpdate"
             @toggle-dinh-danh="toggleDinhDanh"
             @delete="handleDelete"
           />
@@ -199,6 +209,15 @@
                 <div class="flex-none w-[80px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.loaiDN }}</div>
                 <div class="flex-none w-[220px] p-[5px]">
                   <div class="flex items-center gap-2">
+                    <button
+                      @click="goToMapUpdate(company)"
+                      class="inline-flex items-center justify-center rounded-lg bg-sky-600 p-2 text-white transition hover:bg-sky-700"
+                      title="Cập nhật bản đồ"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor"/>
+                      </svg>
+                    </button>
                     <button
                       @click="openEditModal(company)"
                       class="inline-flex items-center justify-center rounded-lg bg-brand-500 p-2 text-white transition hover:bg-brand-600"
@@ -388,6 +407,34 @@
                   type="text"
                   v-model="editForm.phuongXa"
                   class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                />
+              </div>
+
+              <!-- Kinh độ (long) -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                  Kinh độ (long)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  v-model.number="editForm.long"
+                  placeholder="VD: 106.6297"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                />
+              </div>
+
+              <!-- Vĩ độ (lat) -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                  Vĩ độ (lat)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  v-model.number="editForm.lat"
+                  placeholder="VD: 10.8231"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                 />
               </div>
 
@@ -690,6 +737,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -700,6 +748,7 @@ import type { Company, CapitalMemberInput } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 
 const store = useCompaniesStore()
+const router = useRouter()
 const currentPageTitle = ref('Danh sách doanh nghiệp')
 
 const filter = reactive({
@@ -719,6 +768,8 @@ const editForm = reactive<Company>({
   diaChi: '',
   quanHuyen: '',
   phuongXa: '',
+  long: null as number | null,
+  lat: null as number | null,
   vonDieuLe: '',
   trangThai: 'Đang hoạt động',
   dienThoai: '',
@@ -771,6 +822,10 @@ const resetFilters = () => {
   filter.trangThai = ''
   filter.loaiHinhDN = ''
   store.setPage(1)
+}
+
+const goToMapUpdate = (company: Company) => {
+  router.push(`/companies/${company.id}/map`)
 }
 
 const openEditModal = (company: Company) => {

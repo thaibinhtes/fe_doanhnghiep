@@ -71,6 +71,22 @@ const router = createRouter({
       },
     },
     {
+      path: '/companies/map',
+      name: 'Company Map',
+      component: () => import('../views/Companies/CompanyMap.vue'),
+      meta: {
+        title: 'Bản đồ doanh nghiệp',
+      },
+    },
+    {
+      path: '/companies/:id/map',
+      name: 'Company Map Update',
+      component: () => import('../views/Companies/CompanyMapUpdate.vue'),
+      meta: {
+        title: 'Cập nhật tọa độ',
+      },
+    },
+    {
       path: '/members',
       name: 'Members',
       component: () => import('../views/Members.vue'),

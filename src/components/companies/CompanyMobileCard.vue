@@ -86,7 +86,18 @@
       </div>
     </dl>
 
-    <div class="mt-4 flex gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
+    <div class="mt-4 flex flex-col gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
+      <button
+        type="button"
+        @click="$emit('update-map', company)"
+        class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-sky-600 text-sm font-medium text-white transition hover:bg-sky-700"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor"/>
+        </svg>
+        Cập nhật bản đồ
+      </button>
+      <div class="flex gap-2">
       <button
         type="button"
         @click="$emit('toggle-dinh-danh', company)"
@@ -111,6 +122,7 @@
           <path d="M6.875 3.125C6.875 2.43464 7.43464 1.875 8.125 1.875H11.875C12.5654 1.875 13.125 2.43464 13.125 3.125V4.375H17.5C17.8452 4.375 18.125 4.65482 18.125 5C18.125 5.34518 17.8452 5.625 17.5 5.625H16.4463L15.8928 16.6602C15.8425 17.7236 14.9707 18.5625 13.9052 18.5625H6.09479C5.02931 18.5625 4.1575 17.7236 4.10718 16.6602L3.55369 5.625H2.5C2.15482 5.625 1.875 5.34518 1.875 5C1.875 4.65482 2.15482 4.375 2.5 4.375H6.875V3.125ZM8.125 3.125V4.375H11.875V3.125H8.125ZM4.78355 5.625L5.30959 16.2305C5.32971 16.6309 5.65895 16.9375 6.06007 16.9375H13.9399C14.3411 16.9375 14.6703 16.6309 14.6904 16.2305L15.2165 5.625H4.78355Z"/>
         </svg>
       </button>
+      </div>
     </div>
   </article>
 </template>
@@ -128,6 +140,7 @@ const props = defineProps<{
 
 defineEmits<{
   edit: [company: Company]
+  'update-map': [company: Company]
   'toggle-dinh-danh': [company: Company]
   delete: [id: number]
 }>()

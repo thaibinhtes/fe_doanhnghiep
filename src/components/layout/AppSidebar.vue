@@ -237,6 +237,7 @@ const menuGroups = [
         icon: TableIcon,
         subItems: [
           { name: "Danh sách doanh nghiệp", path: "/companies", pro: false },
+          { name: "Bản đồ doanh nghiệp", path: "/companies/map", pro: false },
           { name: "Định danh doanh nghiệp", path: "/companies/identity", pro: false },
           { name: "Tạo doanh nghiệp", path: "/companies/create", pro: false },
         ],
