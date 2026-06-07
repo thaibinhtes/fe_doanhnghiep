@@ -69,6 +69,25 @@
           >
             Đặt lại
           </button>
+          <button
+            @click="handleExport"
+            :disabled="exporting"
+            class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-500 bg-white px-4 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-400 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ exporting ? 'Đang xuất...' : 'Xuất Excel' }}
+          </button>
+          <button
+            @click="openImportModal"
+            class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-amber-500 bg-white px-4 text-sm font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M12 21V9m0 0l4 4m-4-4l-4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Nhập Excel
+          </button>
           <router-link
             to="/companies/map"
             class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-brand-500 bg-white px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-400 dark:bg-gray-900 dark:text-brand-400 dark:hover:bg-brand-500/10"
@@ -732,6 +751,113 @@
         </div>
       </template>
     </Modal>
+
+    <!-- Import Modal -->
+    <Modal v-if="isImportModalOpen" @close="closeImportModal">
+      <template #body>
+        <div
+          class="no-scrollbar relative w-full max-w-[560px] max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6 lg:p-8"
+        >
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h5 class="font-semibold text-gray-800 text-theme-xl dark:text-white/90 lg:text-2xl">
+                Nhập doanh nghiệp từ Excel
+              </h5>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Tải file .xlsx theo mẫu, hệ thống sẽ tạo mới hoặc cập nhật theo mã số DN
+              </p>
+            </div>
+            <button
+              @click="closeImportModal"
+              class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            <button
+              type="button"
+              @click="handleDownloadTemplate"
+              :disabled="downloadingTemplate"
+              class="inline-flex items-center gap-2 text-sm font-medium text-brand-600 hover:text-brand-700 disabled:opacity-50 dark:text-brand-400"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ downloadingTemplate ? 'Đang tải mẫu...' : 'Tải file mẫu Excel' }}
+            </button>
+
+            <div
+              class="rounded-xl border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-700"
+            >
+              <input
+                ref="importFileInput"
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                class="hidden"
+                @change="onImportFileSelected"
+              />
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                Chọn file Excel (.xlsx, .xls, .csv)
+              </p>
+              <button
+                type="button"
+                @click="importFileInput?.click()"
+                class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-600"
+              >
+                Chọn file
+              </button>
+              <p v-if="selectedImportFile" class="mt-3 text-sm text-gray-700 dark:text-gray-300">
+                {{ selectedImportFile.name }}
+              </p>
+            </div>
+
+            <div
+              v-if="importResult"
+              class="rounded-lg border p-4 text-sm dark:border-gray-700"
+              :class="importResult.failed > 0 ? 'border-amber-200 bg-amber-50 dark:bg-amber-900/20' : 'border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20'"
+            >
+              <p class="font-medium text-gray-800 dark:text-gray-200">
+                {{ importResult.imported }} mới · {{ importResult.updated }} cập nhật · {{ importResult.failed }} lỗi
+              </p>
+              <ul v-if="importResult.errors.length" class="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
+                <li v-for="(err, idx) in importResult.errors.slice(0, 10)" :key="idx">
+                  Dòng {{ err.row }}: {{ err.message }}
+                </li>
+                <li v-if="importResult.errors.length > 10" class="text-gray-500">
+                  ... và {{ importResult.errors.length - 10 }} lỗi khác
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="importError" class="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+              {{ importError }}
+            </div>
+          </div>
+
+          <div class="mt-6 flex flex-col-reverse gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              @click="closeImportModal"
+              class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+            >
+              Đóng
+            </button>
+            <button
+              type="button"
+              @click="handleImport"
+              :disabled="!selectedImportFile || importing"
+              class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
+            >
+              {{ importing ? 'Đang nhập...' : 'Nhập dữ liệu' }}
+            </button>
+          </div>
+        </div>
+      </template>
+    </Modal>
   </AdminLayout>
 </template>
 
@@ -744,8 +870,9 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import Modal from '@/components/profile/Modal.vue'
 import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
-import type { Company, CapitalMemberInput } from '@/types/company'
+import type { Company, CapitalMemberInput, CompanyImportResult } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
+import { companyService } from '@/services/companyService'
 
 const store = useCompaniesStore()
 const router = useRouter()
@@ -758,7 +885,15 @@ const filter = reactive({
 })
 
 const isEditModalOpen = ref(false)
+const isImportModalOpen = ref(false)
 const selectedCompanyId = ref<number | null>(null)
+const exporting = ref(false)
+const importing = ref(false)
+const downloadingTemplate = ref(false)
+const selectedImportFile = ref<File | null>(null)
+const importFileInput = ref<HTMLInputElement | null>(null)
+const importResult = ref<CompanyImportResult | null>(null)
+const importError = ref<string | null>(null)
 
 const editForm = reactive<Company>({
   id: 0,
@@ -822,6 +957,92 @@ const resetFilters = () => {
   filter.trangThai = ''
   filter.loaiHinhDN = ''
   store.setPage(1)
+}
+
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
+const handleExport = async () => {
+  exporting.value = true
+  try {
+    const blob = await companyService.exportExcel({
+      search: filter.search,
+      trangThai: filter.trangThai,
+      loaiHinhDN: filter.loaiHinhDN,
+    })
+    downloadBlob(blob, `doanh-nghiep_${new Date().toISOString().slice(0, 10)}.xlsx`)
+  } catch {
+    alert('Xuất Excel thất bại. Vui lòng thử lại.')
+  } finally {
+    exporting.value = false
+  }
+}
+
+const openImportModal = () => {
+  selectedImportFile.value = null
+  importResult.value = null
+  importError.value = null
+  isImportModalOpen.value = true
+}
+
+const closeImportModal = () => {
+  isImportModalOpen.value = false
+  selectedImportFile.value = null
+  if (importFileInput.value) {
+    importFileInput.value.value = ''
+  }
+}
+
+const handleDownloadTemplate = async () => {
+  downloadingTemplate.value = true
+  try {
+    const blob = await companyService.exportTemplate()
+    downloadBlob(blob, 'mau-import-doanh-nghiep.xlsx')
+  } catch {
+    alert('Tải file mẫu thất bại.')
+  } finally {
+    downloadingTemplate.value = false
+  }
+}
+
+const onImportFileSelected = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  selectedImportFile.value = input.files?.[0] ?? null
+  importResult.value = null
+  importError.value = null
+}
+
+const handleImport = async () => {
+  if (!selectedImportFile.value) return
+
+  importing.value = true
+  importError.value = null
+  importResult.value = null
+
+  try {
+    const result = await companyService.importExcel(selectedImportFile.value)
+    importResult.value = result
+    await store.fetchCompanies({
+      search: filter.search,
+      trangThai: filter.trangThai,
+      loaiHinhDN: filter.loaiHinhDN,
+      page: store.page,
+      per_page: store.perPage,
+    })
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    importError.value = axiosErr.response?.data?.message ?? 'Nhập Excel thất bại.'
+  } finally {
+    importing.value = false
+  }
 }
 
 const goToMapUpdate = (company: Company) => {

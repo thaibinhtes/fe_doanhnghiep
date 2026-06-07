@@ -1,5 +1,11 @@
 import api from './api'
-import type { Company, CompanyListResponse, CompanyFilters, CapitalMemberInput } from '@/types/company'
+import type {
+  Company,
+  CompanyListResponse,
+  CompanyFilters,
+  CapitalMemberInput,
+  CompanyImportResult,
+} from '@/types/company'
 
 const BASE_PATH = '/doanh-nghiep'
 
@@ -93,5 +99,44 @@ export const companyService = {
 
   async delete(id: number): Promise<void> {
     await api.delete(`${BASE_PATH}/${id}`)
+  },
+
+  async exportExcel(filters?: CompanyFilters): Promise<Blob> {
+    const { data } = await api.get<Blob>(`${BASE_PATH}/export`, {
+      params: {
+        ...(filters?.search ? { search: filters.search } : {}),
+        ...(filters?.trangThai ? { trangThai: filters.trangThai } : {}),
+        ...(filters?.loaiHinhDN ? { loaiHinhDN: filters.loaiHinhDN } : {}),
+        ...(filters?.daCapNhatDinhDanh !== undefined
+          ? { daCapNhatDinhDanh: filters.daCapNhatDinhDanh }
+          : {}),
+        ...(filters?.hasCoordinates !== undefined
+          ? { hasCoordinates: filters.hasCoordinates }
+          : {}),
+      },
+      responseType: 'blob',
+    })
+    return data
+  },
+
+  async exportTemplate(): Promise<Blob> {
+    const { data } = await api.get<Blob>(`${BASE_PATH}/export-template`, {
+      responseType: 'blob',
+    })
+    return data
+  },
+
+  async importExcel(file: File): Promise<CompanyImportResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const { data } = await api.post<{ data: CompanyImportResult; message: string }>(
+      `${BASE_PATH}/import`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      },
+    )
+    return data.data
   },
 }

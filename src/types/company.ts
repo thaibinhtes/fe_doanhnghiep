@@ -105,3 +105,15 @@ export interface CompanyFilters {
   page?: number
   per_page?: number
 }
+
+export interface CompanyImportError {
+  row: number
+  message: string
+}
+
+export interface CompanyImportResult {
+  imported: number
+  updated: number
+  failed: number
+  errors: CompanyImportError[]
+}
