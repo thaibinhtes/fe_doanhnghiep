@@ -109,6 +109,8 @@ export interface CompanyFilters {
   search?: string
   trangThai?: string
   loaiHinhDN?: string
+  quanHuyen?: string
+  phuongXa?: string
   daCapNhatDinhDanh?: boolean
   hasCoordinates?: boolean
   page?: number
@@ -125,4 +127,9 @@ export interface CompanyImportResult {
   updated: number
   failed: number
   errors: CompanyImportError[]
+}
+
+export interface CompanyIdentityBulkItem {
+  maSoDoanhNghiep: string
+  daCapNhatDinhDanh: boolean
 }

@@ -63,6 +63,53 @@
               </span>
             </div>
           </div>
+          <div class="w-full sm:w-56">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+              Tỉnh / Thành
+            </label>
+            <div class="relative z-20 bg-transparent">
+              <select
+                v-model="filterSelectedProvinceCode"
+                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+              >
+                <option value="">Tất cả tỉnh/thành</option>
+                <option v-for="province in filterProvinces" :key="province.code" :value="province.code">
+                  {{ province.fullName }}
+                </option>
+              </select>
+              <span
+                class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
+              >
+                <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </div>
+          </div>
+          <div class="w-full sm:w-56">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+              Phường / Xã
+            </label>
+            <div class="relative z-20 bg-transparent">
+              <select
+                v-model="filterSelectedWardCode"
+                :disabled="!filterSelectedProvinceCode || loadingFilterWards"
+                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+              >
+                <option value="">{{ loadingFilterWards ? 'Đang tải...' : 'Tất cả phường/xã' }}</option>
+                <option v-for="ward in filterWards" :key="ward.code" :value="ward.code">
+                  {{ ward.fullName }}
+                </option>
+              </select>
+              <span
+                class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
+              >
+                <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </div>
+          </div>
           <button
             @click="resetFilters"
             class="h-11 w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
@@ -80,16 +127,38 @@
             </svg>
             {{ exporting ? 'Đang xuất...' : 'Xuất Excel' }}
           </button>
-          <button
-            @click="openImportModal"
+          <details
             v-if="auth.hasPermission('feature.companies.import')"
-            class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-amber-500 bg-white px-4 text-sm font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
+            class="relative w-full sm:w-auto"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M12 21V9m0 0l4 4m-4-4l-4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Nhập Excel
-          </button>
+            <summary
+              class="h-11 w-full sm:w-auto list-none inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-amber-500 bg-white px-4 text-sm font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 21V9m0 0l4 4m-4-4l-4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Nhập Excel
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+                <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </summary>
+            <div class="absolute right-0 z-50 mt-2 min-w-[260px] rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+              <button
+                type="button"
+                @click="openImportModal('companies')"
+                class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                Import danh sách mới
+              </button>
+              <button
+                type="button"
+                @click="openImportModal('identity')"
+                class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                Import danh sách định danh doanh nghiệp
+              </button>
+            </div>
+          </details>
           <router-link
             to="/companies/map"
             class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-brand-500 bg-white px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-400 dark:bg-gray-900 dark:text-brand-400 dark:hover:bg-brand-500/10"
@@ -108,6 +177,31 @@
             </svg>
             Tạo mới
           </router-link>
+        </div>
+
+        <div
+          v-if="selectedCompanyIds.length > 0"
+          class="mb-4 flex flex-col gap-2 rounded-lg border border-brand-200 bg-brand-50 p-3 sm:flex-row sm:items-center sm:justify-between dark:border-brand-800/40 dark:bg-brand-500/10"
+        >
+          <p class="text-sm text-brand-700 dark:text-brand-300">
+            Đã chọn {{ selectedCompanyIds.length }} doanh nghiệp
+          </p>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              @click="handleBulkDinhDanh(true)"
+              class="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-600 px-3 text-sm font-medium text-white transition hover:bg-emerald-700"
+            >
+              Định danh
+            </button>
+            <button
+              type="button"
+              @click="handleBulkDinhDanh(false)"
+              class="inline-flex h-9 items-center justify-center rounded-lg bg-amber-500 px-3 text-sm font-medium text-white transition hover:bg-amber-600"
+            >
+              Hủy định danh
+            </button>
+          </div>
         </div>
 
         <div v-if="store.error" class="mb-4 rounded-lg bg-red-50 p-[5px] text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
@@ -147,6 +241,14 @@
           <div v-else class="min-w-max w-full">
             <!-- Header -->
             <div class="flex border-b border-gray-200 dark:border-gray-700">
+              <div class="flex-none w-[46px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">
+                <input
+                  type="checkbox"
+                  :checked="isAllSelectedOnPage"
+                  @change="toggleSelectAllOnPage"
+                  class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
+                />
+              </div>
               <div class="flex-none w-[50px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">TT</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Mã số doanh nghiệp</div>
               <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tên doanh nghiệp</div>
@@ -178,6 +280,14 @@
                 :key="company.id"
                 class="flex hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
               >
+                <div class="flex-none w-[46px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">
+                  <input
+                    type="checkbox"
+                    :checked="selectedCompanyIds.includes(company.id)"
+                    @change="toggleCompanySelection(company.id)"
+                    class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
+                  />
+                </div>
                 <div class="flex-none w-[50px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ index + 1 }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.maSoDoanhNghiep }}</div>
                 <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tenDoanhNghiep }}</div>
@@ -332,7 +442,7 @@
 
     <!-- Edit Modal -->
     <Modal v-if="isEditModalOpen" @close="closeEditModal">
-      <template #body>
+      <template v-slot:body>
         <div
           class="no-scrollbar relative w-full max-w-[800px] max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6 lg:p-10"
         >
@@ -791,7 +901,7 @@
 
     <!-- Status Quick Edit Modal -->
     <Modal v-if="isStatusModalOpen" @close="closeStatusModal">
-      <template #body>
+      <template v-slot:body>
         <div
           class="no-scrollbar relative w-full max-w-[520px] max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6"
         >
@@ -866,17 +976,17 @@
 
     <!-- Import Modal -->
     <Modal v-if="isImportModalOpen" @close="closeImportModal">
-      <template #body>
+      <template v-slot:body>
         <div
           class="no-scrollbar relative w-full max-w-[560px] max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6 lg:p-8"
         >
           <div class="flex items-center justify-between mb-6">
             <div>
               <h5 class="font-semibold text-gray-800 text-theme-xl dark:text-white/90 lg:text-2xl">
-                Nhập doanh nghiệp từ Excel
+                {{ importModalTitle }}
               </h5>
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Tải file .xlsx theo mẫu, hệ thống sẽ tạo mới hoặc cập nhật theo mã số DN
+                {{ importModalDescription }}
               </p>
             </div>
             <button
@@ -891,6 +1001,7 @@
 
           <div class="space-y-4">
             <button
+              v-if="importMode === 'companies'"
               type="button"
               @click="handleDownloadTemplate"
               :disabled="downloadingTemplate"
@@ -901,6 +1012,10 @@
               </svg>
               {{ downloadingTemplate ? 'Đang tải mẫu...' : 'Tải file mẫu Excel' }}
             </button>
+
+            <p v-else class="text-sm text-gray-600 dark:text-gray-300">
+              Cột yêu cầu: <strong>mã số doanh nghiệp</strong> | <strong>tên doanh nghiệp</strong> | <strong>định danh</strong>.
+            </p>
 
             <div
               class="rounded-xl border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-700"
@@ -933,7 +1048,12 @@
               :class="importResult.failed > 0 ? 'border-amber-200 bg-amber-50 dark:bg-amber-900/20' : 'border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20'"
             >
               <p class="font-medium text-gray-800 dark:text-gray-200">
-                {{ importResult.imported }} mới · {{ importResult.updated }} cập nhật · {{ importResult.failed }} lỗi
+                <template v-if="importMode === 'companies'">
+                  {{ importResult.imported }} mới · {{ importResult.updated }} cập nhật · {{ importResult.failed }} lỗi
+                </template>
+                <template v-else>
+                  {{ importResult.updated }} cập nhật định danh · {{ importResult.failed }} lỗi
+                </template>
               </p>
               <ul v-if="importResult.errors.length" class="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
                 <li v-for="(err, idx) in importResult.errors.slice(0, 10)" :key="idx">
@@ -982,7 +1102,7 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import Modal from '@/components/profile/Modal.vue'
 import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
-import type { Company, CapitalMemberInput, CompanyImportResult } from '@/types/company'
+import type { Company, CapitalMemberInput, CompanyImportResult, CompanyIdentityBulkItem } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 import { companyService } from '@/services/companyService'
 import { locationService } from '@/services/locationService'
@@ -1000,6 +1120,8 @@ const filter = reactive({
   search: '',
   trangThai: '',
   loaiHinhDN: '',
+  quanHuyen: '',
+  phuongXa: '',
 })
 
 const isEditModalOpen = ref(false)
@@ -1015,11 +1137,18 @@ const selectedImportFile = ref<File | null>(null)
 const importFileInput = ref<HTMLInputElement | null>(null)
 const importResult = ref<CompanyImportResult | null>(null)
 const importError = ref<string | null>(null)
+const importMode = ref<'companies' | 'identity'>('companies')
+const selectedCompanyIds = ref<number[]>([])
 const editProvinces = ref<ProvinceItem[]>([])
 const editWards = ref<WardItem[]>([])
 const editSelectedProvinceCode = ref('')
 const editSelectedWardCode = ref('')
 const loadingEditWards = ref(false)
+const filterProvinces = ref<ProvinceItem[]>([])
+const filterWards = ref<WardItem[]>([])
+const filterSelectedProvinceCode = ref('')
+const filterSelectedWardCode = ref('')
+const loadingFilterWards = ref(false)
 
 const editForm = reactive<Company>({
   id: 0,
@@ -1061,6 +1190,19 @@ const statusModal = reactive({
   lyDoTrangThai: '',
 })
 const statusModalShowReason = computed(() => requiresReason(statusModal.dnTrangThaiId))
+const isAllSelectedOnPage = computed(
+  () => store.companies.length > 0 && store.companies.every((company) => selectedCompanyIds.value.includes(company.id)),
+)
+const importModalTitle = computed(() =>
+  importMode.value === 'companies'
+    ? 'Nhập doanh nghiệp từ Excel'
+    : 'Nhập định danh doanh nghiệp từ Excel',
+)
+const importModalDescription = computed(() =>
+  importMode.value === 'companies'
+    ? 'Tải file .xlsx theo mẫu, hệ thống sẽ tạo mới hoặc cập nhật theo mã số DN'
+    : 'File gồm 3 cột: mã số doanh nghiệp | tên doanh nghiệp | định danh',
+)
 
 const visiblePages = computed(() => {
   const pages: number[] = []
@@ -1092,8 +1234,61 @@ const resetFilters = () => {
   filter.search = ''
   filter.trangThai = ''
   filter.loaiHinhDN = ''
+  filter.quanHuyen = ''
+  filter.phuongXa = ''
+  filterSelectedProvinceCode.value = ''
+  filterSelectedWardCode.value = ''
+  filterWards.value = []
   store.setPage(1)
 }
+
+const toggleCompanySelection = (companyId: number) => {
+  if (selectedCompanyIds.value.includes(companyId)) {
+    selectedCompanyIds.value = selectedCompanyIds.value.filter((id) => id !== companyId)
+    return
+  }
+  selectedCompanyIds.value.push(companyId)
+}
+
+const toggleSelectAllOnPage = () => {
+  if (isAllSelectedOnPage.value) {
+    selectedCompanyIds.value = selectedCompanyIds.value.filter(
+      (id) => !store.companies.some((company) => company.id === id),
+    )
+    return
+  }
+
+  const idsOnPage = store.companies.map((company) => company.id)
+  selectedCompanyIds.value = Array.from(new Set([...selectedCompanyIds.value, ...idsOnPage]))
+}
+
+const handleBulkDinhDanh = async (daCapNhatDinhDanh: boolean) => {
+  const items: CompanyIdentityBulkItem[] = store.companies
+    .filter((company) => selectedCompanyIds.value.includes(company.id) && !!company.maSoDoanhNghiep)
+    .map((company) => ({
+      maSoDoanhNghiep: company.maSoDoanhNghiep,
+      daCapNhatDinhDanh,
+    }))
+
+  if (items.length === 0) {
+    alert('Không có doanh nghiệp hợp lệ để cập nhật định danh.')
+    return
+  }
+
+  await companyService.bulkUpdateDinhDanh(items)
+  selectedCompanyIds.value = []
+  await store.fetchCompanies(currentCompanyFilters())
+}
+
+const currentCompanyFilters = () => ({
+  search: filter.search,
+  trangThai: filter.trangThai,
+  loaiHinhDN: filter.loaiHinhDN,
+  quanHuyen: filter.quanHuyen,
+  phuongXa: filter.phuongXa,
+  page: store.page,
+  per_page: store.perPage,
+})
 
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob)
@@ -1113,6 +1308,8 @@ const handleExport = async () => {
       search: filter.search,
       trangThai: filter.trangThai,
       loaiHinhDN: filter.loaiHinhDN,
+      quanHuyen: filter.quanHuyen,
+      phuongXa: filter.phuongXa,
     })
     downloadBlob(blob, `doanh-nghiep_${new Date().toISOString().slice(0, 10)}.xlsx`)
   } catch {
@@ -1122,7 +1319,8 @@ const handleExport = async () => {
   }
 }
 
-const openImportModal = () => {
+const openImportModal = (mode: 'companies' | 'identity') => {
+  importMode.value = mode
   selectedImportFile.value = null
   importResult.value = null
   importError.value = null
@@ -1164,15 +1362,11 @@ const handleImport = async () => {
   importResult.value = null
 
   try {
-    const result = await companyService.importExcel(selectedImportFile.value)
+    const result = importMode.value === 'companies'
+      ? await companyService.importExcel(selectedImportFile.value)
+      : await companyService.importIdentityExcel(selectedImportFile.value)
     importResult.value = result
-    await store.fetchCompanies({
-      search: filter.search,
-      trangThai: filter.trangThai,
-      loaiHinhDN: filter.loaiHinhDN,
-      page: store.page,
-      per_page: store.perPage,
-    })
+    await store.fetchCompanies(currentCompanyFilters())
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { message?: string } } }
     importError.value = axiosErr.response?.data?.message ?? 'Nhập Excel thất bại.'
@@ -1187,6 +1381,30 @@ const goToMapUpdate = (company: Company) => {
 
 const loadEditProvinces = async () => {
   editProvinces.value = await locationService.getProvinces()
+}
+
+const loadFilterProvinces = async () => {
+  filterProvinces.value = await locationService.getProvinces()
+}
+
+const loadFilterWards = async () => {
+  if (!filterSelectedProvinceCode.value) {
+    filterWards.value = []
+    filterSelectedWardCode.value = ''
+    filter.phuongXa = ''
+    return
+  }
+
+  loadingFilterWards.value = true
+  try {
+    filterWards.value = await locationService.getWardsByProvince(filterSelectedProvinceCode.value)
+    if (!filterWards.value.some((ward) => ward.code === filterSelectedWardCode.value)) {
+      filterSelectedWardCode.value = ''
+      filter.phuongXa = ''
+    }
+  } finally {
+    loadingFilterWards.value = false
+  }
 }
 
 const loadEditWards = async () => {
@@ -1216,6 +1434,21 @@ watch(editSelectedProvinceCode, () => {
 watch(editSelectedWardCode, () => {
   const ward = editWards.value.find((item) => item.code === editSelectedWardCode.value)
   editForm.phuongXa = ward?.fullName ?? ''
+})
+
+watch(filterSelectedProvinceCode, () => {
+  const province = filterProvinces.value.find((item) => item.code === filterSelectedProvinceCode.value)
+  filter.quanHuyen = province?.fullName ?? ''
+  filter.phuongXa = ''
+  filterSelectedWardCode.value = ''
+  void loadFilterWards()
+  store.setPage(1)
+})
+
+watch(filterSelectedWardCode, () => {
+  const ward = filterWards.value.find((item) => item.code === filterSelectedWardCode.value)
+  filter.phuongXa = ward?.fullName ?? ''
+  store.setPage(1)
 })
 
 const openEditModal = async (company: Company) => {
@@ -1280,13 +1513,7 @@ const saveStatusUpdate = async () => {
       dnTrangThaiId: statusModal.dnTrangThaiId,
       lyDoTrangThai: statusModal.lyDoTrangThai || null,
     })
-    await store.fetchCompanies({
-      search: filter.search,
-      trangThai: filter.trangThai,
-      loaiHinhDN: filter.loaiHinhDN,
-      page: store.page,
-      per_page: store.perPage,
-    })
+    await store.fetchCompanies(currentCompanyFilters())
     closeStatusModal()
   } finally {
     savingStatus.value = false
@@ -1297,7 +1524,7 @@ const handleUpdate = async () => {
   if (selectedCompanyId.value !== null) {
     const { nguoiDaiDien, chuSoHuu, ...payload } = editForm
     await store.updateCompany(selectedCompanyId.value, payload)
-    await store.fetchCompanies()
+    await store.fetchCompanies(currentCompanyFilters())
   }
   closeEditModal()
 }
@@ -1305,7 +1532,7 @@ const handleUpdate = async () => {
 const handleDelete = async (id: number) => {
   if (confirm('Bạn có chắc muốn xóa doanh nghiệp này?')) {
     await store.deleteCompany(id)
-    await store.fetchCompanies()
+    await store.fetchCompanies(currentCompanyFilters())
   }
 }
 
@@ -1346,21 +1573,17 @@ const dinhDanhClass = (isUpdated?: boolean) =>
 
 // Fetch when filters or page changes
 watch(
-  () => [filter.search, filter.trangThai, filter.loaiHinhDN, store.page],
+  () => [filter.search, filter.trangThai, filter.loaiHinhDN, filter.quanHuyen, filter.phuongXa, store.page],
   () => {
-    store.fetchCompanies({
-      search: filter.search,
-      trangThai: filter.trangThai,
-      loaiHinhDN: filter.loaiHinhDN,
-      page: store.page,
-      per_page: store.perPage,
-    })
+    selectedCompanyIds.value = []
+    store.fetchCompanies(currentCompanyFilters())
   },
   { debounce: 300 } as any,
 )
 
 onMounted(async () => {
   await loadStatuses()
-  store.fetchCompanies()
+  await loadFilterProvinces()
+  store.fetchCompanies(currentCompanyFilters())
 })
 </script>

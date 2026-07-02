@@ -5,6 +5,7 @@ import type {
   CompanyFilters,
   CapitalMemberInput,
   CompanyImportResult,
+  CompanyIdentityBulkItem,
 } from '@/types/company'
 
 const BASE_PATH = '/doanh-nghiep'
@@ -61,6 +62,8 @@ export const companyService = {
         ...(filters?.search ? { search: filters.search } : {}),
         ...(filters?.trangThai ? { trangThai: filters.trangThai } : {}),
         ...(filters?.loaiHinhDN ? { loaiHinhDN: filters.loaiHinhDN } : {}),
+        ...(filters?.quanHuyen ? { quanHuyen: filters.quanHuyen } : {}),
+        ...(filters?.phuongXa ? { phuongXa: filters.phuongXa } : {}),
         ...(filters?.daCapNhatDinhDanh !== undefined
           ? { daCapNhatDinhDanh: filters.daCapNhatDinhDanh }
           : {}),
@@ -107,6 +110,8 @@ export const companyService = {
         ...(filters?.search ? { search: filters.search } : {}),
         ...(filters?.trangThai ? { trangThai: filters.trangThai } : {}),
         ...(filters?.loaiHinhDN ? { loaiHinhDN: filters.loaiHinhDN } : {}),
+        ...(filters?.quanHuyen ? { quanHuyen: filters.quanHuyen } : {}),
+        ...(filters?.phuongXa ? { phuongXa: filters.phuongXa } : {}),
         ...(filters?.daCapNhatDinhDanh !== undefined
           ? { daCapNhatDinhDanh: filters.daCapNhatDinhDanh }
           : {}),
@@ -136,6 +141,28 @@ export const companyService = {
       {
         headers: { 'Content-Type': 'multipart/form-data' },
       },
+    )
+    return data.data
+  },
+
+  async importIdentityExcel(file: File): Promise<CompanyImportResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const { data } = await api.post<{ data: CompanyImportResult; message: string }>(
+      `${BASE_PATH}/import-dinh-danh`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      },
+    )
+    return data.data
+  },
+
+  async bulkUpdateDinhDanh(items: CompanyIdentityBulkItem[]): Promise<CompanyImportResult> {
+    const { data } = await api.patch<{ data: CompanyImportResult; message: string }>(
+      `${BASE_PATH}/dinh-danh/bulk`,
+      { items },
     )
     return data.data
   },
