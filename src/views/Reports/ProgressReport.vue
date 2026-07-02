@@ -26,7 +26,7 @@
               :disabled="exporting"
               class="inline-flex h-10 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
             >
-              {{ exporting ? 'Đang xuất...' : 'Xuất Excel' }}
+              {{ exporting ? 'Đang xuất...' : 'Xuất mẫu báo cáo' }}
             </button>
           </div>
         </div>

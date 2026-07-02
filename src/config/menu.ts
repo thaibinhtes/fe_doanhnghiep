@@ -43,17 +43,16 @@ export const menuConfig: MenuGroup[] = [
           { name: 'Tạo thành viên', path: '/members/create', permission: 'menu.members.create' },
         ],
       },
-    ],
-  },
-  {
-    title: 'Báo cáo',
-    items: [
       {
         name: 'Báo cáo',
         icon: PieChartIcon,
         subItems: [
           { name: 'Báo cáo tổng hợp', path: '/reports/summary', permission: 'menu.reports.summary' },
-          { name: 'Báo cáo tiến độ', path: '/reports/progress', permission: 'menu.reports.progress' },
+          {
+            name: 'Báo cáo tiến độ định danh',
+            path: '/reports/progress',
+            permission: 'menu.reports.progress',
+          },
         ],
       },
     ],
