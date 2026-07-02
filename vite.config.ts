@@ -85,14 +85,11 @@ const pwaPlugin = VitePWA({
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const apiBaseUrl = env.VITE_API_BASE_URL
+  const apiPrefix = env.VITE_API_PREFIX || '/api'
+  const proxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:8002'
 
-  if (!apiBaseUrl) {
-    console.warn(
-      `[vite] VITE_API_BASE_URL is missing (mode: ${mode}). API calls will fail until fe/.env is configured.`,
-    )
-  } else {
-    console.info(`[vite] VITE_API_BASE_URL = ${apiBaseUrl}`)
+  if (mode === 'development') {
+    console.info(`[vite] API prefix = ${apiPrefix}, proxy → ${proxyTarget}`)
   }
 
   return {
@@ -105,6 +102,12 @@ export default defineConfig(({ mode }) => {
   envPrefix: 'VITE_',
   server: {
     port: 3000,
+    proxy: {
+      [apiPrefix]: {
+        target: proxyTarget,
+        changeOrigin: true,
+      },
+    },
   },
   resolve: {
     alias: {

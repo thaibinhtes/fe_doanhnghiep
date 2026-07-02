@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        VITE_API_BASE_URL: https://qldn.zsellers.com/api
     container_name: vue-admin-dashboard
     ports:
       - "9000:9000"

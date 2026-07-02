@@ -1,8 +1,8 @@
 import axios from 'axios'
-import { API_BASE_URL } from '@/config/env'
+import { API_PREFIX } from '@/config/env'
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_PREFIX,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -11,7 +11,7 @@ const api = axios.create({
 })
 
 if (import.meta.env.DEV) {
-  console.info('[API] baseURL =', API_BASE_URL)
+  console.info('[API] prefix =', API_PREFIX)
 }
 
 // Request interceptor
@@ -40,5 +40,5 @@ api.interceptors.response.use(
   },
 )
 
-export { API_BASE_URL }
+export { API_PREFIX }
 export default api
