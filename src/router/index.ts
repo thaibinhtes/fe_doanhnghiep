@@ -63,6 +63,12 @@ const router = createRouter({
       meta: { title: 'Phân quyền', requiresAuth: true },
     },
     {
+      path: '/admin/cadastral',
+      name: 'Cadastral Management',
+      component: () => import('../views/Admin/CadastralManagement.vue'),
+      meta: { title: 'Quản lý địa chính', requiresAuth: true },
+    },
+    {
       path: '/companies/statuses',
       name: 'Company Statuses',
       component: () => import('../views/Admin/CompanyStatuses.vue'),

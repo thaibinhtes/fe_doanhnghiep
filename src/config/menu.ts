@@ -66,6 +66,12 @@ export const menuConfig: MenuGroup[] = [
         path: '/admin/roles',
         permission: 'menu.admin.roles',
       },
+      {
+        name: 'Quản lý địa chính (ProvinceCode)',
+        icon: SettingsIcon,
+        path: '/admin/cadastral',
+        permission: 'menu.admin.roles',
+      },
     ],
   },
 ]
@@ -82,6 +88,7 @@ export const routePermissions: Record<string, string> = {
   '/reports/summary': 'menu.reports.summary',
   '/reports/progress': 'menu.reports.progress',
   '/admin/roles': 'menu.admin.roles',
+  '/admin/cadastral': 'menu.admin.roles',
 }
 
 export function getRoutePermission(path: string): string | undefined {

@@ -57,30 +57,37 @@
               />
             </div>
 
-            <!-- Quận / Huyện -->
+            <!-- Tỉnh / Thành (ProvinceCode) -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Quận / Huyện
+                Tỉnh / Thành
               </label>
-              <input
-                type="text"
-                v-model="form.quanHuyen"
-                placeholder="Nhập quận/huyện"
+              <select
+                v-model="selectedProvinceCode"
                 class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              />
+              >
+                <option value="">Chọn tỉnh/thành</option>
+                <option v-for="province in provinces" :key="province.code" :value="province.code">
+                  {{ province.code }} - {{ province.fullName }}
+                </option>
+              </select>
             </div>
 
-            <!-- Phường/xã -->
+            <!-- Xã / Phường -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Phường / xã
+                Xã / Phường
               </label>
-              <input
-                type="text"
-                v-model="form.phuongXa"
-                placeholder="Nhập phường/xã"
+              <select
+                v-model="selectedWardCode"
+                :disabled="!selectedProvinceCode || loadingWards"
                 class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              />
+              >
+                <option value="">{{ loadingWards ? 'Đang tải...' : 'Chọn xã/phường' }}</option>
+                <option v-for="ward in wards" :key="ward.code" :value="ward.code">
+                  {{ ward.fullName }}
+                </option>
+              </select>
             </div>
 
             <!-- Kinh độ (long) -->
@@ -435,12 +442,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
 import { useCompanyStatuses } from '@/composables/useCompanyStatuses'
+import { locationService } from '@/services/locationService'
 import { formatVND } from '@/utils/formatters'
 import type { CapitalMemberInput } from '@/types/company'
+import type { ProvinceItem, WardItem } from '@/types/location'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
@@ -449,6 +458,11 @@ const router = useRouter()
 const store = useCompaniesStore()
 const { identityStatuses, otherStatuses, defaultStatusId, requiresReason, loadStatuses } = useCompanyStatuses()
 const currentPageTitle = 'Tạo doanh nghiệp'
+const provinces = ref<ProvinceItem[]>([])
+const wards = ref<WardItem[]>([])
+const selectedProvinceCode = ref('')
+const selectedWardCode = ref('')
+const loadingWards = ref(false)
 
 const form = reactive({
   maSoDoanhNghiep: '',
@@ -484,8 +498,41 @@ watch(defaultStatusId, (value) => {
   }
 })
 
+const loadProvinces = async () => {
+  provinces.value = await locationService.getProvinces()
+}
+
+const loadWards = async () => {
+  if (!selectedProvinceCode.value) {
+    wards.value = []
+    selectedWardCode.value = ''
+    return
+  }
+
+  loadingWards.value = true
+  try {
+    wards.value = await locationService.getWardsByProvince(selectedProvinceCode.value)
+    if (!wards.value.some((ward) => ward.code === selectedWardCode.value)) {
+      selectedWardCode.value = ''
+    }
+  } finally {
+    loadingWards.value = false
+  }
+}
+
+watch(selectedProvinceCode, () => {
+  const province = provinces.value.find((item) => item.code === selectedProvinceCode.value)
+  form.quanHuyen = province?.fullName ?? ''
+  void loadWards()
+})
+
+watch(selectedWardCode, () => {
+  const ward = wards.value.find((item) => item.code === selectedWardCode.value)
+  form.phuongXa = ward?.fullName ?? ''
+})
+
 onMounted(async () => {
-  await loadStatuses()
+  await Promise.all([loadStatuses(), loadProvinces()])
   if (defaultStatusId.value) {
     form.dnTrangThaiId = defaultStatusId.value
   }

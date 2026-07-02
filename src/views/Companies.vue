@@ -194,6 +194,12 @@
                   >
                     {{ company.dnTrangThai?.ten ?? company.trangThai }}
                   </span>
+                  <button
+                    @click="openStatusModal(company)"
+                    class="mt-1 inline-flex items-center rounded-md border border-brand-500 px-2 py-0.5 text-[11px] font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-400 dark:text-brand-400 dark:hover:bg-brand-500/10"
+                  >
+                    Sửa
+                  </button>
                 </div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.dienThoai }}</div>
                 <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nguoiDaiDienTen || company.nguoiDaiDien?.fullName || '-' }}</div>
@@ -410,25 +416,34 @@
               <!-- Quận / Huyện -->
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Quận / Huyện
+                  Tỉnh / Thành
                 </label>
-                <input
-                  type="text"
-                  v-model="editForm.quanHuyen"
+                <select
+                  v-model="editSelectedProvinceCode"
                   class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                />
+                >
+                  <option value="">Chọn tỉnh/thành</option>
+                  <option v-for="province in editProvinces" :key="province.code" :value="province.code">
+                    {{ province.code }} - {{ province.fullName }}
+                  </option>
+                </select>
               </div>
 
               <!-- Phường/xã -->
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Phường / xã
+                  Xã / Phường
                 </label>
-                <input
-                  type="text"
-                  v-model="editForm.phuongXa"
+                <select
+                  v-model="editSelectedWardCode"
+                  :disabled="!editSelectedProvinceCode || loadingEditWards"
                   class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                />
+                >
+                  <option value="">{{ loadingEditWards ? 'Đang tải...' : 'Chọn xã/phường' }}</option>
+                  <option v-for="ward in editWards" :key="ward.code" :value="ward.code">
+                    {{ ward.fullName }}
+                  </option>
+                </select>
               </div>
 
               <!-- Kinh độ (long) -->
@@ -774,6 +789,81 @@
       </template>
     </Modal>
 
+    <!-- Status Quick Edit Modal -->
+    <Modal v-if="isStatusModalOpen" @close="closeStatusModal">
+      <template #body>
+        <div
+          class="no-scrollbar relative w-full max-w-[520px] max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6"
+        >
+          <div class="mb-5 flex items-center justify-between">
+            <div>
+              <h5 class="font-semibold text-gray-800 text-theme-xl dark:text-white/90">Cập nhật trạng thái doanh nghiệp</h5>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ statusModal.companyName }}</p>
+            </div>
+            <button
+              @click="closeStatusModal"
+              class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+
+          <form @submit.prevent="saveStatusUpdate" class="space-y-4">
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Trạng thái</label>
+              <select
+                v-model.number="statusModal.dnTrangThaiId"
+                class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm dark:border-gray-700 dark:bg-gray-900"
+              >
+                <optgroup label="Định danh">
+                  <option v-for="status in identityStatuses" :key="status.id" :value="status.id">
+                    {{ status.ten }}
+                  </option>
+                </optgroup>
+                <optgroup label="Trạng thái khác">
+                  <option v-for="status in otherStatuses" :key="status.id" :value="status.id">
+                    {{ status.ten }}
+                  </option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div v-if="statusModalShowReason">
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Lý do trạng thái <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                v-model="statusModal.lyDoTrangThai"
+                rows="3"
+                required
+                placeholder="Nhập lý do khi chọn trạng thái này"
+                class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900"
+              />
+            </div>
+
+            <div class="flex flex-col-reverse gap-2 pt-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                @click="closeStatusModal"
+                class="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                :disabled="savingStatus"
+                class="inline-flex h-10 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+              >
+                {{ savingStatus ? 'Đang lưu...' : 'Lưu trạng thái' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </template>
+    </Modal>
+
     <!-- Import Modal -->
     <Modal v-if="isImportModalOpen" @close="closeImportModal">
       <template #body>
@@ -895,8 +985,10 @@ import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
 import type { Company, CapitalMemberInput, CompanyImportResult } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 import { companyService } from '@/services/companyService'
+import { locationService } from '@/services/locationService'
 import { useAuthStore } from '@/stores/auth'
 import { useCompanyStatuses } from '@/composables/useCompanyStatuses'
+import type { ProvinceItem, WardItem } from '@/types/location'
 
 const store = useCompaniesStore()
 const auth = useAuthStore()
@@ -911,15 +1003,23 @@ const filter = reactive({
 })
 
 const isEditModalOpen = ref(false)
+const isStatusModalOpen = ref(false)
 const isImportModalOpen = ref(false)
 const selectedCompanyId = ref<number | null>(null)
+const statusCompanyId = ref<number | null>(null)
 const exporting = ref(false)
 const importing = ref(false)
 const downloadingTemplate = ref(false)
+const savingStatus = ref(false)
 const selectedImportFile = ref<File | null>(null)
 const importFileInput = ref<HTMLInputElement | null>(null)
 const importResult = ref<CompanyImportResult | null>(null)
 const importError = ref<string | null>(null)
+const editProvinces = ref<ProvinceItem[]>([])
+const editWards = ref<WardItem[]>([])
+const editSelectedProvinceCode = ref('')
+const editSelectedWardCode = ref('')
+const loadingEditWards = ref(false)
 
 const editForm = reactive<Company>({
   id: 0,
@@ -955,6 +1055,12 @@ const editForm = reactive<Company>({
 })
 
 const editShowReasonField = computed(() => requiresReason(editForm.dnTrangThaiId))
+const statusModal = reactive({
+  companyName: '',
+  dnTrangThaiId: null as number | null,
+  lyDoTrangThai: '',
+})
+const statusModalShowReason = computed(() => requiresReason(statusModal.dnTrangThaiId))
 
 const visiblePages = computed(() => {
   const pages: number[] = []
@@ -1079,7 +1185,40 @@ const goToMapUpdate = (company: Company) => {
   router.push(`/companies/${company.id}/map`)
 }
 
-const openEditModal = (company: Company) => {
+const loadEditProvinces = async () => {
+  editProvinces.value = await locationService.getProvinces()
+}
+
+const loadEditWards = async () => {
+  if (!editSelectedProvinceCode.value) {
+    editWards.value = []
+    editSelectedWardCode.value = ''
+    return
+  }
+
+  loadingEditWards.value = true
+  try {
+    editWards.value = await locationService.getWardsByProvince(editSelectedProvinceCode.value)
+    if (!editWards.value.some((ward) => ward.code === editSelectedWardCode.value)) {
+      editSelectedWardCode.value = ''
+    }
+  } finally {
+    loadingEditWards.value = false
+  }
+}
+
+watch(editSelectedProvinceCode, () => {
+  const province = editProvinces.value.find((item) => item.code === editSelectedProvinceCode.value)
+  editForm.quanHuyen = province?.fullName ?? ''
+  void loadEditWards()
+})
+
+watch(editSelectedWardCode, () => {
+  const ward = editWards.value.find((item) => item.code === editSelectedWardCode.value)
+  editForm.phuongXa = ward?.fullName ?? ''
+})
+
+const openEditModal = async (company: Company) => {
   selectedCompanyId.value = company.id
   Object.assign(editForm, {
     ...company,
@@ -1094,12 +1233,64 @@ const openEditModal = (company: Company) => {
       memberId: m.memberId ?? null,
     })),
   })
+  await loadEditProvinces()
+  const matchedProvince = editProvinces.value.find((item) => item.fullName === (company.quanHuyen ?? ''))
+  editSelectedProvinceCode.value = matchedProvince?.code ?? ''
+  if (!matchedProvince) {
+    editWards.value = []
+    editSelectedWardCode.value = ''
+  } else {
+    await loadEditWards()
+    const matchedWard = editWards.value.find((item) => item.fullName === (company.phuongXa ?? ''))
+    editSelectedWardCode.value = matchedWard?.code ?? ''
+  }
   isEditModalOpen.value = true
 }
 
 const closeEditModal = () => {
   isEditModalOpen.value = false
   selectedCompanyId.value = null
+  editSelectedProvinceCode.value = ''
+  editSelectedWardCode.value = ''
+  editWards.value = []
+}
+
+const openStatusModal = (company: Company) => {
+  statusCompanyId.value = company.id
+  statusModal.companyName = company.tenDoanhNghiep
+  statusModal.dnTrangThaiId = company.dnTrangThaiId ?? company.dnTrangThai?.id ?? null
+  statusModal.lyDoTrangThai = company.lyDoTrangThai ?? ''
+  isStatusModalOpen.value = true
+}
+
+const closeStatusModal = () => {
+  isStatusModalOpen.value = false
+  statusCompanyId.value = null
+  statusModal.companyName = ''
+  statusModal.dnTrangThaiId = null
+  statusModal.lyDoTrangThai = ''
+}
+
+const saveStatusUpdate = async () => {
+  if (statusCompanyId.value === null || statusModal.dnTrangThaiId === null) return
+
+  savingStatus.value = true
+  try {
+    await store.updateCompany(statusCompanyId.value, {
+      dnTrangThaiId: statusModal.dnTrangThaiId,
+      lyDoTrangThai: statusModal.lyDoTrangThai || null,
+    })
+    await store.fetchCompanies({
+      search: filter.search,
+      trangThai: filter.trangThai,
+      loaiHinhDN: filter.loaiHinhDN,
+      page: store.page,
+      per_page: store.perPage,
+    })
+    closeStatusModal()
+  } finally {
+    savingStatus.value = false
+  }
 }
 
 const handleUpdate = async () => {
