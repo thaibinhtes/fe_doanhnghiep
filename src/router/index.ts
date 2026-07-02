@@ -79,6 +79,12 @@ const router = createRouter({
       meta: { title: 'Báo cáo tổng hợp', requiresAuth: true },
     },
     {
+      path: '/reports/progress',
+      name: 'Progress Report',
+      component: () => import('../views/Reports/ProgressReport.vue'),
+      meta: { title: 'Báo cáo tiến độ định danh', requiresAuth: true },
+    },
+    {
       path: '/signin',
       name: 'Signin',
       component: () => import('../views/Auth/Signin.vue'),

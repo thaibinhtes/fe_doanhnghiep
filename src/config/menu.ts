@@ -49,10 +49,12 @@ export const menuConfig: MenuGroup[] = [
     title: 'Báo cáo',
     items: [
       {
-        name: 'Báo cáo tổng hợp',
+        name: 'Báo cáo',
         icon: PieChartIcon,
-        path: '/reports/summary',
-        permission: 'menu.reports.summary',
+        subItems: [
+          { name: 'Báo cáo tổng hợp', path: '/reports/summary', permission: 'menu.reports.summary' },
+          { name: 'Báo cáo tiến độ', path: '/reports/progress', permission: 'menu.reports.progress' },
+        ],
       },
     ],
   },
@@ -79,6 +81,7 @@ export const routePermissions: Record<string, string> = {
   '/members': 'menu.members.list',
   '/members/create': 'menu.members.create',
   '/reports/summary': 'menu.reports.summary',
+  '/reports/progress': 'menu.reports.progress',
   '/admin/roles': 'menu.admin.roles',
 }
 
