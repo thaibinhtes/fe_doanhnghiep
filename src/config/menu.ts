@@ -67,7 +67,7 @@ export const menuConfig: MenuGroup[] = [
         permission: 'menu.admin.roles',
       },
       {
-        name: 'Quản lý địa chính (ProvinceCode)',
+        name: 'Quản lý địa chính',
         icon: SettingsIcon,
         path: '/admin/cadastral',
         permission: 'menu.admin.roles',
