@@ -14,9 +14,9 @@ COPY . .
 
 # Force Docker builds to use the Docker-specific env file.
 ARG ENV_FILE=.env.docker
-RUN if [ -f "$ENV_FILE" ]; then cp "$ENV_FILE" .env; fi
+RUN cp "$ENV_FILE" .env.production
 
-# Build the app
+# Build the app (mode production → reads .env.production)
 RUN npm run build-only
 
 # Production stage
