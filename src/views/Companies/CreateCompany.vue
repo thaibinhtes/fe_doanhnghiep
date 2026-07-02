@@ -128,16 +128,23 @@
             <!-- Trạng thái -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Trạng thái
+                Trạng thái định danh
               </label>
               <div class="relative z-20 bg-transparent">
                 <select
-                  v-model="form.trangThai"
+                  v-model.number="form.dnTrangThaiId"
                   class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                 >
-                  <option value="Đang hoạt động">Đang hoạt động</option>
-                  <option value="Tạm ngừng">Tạm ngừng</option>
-                  <option value="Giải thể">Giải thể</option>
+                  <optgroup label="Định danh">
+                    <option v-for="status in identityStatuses" :key="status.id" :value="status.id">
+                      {{ status.ten }}
+                    </option>
+                  </optgroup>
+                  <optgroup label="Trạng thái khác">
+                    <option v-for="status in otherStatuses" :key="status.id" :value="status.id">
+                      {{ status.ten }}
+                    </option>
+                  </optgroup>
                 </select>
                 <span
                   class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
@@ -147,6 +154,19 @@
                   </svg>
                 </span>
               </div>
+            </div>
+
+            <div v-if="showReasonField" class="sm:col-span-2 lg:col-span-3">
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Lý do trạng thái <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                v-model="form.lyDoTrangThai"
+                rows="3"
+                required
+                placeholder="Nhập lý do khi chọn trạng thái này"
+                class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+              />
             </div>
 
             <!-- Loại hình DN -->
@@ -415,9 +435,10 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { computed, onMounted, reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
+import { useCompanyStatuses } from '@/composables/useCompanyStatuses'
 import { formatVND } from '@/utils/formatters'
 import type { CapitalMemberInput } from '@/types/company'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
@@ -426,6 +447,7 @@ import ComponentCard from '@/components/common/ComponentCard.vue'
 
 const router = useRouter()
 const store = useCompaniesStore()
+const { identityStatuses, otherStatuses, defaultStatusId, requiresReason, loadStatuses } = useCompanyStatuses()
 const currentPageTitle = 'Tạo doanh nghiệp'
 
 const form = reactive({
@@ -437,7 +459,8 @@ const form = reactive({
   long: null as number | null,
   lat: null as number | null,
   vonDieuLe: '',
-  trangThai: 'Đang hoạt động',
+  dnTrangThaiId: null as number | null,
+  lyDoTrangThai: '',
   dienThoai: '',
   nguoiDaiDienTen: '',
   ngaySinhNguoiDaiDien: '',
@@ -451,6 +474,21 @@ const form = reactive({
   dsThanhVienGopVon: [] as CapitalMemberInput[],
   dsCoDong: '',
   loaiDN: 'TN',
+})
+
+const showReasonField = computed(() => requiresReason(form.dnTrangThaiId))
+
+watch(defaultStatusId, (value) => {
+  if (value && !form.dnTrangThaiId) {
+    form.dnTrangThaiId = value
+  }
+})
+
+onMounted(async () => {
+  await loadStatuses()
+  if (defaultStatusId.value) {
+    form.dnTrangThaiId = defaultStatusId.value
+  }
 })
 
 const addMember = () => {

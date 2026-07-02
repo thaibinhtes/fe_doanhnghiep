@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
@@ -83,13 +83,26 @@ const pwaPlugin = VitePWA({
 }) as any
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const apiBaseUrl = env.VITE_API_BASE_URL
+
+  if (!apiBaseUrl) {
+    console.warn(
+      `[vite] VITE_API_BASE_URL is missing (mode: ${mode}). API calls will fail until fe/.env is configured.`,
+    )
+  } else {
+    console.info(`[vite] VITE_API_BASE_URL = ${apiBaseUrl}`)
+  }
+
+  return {
   plugins: [
     vue(),
     vueJsx(),
     vueDevTools(),
     pwaPlugin,
   ],
+  envPrefix: 'VITE_',
   server: {
     port: 3000,
   },
@@ -98,4 +111,5 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  }
 })

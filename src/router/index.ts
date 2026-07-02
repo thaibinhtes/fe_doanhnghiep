@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { getRoutePermission } from '@/config/menu'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,198 +12,120 @@ const router = createRouter({
       path: '/',
       name: 'Companies Index',
       component: () => import('../views/Companies.vue'),
-      meta: {
-        title: 'Danh sách doanh nghiệp',
-      },
-    },
-    {
-      path: '/calendar',
-      name: 'Calendar',
-      component: () => import('../views/Others/Calendar.vue'),
-      meta: {
-        title: 'Calendar',
-      },
-    },
-    {
-      path: '/profile',
-      name: 'Profile',
-      component: () => import('../views/Others/UserProfile.vue'),
-      meta: {
-        title: 'Profile',
-      },
-    },
-    {
-      path: '/form-elements',
-      name: 'Form Elements',
-      component: () => import('../views/Forms/FormElements.vue'),
-      meta: {
-        title: 'Form Elements',
-      },
-    },
-    {
-      path: '/basic-tables',
-      name: 'Basic Tables',
-      component: () => import('../views/Tables/BasicTables.vue'),
-      meta: {
-        title: 'Basic Tables',
-      },
+      meta: { title: 'Danh sách doanh nghiệp', requiresAuth: true },
     },
     {
       path: '/companies',
       name: 'Companies',
       component: () => import('../views/Companies.vue'),
-      meta: {
-        title: 'Companies',
-      },
+      meta: { title: 'Danh sách doanh nghiệp', requiresAuth: true },
     },
     {
       path: '/companies/create',
       name: 'Create Company',
       component: () => import('../views/Companies/CreateCompany.vue'),
-      meta: {
-        title: 'Create Company',
-      },
+      meta: { title: 'Tạo doanh nghiệp', requiresAuth: true },
     },
     {
       path: '/companies/identity',
       name: 'Identity Companies',
       component: () => import('../views/Companies/IdentityCompanies.vue'),
-      meta: {
-        title: 'Identity Companies',
-      },
+      meta: { title: 'Định danh doanh nghiệp', requiresAuth: true },
     },
     {
       path: '/companies/map',
       name: 'Company Map',
       component: () => import('../views/Companies/CompanyMap.vue'),
-      meta: {
-        title: 'Bản đồ doanh nghiệp',
-      },
+      meta: { title: 'Bản đồ doanh nghiệp', requiresAuth: true },
     },
     {
       path: '/companies/:id/map',
       name: 'Company Map Update',
       component: () => import('../views/Companies/CompanyMapUpdate.vue'),
-      meta: {
-        title: 'Cập nhật tọa độ',
-      },
+      meta: { title: 'Cập nhật tọa độ', requiresAuth: true },
     },
     {
       path: '/members',
       name: 'Members',
       component: () => import('../views/Members.vue'),
-      meta: {
-        title: 'Members',
-      },
+      meta: { title: 'Danh sách thành viên', requiresAuth: true },
     },
     {
       path: '/members/create',
       name: 'Create Member',
       component: () => import('../views/Members/CreateMember.vue'),
-      meta: {
-        title: 'Create Member',
-      },
+      meta: { title: 'Tạo thành viên', requiresAuth: true },
     },
     {
-      path: '/line-chart',
-      name: 'Line Chart',
-      component: () => import('../views/Chart/LineChart/LineChart.vue'),
+      path: '/admin/roles',
+      name: 'Role Permissions',
+      component: () => import('../views/Admin/RolePermissions.vue'),
+      meta: { title: 'Phân quyền', requiresAuth: true },
     },
     {
-      path: '/bar-chart',
-      name: 'Bar Chart',
-      component: () => import('../views/Chart/BarChart/BarChart.vue'),
+      path: '/companies/statuses',
+      name: 'Company Statuses',
+      component: () => import('../views/Admin/CompanyStatuses.vue'),
+      meta: { title: 'Trạng thái doanh nghiệp', requiresAuth: true },
     },
     {
-      path: '/alerts',
-      name: 'Alerts',
-      component: () => import('../views/UiElements/Alerts.vue'),
-      meta: {
-        title: 'Alerts',
-      },
+      path: '/admin/statuses',
+      redirect: '/companies/statuses',
     },
     {
-      path: '/avatars',
-      name: 'Avatars',
-      component: () => import('../views/UiElements/Avatars.vue'),
-      meta: {
-        title: 'Avatars',
-      },
+      path: '/reports/summary',
+      name: 'Summary Report',
+      component: () => import('../views/Reports/SummaryReport.vue'),
+      meta: { title: 'Báo cáo tổng hợp', requiresAuth: true },
     },
-    {
-      path: '/badge',
-      name: 'Badge',
-      component: () => import('../views/UiElements/Badges.vue'),
-      meta: {
-        title: 'Badge',
-      },
-    },
-
-    {
-      path: '/buttons',
-      name: 'Buttons',
-      component: () => import('../views/UiElements/Buttons.vue'),
-      meta: {
-        title: 'Buttons',
-      },
-    },
-
-    {
-      path: '/images',
-      name: 'Images',
-      component: () => import('../views/UiElements/Images.vue'),
-      meta: {
-        title: 'Images',
-      },
-    },
-    {
-      path: '/videos',
-      name: 'Videos',
-      component: () => import('../views/UiElements/Videos.vue'),
-      meta: {
-        title: 'Videos',
-      },
-    },
-    {
-      path: '/blank',
-      name: 'Blank',
-      component: () => import('../views/Pages/BlankPage.vue'),
-      meta: {
-        title: 'Blank',
-      },
-    },
-
-    {
-      path: '/error-404',
-      name: '404 Error',
-      component: () => import('../views/Errors/FourZeroFour.vue'),
-      meta: {
-        title: '404 Error',
-      },
-    },
-
     {
       path: '/signin',
       name: 'Signin',
       component: () => import('../views/Auth/Signin.vue'),
-      meta: {
-        title: 'Signin',
-      },
+      meta: { title: 'Đăng nhập', guestOnly: true },
     },
     {
       path: '/signup',
       name: 'Signup',
       component: () => import('../views/Auth/Signup.vue'),
-      meta: {
-        title: 'Signup',
-      },
+      meta: { title: 'Đăng ký', guestOnly: true },
+    },
+    {
+      path: '/error-404',
+      name: '404 Error',
+      component: () => import('../views/Errors/FourZeroFour.vue'),
+      meta: { title: '404 Error' },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/error-404',
     },
   ],
 })
 
-export default router
+router.beforeEach(async (to, _from, next) => {
+  document.title = `${to.meta.title ?? 'HTQLDN'} | Hệ Thống Quản Lý Doanh Nghiệp (HTQLDN)`
 
-router.beforeEach((to, from, next) => {
-  document.title = `${to.meta.title} | Hệ Thống Quản Lý Doanh Nghiệp (HTQLDN)`
+  const auth = useAuthStore()
+
+  if (!auth.initialized) {
+    await auth.init()
+  }
+
+  if (to.meta.guestOnly && auth.isAuthenticated) {
+    return next({ path: '/' })
+  }
+
+  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    return next({ path: '/signin', query: { redirect: to.fullPath } })
+  }
+
+  const requiredPermission = getRoutePermission(to.path)
+  if (requiredPermission && auth.isAuthenticated && !auth.hasPermission(requiredPermission)) {
+    return next({ path: '/signin', query: { error: 'no-permission' } })
+  }
+
   next()
 })
+
+export default router

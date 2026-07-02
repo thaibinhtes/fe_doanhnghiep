@@ -71,6 +71,7 @@
           </button>
           <button
             @click="handleExport"
+            v-if="auth.hasPermission('feature.companies.export')"
             :disabled="exporting"
             class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-500 bg-white px-4 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-400 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
           >
@@ -81,6 +82,7 @@
           </button>
           <button
             @click="openImportModal"
+            v-if="auth.hasPermission('feature.companies.import')"
             class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-amber-500 bg-white px-4 text-sm font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -190,7 +192,7 @@
                       statusClass(company.trangThai),
                     ]"
                   >
-                    {{ company.trangThai }}
+                    {{ company.dnTrangThai?.ten ?? company.trangThai }}
                   </span>
                 </div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.dienThoai }}</div>
@@ -474,16 +476,23 @@
               <!-- Trạng thái -->
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Trạng thái
+                  Trạng thái doanh nghiệp
                 </label>
                 <div class="relative z-20 bg-transparent">
                   <select
-                    v-model="editForm.trangThai"
+                    v-model.number="editForm.dnTrangThaiId"
                     class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                   >
-                    <option value="Đang hoạt động">Đang hoạt động</option>
-                    <option value="Tạm ngừng">Tạm ngừng</option>
-                    <option value="Giải thể">Giải thể</option>
+                    <optgroup label="Định danh">
+                      <option v-for="status in identityStatuses" :key="status.id" :value="status.id">
+                        {{ status.ten }}
+                      </option>
+                    </optgroup>
+                    <optgroup label="Trạng thái khác">
+                      <option v-for="status in otherStatuses" :key="status.id" :value="status.id">
+                        {{ status.ten }}
+                      </option>
+                    </optgroup>
                   </select>
                   <span
                     class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
@@ -493,6 +502,19 @@
                     </svg>
                   </span>
                 </div>
+              </div>
+
+              <div v-if="editShowReasonField" class="sm:col-span-2 lg:col-span-3">
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                  Lý do trạng thái <span class="text-red-500">*</span>
+                </label>
+                <textarea
+                  v-model="editForm.lyDoTrangThai"
+                  rows="3"
+                  required
+                  placeholder="Nhập lý do khi chọn trạng thái này"
+                  class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                />
               </div>
 
               <!-- Loại hình DN -->
@@ -873,9 +895,13 @@ import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
 import type { Company, CapitalMemberInput, CompanyImportResult } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 import { companyService } from '@/services/companyService'
+import { useAuthStore } from '@/stores/auth'
+import { useCompanyStatuses } from '@/composables/useCompanyStatuses'
 
 const store = useCompaniesStore()
+const auth = useAuthStore()
 const router = useRouter()
+const { identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()
 const currentPageTitle = ref('Danh sách doanh nghiệp')
 
 const filter = reactive({
@@ -906,7 +932,9 @@ const editForm = reactive<Company>({
   long: null as number | null,
   lat: null as number | null,
   vonDieuLe: '',
-  trangThai: 'Đang hoạt động',
+  trangThai: '',
+  dnTrangThaiId: null as number | null,
+  lyDoTrangThai: '',
   dienThoai: '',
   nguoiDaiDienTen: '',
   ngaySinhNguoiDaiDien: '',
@@ -925,6 +953,8 @@ const editForm = reactive<Company>({
   nguoiDaiDien: null,
   chuSoHuu: null,
 })
+
+const editShowReasonField = computed(() => requiresReason(editForm.dnTrangThaiId))
 
 const visiblePages = computed(() => {
   const pages: number[] = []
@@ -1138,7 +1168,8 @@ watch(
   { debounce: 300 } as any,
 )
 
-onMounted(() => {
+onMounted(async () => {
+  await loadStatuses()
   store.fetchCompanies()
 })
 </script>

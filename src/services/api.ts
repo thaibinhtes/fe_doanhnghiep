@@ -1,6 +1,5 @@
 import axios from 'axios'
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+import { API_BASE_URL } from '@/config/env'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,6 +9,10 @@ const api = axios.create({
   },
   timeout: 30000,
 })
+
+if (import.meta.env.DEV) {
+  console.info('[API] baseURL =', API_BASE_URL)
+}
 
 // Request interceptor
 api.interceptors.request.use(
@@ -37,4 +40,5 @@ api.interceptors.response.use(
   },
 )
 
+export { API_BASE_URL }
 export default api

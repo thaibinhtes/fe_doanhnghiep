@@ -5,8 +5,12 @@
       @click.prevent="toggleDropdown"
     >
       <span class="mr-3 overflow-hidden rounded-full h-11 w-11">
-        <div class="w-11 h-11 bg-gray-200 rounded-full"></div>
-        <!-- <img src="/images/user/owner.jpg" alt="User" /> -->
+        <div class="flex h-11 w-11 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
+          {{ userInitials }}
+        </div>
+      </span>
+      <span v-if="auth.user" class="mr-2 hidden text-sm font-medium text-gray-700 dark:text-gray-300 sm:block">
+        {{ auth.user.name }}
       </span>
 
       <ChevronDownIcon :class="{ 'rotate-180': dropdownOpen }" />
@@ -34,13 +38,13 @@
       </ul>
       <router-link
         to="/signin"
-        @click="signOut"
+        @click.prevent="signOut"
         class="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
       >
         <LogoutIcon
           class="text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300"
         />
-        Sign out
+        Đăng xuất
       </router-link>
     </div>
     <!-- Dropdown End -->
@@ -48,18 +52,26 @@
 </template>
 
 <script setup>
-import { UserCircleIcon, ChevronDownIcon, LogoutIcon, SettingsIcon, InfoCircleIcon } from '@/icons'
-import { RouterLink } from 'vue-router'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { UserCircleIcon, ChevronDownIcon, LogoutIcon } from '@/icons'
+import { useAuthStore } from '@/stores/auth'
 
+const auth = useAuthStore()
+const router = useRouter()
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
 
-const menuItems = [
-  { href: '/profile', icon: UserCircleIcon, text: 'Edit profile' },
-  { href: '/chat', icon: SettingsIcon, text: 'Account settings' },
-  { href: '/profile', icon: InfoCircleIcon, text: 'Support' },
-]
+const menuItems = computed(() => {
+  const items = []
+  if (auth.hasPermission('menu.admin.roles')) {
+    items.push({ href: '/admin/roles', icon: UserCircleIcon, text: 'Phân quyền' })
+  }
+  if (auth.hasPermission('menu.companies.statuses')) {
+    items.push({ href: '/companies/statuses', icon: UserCircleIcon, text: 'Trạng thái DN' })
+  }
+  return items
+})
 
 const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value
@@ -69,11 +81,18 @@ const closeDropdown = () => {
   dropdownOpen.value = false
 }
 
-const signOut = () => {
-  // Implement sign out logic here
-  console.log('Signing out...')
+const signOut = async () => {
+  await auth.logout()
   closeDropdown()
+  router.push('/signin')
 }
+
+const userInitials = computed(() => {
+  const name = auth.user?.name?.trim() ?? ''
+  if (!name) return 'U'
+  const parts = name.split(/\s+/)
+  return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('')
+})
 
 const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {

@@ -43,6 +43,15 @@ export interface Company {
   phuongXa: string | null
   vonDieuLe: string | null
   trangThai: string | null
+  dnTrangThaiId?: number | null
+  lyDoTrangThai?: string | null
+  dnTrangThai?: {
+    id: number
+    ma: string
+    ten: string
+    loai: string
+    yeuCauLyDo: boolean
+  } | null
   daCapNhatDinhDanh?: boolean
   trangThaiDinhDanh?: string
   dienThoai: string | null

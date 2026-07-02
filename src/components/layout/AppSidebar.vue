@@ -203,98 +203,42 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
-
 import {
-  GridIcon,
-  CalenderIcon,
-  UserCircleIcon,
-  ChatIcon,
-  MailIcon,
-  DocsIcon,
-  PieChartIcon,
   ChevronDownIcon,
   HorizontalDots,
-  PageIcon,
-  TableIcon,
-  ListIcon,
-  PlugInIcon,
-  UserGroupIcon,
 } from "../../icons";
-// import SidebarWidget from "./SidebarWidget.vue";
-import BoxCubeIcon from "@/icons/BoxCubeIcon.vue";
 import { useSidebar } from "@/composables/useSidebar";
+import { menuConfig } from "@/config/menu";
+import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
-
+const auth = useAuthStore();
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
 
-const menuGroups = [
-  {
-    title: "Danh mục",
-    items: [
-      {
-        name: "Quản lý doanh nghiệp",
-        icon: TableIcon,
-        subItems: [
-          { name: "Danh sách doanh nghiệp", path: "/companies", pro: false },
-          { name: "Bản đồ doanh nghiệp", path: "/companies/map", pro: false },
-          { name: "Định danh doanh nghiệp", path: "/companies/identity", pro: false },
-          { name: "Tạo doanh nghiệp", path: "/companies/create", pro: false },
-        ],
-      },
-      {
-        name: "Thành viên",
-        icon: UserGroupIcon,
-        subItems: [
-          { name: "Danh sách thành viên", path: "/members", pro: false },
-          { name: "Tạo thành viên", path: "/members/create", pro: false },
-        ],
-      },
-      // {
-      //   name: "Pages",
-      //   icon: PageIcon,
-      //   subItems: [
-      //     { name: "Black Page", path: "/blank", pro: false },
-      //     { name: "404 Page", path: "/error-404", pro: false },
-      //   ],
-      // },
-    ],
-  },
-  // {
-  //   title: "Others",
-  //   items: [
-  //     {
-  //       icon: PieChartIcon,
-  //       name: "Charts",
-  //       subItems: [
-  //         { name: "Line Chart", path: "/line-chart", pro: false },
-  //         { name: "Bar Chart", path: "/bar-chart", pro: false },
-  //       ],
-  //     },
-  //     {
-  //       icon: BoxCubeIcon,
-  //       name: "Ui Elements",
-  //       subItems: [
-  //         { name: "Alerts", path: "/alerts", pro: false },
-  //         { name: "Avatars", path: "/avatars", pro: false },
-  //         { name: "Badge", path: "/badge", pro: false },
-  //         { name: "Buttons", path: "/buttons", pro: false },
-  //         { name: "Images", path: "/images", pro: false },
-  //         { name: "Videos", path: "/videos", pro: false },
-  //       ],
-  //     },
-  //     {
-  //       icon: PlugInIcon,
-  //       name: "Authentication",
-  //       subItems: [
-  //         { name: "Signin", path: "/signin", pro: false },
-  //         { name: "Signup", path: "/signup", pro: false },
-  //       ],
-  //     },
-  //     // ... Add other menu items here
-  //   ],
-  // },
-];
+const menuGroups = computed(() =>
+  menuConfig
+    .map((group) => ({
+      ...group,
+      items: group.items
+        .map((item) => {
+          if (item.subItems) {
+            const subItems = item.subItems.filter((sub) =>
+              auth.hasPermission(sub.permission),
+            );
+            if (subItems.length === 0) return null;
+            return { ...item, subItems };
+          }
+
+          if (item.permission && !auth.hasPermission(item.permission)) {
+            return null;
+          }
+
+          return item;
+        })
+        .filter(Boolean),
+    }))
+    .filter((group) => group.items.length > 0),
+);
 
 const isActive = (path) => route.path === path;
 
@@ -304,7 +248,7 @@ const toggleSubmenu = (groupIndex, itemIndex) => {
 };
 
 const isAnySubmenuRouteActive = computed(() => {
-  return menuGroups.some((group) =>
+  return menuGroups.value.some((group) =>
     group.items.some(
       (item) =>
         item.subItems && item.subItems.some((subItem) => isActive(subItem.path))
@@ -317,7 +261,7 @@ const isSubmenuOpen = (groupIndex, itemIndex) => {
   return (
     openSubmenu.value === key ||
     (isAnySubmenuRouteActive.value &&
-      menuGroups[groupIndex].items[itemIndex].subItems?.some((subItem) =>
+      menuGroups.value[groupIndex].items[itemIndex].subItems?.some((subItem) =>
         isActive(subItem.path)
       ))
   );
