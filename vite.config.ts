@@ -86,7 +86,7 @@ const pwaPlugin = VitePWA({
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const apiPrefix = env.VITE_API_PREFIX || '/api'
-  const proxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:8002'
+  const proxyTarget = env.VITE_API_PROXY_TARGET || 'https://qldn.zsellers.com'
 
   if (mode === 'development') {
     console.info(`[vite] API prefix = ${apiPrefix}, proxy → ${proxyTarget}`)
