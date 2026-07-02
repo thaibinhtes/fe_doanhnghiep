@@ -7,12 +7,17 @@
   >
     <!-- Card Header -->
     <div class="px-4 py-4 sm:px-6 sm:py-5">
-      <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
-        {{ title }}
-      </h3>
-      <p v-if="desc" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        {{ desc }}
-      </p>
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+            {{ title }}
+          </h3>
+          <p v-if="desc" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {{ desc }}
+          </p>
+        </div>
+        <slot name="header-right"></slot>
+      </div>
     </div>
 
     <!-- Card Body -->

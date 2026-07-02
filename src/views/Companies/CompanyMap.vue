@@ -3,6 +3,16 @@
     <PageBreadcrumb :pageTitle="currentPageTitle" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Bản đồ doanh nghiệp">
+        <div class="mb-4 rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+          <AdministrativeFilter
+            v-model:provinceCode="filterProvinceCode"
+            v-model:wardCode="filterWardCode"
+            province-placeholder="Tất cả tỉnh/thành"
+            ward-placeholder="Tất cả phường/xã"
+            @change="handleAdministrativeFilterChange"
+          />
+        </div>
+
         <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-sm text-gray-600 dark:text-gray-400">
             Hiển thị <span class="font-medium text-gray-900 dark:text-white">{{ mappedCompanies.length }}</span>
@@ -143,6 +153,7 @@ import type { Company } from '@/types/company'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 
 const FOCUS_ZOOM = 16
 
@@ -157,6 +168,10 @@ const error = ref<string | null>(null)
 const sidebarSearch = ref('')
 const selectedCompanyId = ref<number | null>(null)
 const isSidebarOpen = ref(true)
+const filterProvinceCode = ref('')
+const filterWardCode = ref('')
+const filterQuanHuyen = ref('')
+const filterPhuongXa = ref('')
 
 let map: L.Map | null = null
 let markerLayer: L.LayerGroup | null = null
@@ -279,6 +294,8 @@ async function loadCompanies() {
   try {
     const response = await companyService.getAll({
       hasCoordinates: true,
+      quanHuyen: filterQuanHuyen.value || undefined,
+      phuongXa: filterPhuongXa.value || undefined,
       per_page: 500,
       page: 1,
     })
@@ -289,6 +306,16 @@ async function loadCompanies() {
   } finally {
     loading.value = false
   }
+}
+
+const handleAdministrativeFilterChange = (payload: {
+  provinceCode: string
+  wardCode: string
+  provinceName: string
+  wardName: string
+}) => {
+  filterQuanHuyen.value = payload.provinceName
+  filterPhuongXa.value = payload.wardName
 }
 
 onMounted(async () => {
@@ -303,6 +330,17 @@ watch(mappedCompanies, async (list) => {
   if (!map) {
     await initMap()
   } else {
+    renderMarkers()
+  }
+})
+
+watch([filterQuanHuyen, filterPhuongXa], async () => {
+  await loadCompanies()
+  if (!map && mappedCompanies.value.length > 0) {
+    await initMap()
+    return
+  }
+  if (map) {
     renderMarkers()
   }
 })

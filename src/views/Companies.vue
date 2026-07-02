@@ -3,9 +3,35 @@
     <PageBreadcrumb :pageTitle="currentPageTitle" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Danh sách doanh nghiệp" className="overflow-hidden">
+        <template #header-right>
+          <div
+            v-if="companyImportDocs"
+            class="inline-flex flex-wrap items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs text-blue-800 dark:border-blue-800/40 dark:bg-blue-900/20 dark:text-blue-200"
+          >
+            <span>Demo file import:</span>
+            <a
+              :href="toAbsoluteUrl(companyImportDocs.companyImportTemplateUrl)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline"
+            >
+              Danh sách mới
+            </a>
+            <span>·</span>
+            <a
+              :href="toAbsoluteUrl(companyImportDocs.companyIdentityImportTemplateUrl)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline"
+            >
+              Import định danh
+            </a>
+          </div>
+        </template>
         <!-- Filters -->
-        <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
-          <div class="w-full sm:flex-1 sm:min-w-[200px]">
+        <div class="mb-5 space-y-3 rounded-xl border border-gray-200 p-3 dark:border-gray-700">
+          <div class="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(240px,1.4fr)_170px_170px_minmax(360px,1.6fr)] xl:items-end">
+          <div class="w-full">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Tìm kiếm
             </label>
@@ -16,7 +42,7 @@
               class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
             />
           </div>
-          <div class="w-full sm:w-48">
+          <div class="w-full">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Trạng thái
             </label>
@@ -39,7 +65,7 @@
               </span>
             </div>
           </div>
-          <div class="w-full sm:w-48">
+          <div class="w-full">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Loại hình DN
             </label>
@@ -63,56 +89,21 @@
               </span>
             </div>
           </div>
-          <div class="w-full sm:w-56">
-            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Tỉnh / Thành
-            </label>
-            <div class="relative z-20 bg-transparent">
-              <select
-                v-model="filterSelectedProvinceCode"
-                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-              >
-                <option value="">Tất cả tỉnh/thành</option>
-                <option v-for="province in filterProvinces" :key="province.code" :value="province.code">
-                  {{ province.fullName }}
-                </option>
-              </select>
-              <span
-                class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
-              >
-                <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </div>
+          <div class="w-full">
+            <AdministrativeFilter
+              v-model:provinceCode="filterProvinceCode"
+              v-model:wardCode="filterWardCode"
+              province-placeholder="Tất cả tỉnh/thành"
+              ward-placeholder="Tất cả phường/xã"
+              compact
+              @change="handleCompanyAdministrativeFilterChange"
+            />
           </div>
-          <div class="w-full sm:w-56">
-            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Phường / Xã
-            </label>
-            <div class="relative z-20 bg-transparent">
-              <select
-                v-model="filterSelectedWardCode"
-                :disabled="!filterSelectedProvinceCode || loadingFilterWards"
-                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-              >
-                <option value="">{{ loadingFilterWards ? 'Đang tải...' : 'Tất cả phường/xã' }}</option>
-                <option v-for="ward in filterWards" :key="ward.code" :value="ward.code">
-                  {{ ward.fullName }}
-                </option>
-              </select>
-              <span
-                class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
-              >
-                <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </div>
           </div>
+          <div class="flex flex-wrap items-center gap-2">
           <button
             @click="resetFilters"
-            class="h-11 w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            class="h-10 w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             Đặt lại
           </button>
@@ -120,7 +111,7 @@
             @click="handleExport"
             v-if="auth.hasPermission('feature.companies.export')"
             :disabled="exporting"
-            class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-500 bg-white px-4 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-400 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+            class="h-10 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-500 bg-white px-3.5 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-400 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -132,7 +123,7 @@
             class="relative w-full sm:w-auto"
           >
             <summary
-              class="h-11 w-full sm:w-auto list-none inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-amber-500 bg-white px-4 text-sm font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
+              class="h-10 w-full sm:w-auto list-none inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-amber-500 bg-white px-3.5 text-sm font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M12 21V9m0 0l4 4m-4-4l-4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -161,7 +152,7 @@
           </details>
           <router-link
             to="/companies/map"
-            class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-brand-500 bg-white px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-400 dark:bg-gray-900 dark:text-brand-400 dark:hover:bg-brand-500/10"
+            class="h-10 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-brand-500 bg-white px-3.5 text-sm font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-400 dark:bg-gray-900 dark:text-brand-400 dark:hover:bg-brand-500/10"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor"/>
@@ -170,13 +161,14 @@
           </router-link>
           <router-link
             to="/companies/create"
-            class="h-11 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition hover:bg-brand-600"
+            class="h-10 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-3.5 text-sm font-medium text-white transition hover:bg-brand-600"
           >
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
               <path d="M10 4.16669V15.8334M4.16669 10H15.8334" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
             Tạo mới
           </router-link>
+          </div>
         </div>
 
         <div
@@ -528,12 +520,18 @@
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Tỉnh / Thành
                 </label>
+                <input
+                  type="text"
+                  v-model="editProvinceSearch"
+                  placeholder="Tìm tỉnh/thành..."
+                  class="mb-2 dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                />
                 <select
                   v-model="editSelectedProvinceCode"
                   class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                 >
                   <option value="">Chọn tỉnh/thành</option>
-                  <option v-for="province in editProvinces" :key="province.code" :value="province.code">
+                  <option v-for="province in visibleEditProvinces" :key="province.code" :value="province.code">
                     {{ province.code }} - {{ province.fullName }}
                   </option>
                 </select>
@@ -544,13 +542,20 @@
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Xã / Phường
                 </label>
+                <input
+                  type="text"
+                  v-model="editWardSearch"
+                  placeholder="Tìm phường/xã..."
+                  :disabled="!editSelectedProvinceCode"
+                  class="mb-2 dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                />
                 <select
                   v-model="editSelectedWardCode"
                   :disabled="!editSelectedProvinceCode || loadingEditWards"
                   class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                 >
                   <option value="">{{ loadingEditWards ? 'Đang tải...' : 'Chọn xã/phường' }}</option>
-                  <option v-for="ward in editWards" :key="ward.code" :value="ward.code">
+                  <option v-for="ward in visibleEditWards" :key="ward.code" :value="ward.code">
                     {{ ward.fullName }}
                   </option>
                 </select>
@@ -1014,7 +1019,7 @@
             </button>
 
             <p v-else class="text-sm text-gray-600 dark:text-gray-300">
-              Cột yêu cầu: <strong>mã số doanh nghiệp</strong> | <strong>tên doanh nghiệp</strong> | <strong>định danh</strong>.
+              Cột yêu cầu: <strong>mã số doanh nghiệp</strong> | <strong>tên doanh nghiệp</strong> | <strong>định danh (1/0)</strong>.
             </p>
 
             <div
@@ -1102,10 +1107,12 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import Modal from '@/components/profile/Modal.vue'
 import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
+import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 import type { Company, CapitalMemberInput, CompanyImportResult, CompanyIdentityBulkItem } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 import { companyService } from '@/services/companyService'
 import { locationService } from '@/services/locationService'
+import { settingService, type CompanyImportDocs } from '@/services/settingService'
 import { useAuthStore } from '@/stores/auth'
 import { useCompanyStatuses } from '@/composables/useCompanyStatuses'
 import type { ProvinceItem, WardItem } from '@/types/location'
@@ -1139,16 +1146,16 @@ const importResult = ref<CompanyImportResult | null>(null)
 const importError = ref<string | null>(null)
 const importMode = ref<'companies' | 'identity'>('companies')
 const selectedCompanyIds = ref<number[]>([])
+const companyImportDocs = ref<CompanyImportDocs | null>(null)
+const filterProvinceCode = ref('')
+const filterWardCode = ref('')
+const editProvinceSearch = ref('')
+const editWardSearch = ref('')
 const editProvinces = ref<ProvinceItem[]>([])
 const editWards = ref<WardItem[]>([])
 const editSelectedProvinceCode = ref('')
 const editSelectedWardCode = ref('')
 const loadingEditWards = ref(false)
-const filterProvinces = ref<ProvinceItem[]>([])
-const filterWards = ref<WardItem[]>([])
-const filterSelectedProvinceCode = ref('')
-const filterSelectedWardCode = ref('')
-const loadingFilterWards = ref(false)
 
 const editForm = reactive<Company>({
   id: 0,
@@ -1193,6 +1200,16 @@ const statusModalShowReason = computed(() => requiresReason(statusModal.dnTrangT
 const isAllSelectedOnPage = computed(
   () => store.companies.length > 0 && store.companies.every((company) => selectedCompanyIds.value.includes(company.id)),
 )
+const visibleEditProvinces = computed(() => {
+  const keyword = editProvinceSearch.value.trim().toLowerCase()
+  if (!keyword) return editProvinces.value
+  return editProvinces.value.filter((province) => province.fullName.toLowerCase().includes(keyword))
+})
+const visibleEditWards = computed(() => {
+  const keyword = editWardSearch.value.trim().toLowerCase()
+  if (!keyword) return editWards.value
+  return editWards.value.filter((ward) => ward.fullName.toLowerCase().includes(keyword))
+})
 const importModalTitle = computed(() =>
   importMode.value === 'companies'
     ? 'Nhập doanh nghiệp từ Excel'
@@ -1201,7 +1218,7 @@ const importModalTitle = computed(() =>
 const importModalDescription = computed(() =>
   importMode.value === 'companies'
     ? 'Tải file .xlsx theo mẫu, hệ thống sẽ tạo mới hoặc cập nhật theo mã số DN'
-    : 'File gồm 3 cột: mã số doanh nghiệp | tên doanh nghiệp | định danh',
+    : 'File gồm 3 cột: mã số doanh nghiệp | tên doanh nghiệp | định danh (1/0)',
 )
 
 const visiblePages = computed(() => {
@@ -1236,11 +1253,33 @@ const resetFilters = () => {
   filter.loaiHinhDN = ''
   filter.quanHuyen = ''
   filter.phuongXa = ''
-  filterSelectedProvinceCode.value = ''
-  filterSelectedWardCode.value = ''
-  filterWards.value = []
+  filterProvinceCode.value = ''
+  filterWardCode.value = ''
   store.setPage(1)
 }
+
+const handleCompanyAdministrativeFilterChange = (payload: {
+  provinceCode: string
+  wardCode: string
+  provinceName: string
+  wardName: string
+}) => {
+  filter.quanHuyen = payload.provinceName
+  filter.phuongXa = payload.wardName
+  store.setPage(1)
+}
+
+const toAbsoluteUrl = (urlPath: string) => {
+  if (/^https?:\/\//i.test(urlPath)) return urlPath
+  if (import.meta.env.DEV && urlPath.startsWith('/storage')) {
+    const backendOrigin = import.meta.env.VITE_API_PROXY_TARGET?.trim()
+    if (backendOrigin) {
+      return `${backendOrigin.replace(/\/$/, '')}${urlPath}`
+    }
+  }
+  return `${window.location.origin}${urlPath.startsWith('/') ? urlPath : `/${urlPath}`}`
+}
+
 
 const toggleCompanySelection = (companyId: number) => {
   if (selectedCompanyIds.value.includes(companyId)) {
@@ -1383,27 +1422,14 @@ const loadEditProvinces = async () => {
   editProvinces.value = await locationService.getProvinces()
 }
 
-const loadFilterProvinces = async () => {
-  filterProvinces.value = await locationService.getProvinces()
-}
-
-const loadFilterWards = async () => {
-  if (!filterSelectedProvinceCode.value) {
-    filterWards.value = []
-    filterSelectedWardCode.value = ''
-    filter.phuongXa = ''
-    return
-  }
-
-  loadingFilterWards.value = true
+const loadCompanyImportDocs = async () => {
   try {
-    filterWards.value = await locationService.getWardsByProvince(filterSelectedProvinceCode.value)
-    if (!filterWards.value.some((ward) => ward.code === filterSelectedWardCode.value)) {
-      filterSelectedWardCode.value = ''
-      filter.phuongXa = ''
+    companyImportDocs.value = await settingService.getCompanyImportDocs()
+  } catch {
+    companyImportDocs.value = {
+      companyImportTemplateUrl: '/api/doanh-nghiep/export-template',
+      companyIdentityImportTemplateUrl: '/api/doanh-nghiep/export-template-dinh-danh',
     }
-  } finally {
-    loadingFilterWards.value = false
   }
 }
 
@@ -1434,21 +1460,6 @@ watch(editSelectedProvinceCode, () => {
 watch(editSelectedWardCode, () => {
   const ward = editWards.value.find((item) => item.code === editSelectedWardCode.value)
   editForm.phuongXa = ward?.fullName ?? ''
-})
-
-watch(filterSelectedProvinceCode, () => {
-  const province = filterProvinces.value.find((item) => item.code === filterSelectedProvinceCode.value)
-  filter.quanHuyen = province?.fullName ?? ''
-  filter.phuongXa = ''
-  filterSelectedWardCode.value = ''
-  void loadFilterWards()
-  store.setPage(1)
-})
-
-watch(filterSelectedWardCode, () => {
-  const ward = filterWards.value.find((item) => item.code === filterSelectedWardCode.value)
-  filter.phuongXa = ward?.fullName ?? ''
-  store.setPage(1)
 })
 
 const openEditModal = async (company: Company) => {
@@ -1485,6 +1496,8 @@ const closeEditModal = () => {
   selectedCompanyId.value = null
   editSelectedProvinceCode.value = ''
   editSelectedWardCode.value = ''
+  editProvinceSearch.value = ''
+  editWardSearch.value = ''
   editWards.value = []
 }
 
@@ -1583,7 +1596,7 @@ watch(
 
 onMounted(async () => {
   await loadStatuses()
-  await loadFilterProvinces()
+  await loadCompanyImportDocs()
   store.fetchCompanies(currentCompanyFilters())
 })
 </script>
