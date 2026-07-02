@@ -12,9 +12,9 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY . .
 
-# Force Docker builds to use the Docker-specific env file.
-ARG ENV_FILE=.env.docker
-RUN cp "$ENV_FILE" .env.production
+# API URL baked into dist at build time (override: docker build --build-arg VITE_API_BASE_URL=...)
+ARG VITE_API_BASE_URL=https://qldn.zsellers.com/api
+RUN printf 'VITE_API_BASE_URL=%s\n' "$VITE_API_BASE_URL" > .env.production
 
 # Build the app (mode production → reads .env.production)
 RUN npm run build-only
