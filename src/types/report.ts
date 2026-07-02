@@ -1,3 +1,9 @@
+export interface ProgressReportFilters {
+  range1To: string
+  range2From: string
+  range2To: string
+}
+
 export interface ProgressReportMetrics {
   soLuongCapGcn: number
   donViGiaiThe: number
@@ -26,6 +32,7 @@ export interface ProgressReport {
   title: string
   reportDate: string
   reportDateLabel: string
+  filters: ProgressReportFilters
   ranges: ProgressReportRange[]
   metricLabels: Record<keyof ProgressReportMetrics, string>
   rows: ProgressReportRow[]

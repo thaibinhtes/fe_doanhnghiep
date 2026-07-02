@@ -1,6 +1,10 @@
 import api from './api'
-import type { ProgressReport } from '@/types/report'
+import type { ProgressReport, ProgressReportFilters } from '@/types/report'
 import type { SummaryReport } from '@/types/status'
+
+export type ProgressReportQuery = ProgressReportFilters & {
+  reportDate?: string
+}
 
 export const reportService = {
   async getSummary(): Promise<SummaryReport> {
@@ -15,13 +19,16 @@ export const reportService = {
     return data
   },
 
-  async getProgress(): Promise<ProgressReport> {
-    const { data } = await api.get<{ data: ProgressReport }>('/reports/tien-do-dinh-danh')
+  async getProgress(params?: ProgressReportQuery): Promise<ProgressReport> {
+    const { data } = await api.get<{ data: ProgressReport }>('/reports/tien-do-dinh-danh', {
+      params,
+    })
     return data.data
   },
 
-  async exportProgress(): Promise<Blob> {
+  async exportProgress(params?: ProgressReportQuery): Promise<Blob> {
     const { data } = await api.get<Blob>('/reports/tien-do-dinh-danh/export', {
+      params,
       responseType: 'blob',
     })
     return data
