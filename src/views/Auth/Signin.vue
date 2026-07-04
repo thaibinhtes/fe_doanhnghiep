@@ -15,10 +15,14 @@
               </div>
 
               <div
-                v-if="auth.error"
+                v-if="auth.error || route.query.error === 'no-permission'"
                 class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400"
               >
-                {{ auth.error }}
+                {{
+                  route.query.error === 'no-permission'
+                    ? 'Tài khoản không có quyền truy cập hệ thống.'
+                    : auth.error
+                }}
               </div>
 
               <form @submit.prevent="handleSubmit">
@@ -101,6 +105,7 @@ import { useRoute, useRouter } from 'vue-router'
 import CommonGridShape from '@/components/common/CommonGridShape.vue'
 import FullScreenLayout from '@/components/layout/FullScreenLayout.vue'
 import { useAuthStore } from '@/stores/auth'
+import { getFirstAccessibleRoute } from '@/config/menu'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -121,7 +126,10 @@ const handleSubmit = async () => {
       password: password.value,
     })
 
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+    const redirect =
+      typeof route.query.redirect === 'string' && route.query.redirect !== '/dashboard'
+        ? route.query.redirect
+        : getFirstAccessibleRoute((key) => auth.hasPermission(key))
     router.push(redirect)
   } catch {
     // error shown via auth.error

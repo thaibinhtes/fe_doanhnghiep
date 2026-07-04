@@ -6,7 +6,7 @@
     ]"
   >
     <!-- Card Header -->
-    <div class="px-4 py-4 sm:px-6 sm:py-5">
+    <div v-if="!hideHeader" class="shrink-0 px-4 py-4 sm:px-6 sm:py-5">
       <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 class="text-base font-medium text-gray-800 dark:text-white/90">
@@ -21,8 +21,12 @@
     </div>
 
     <!-- Card Body -->
-    <div class="p-3 border-t border-gray-100 dark:border-gray-800 sm:p-4 md:p-6">
-      <div class="space-y-5">
+    <div
+      :class="[
+        bodyClass ?? 'border-t border-gray-100 p-3 dark:border-gray-800 sm:p-4 md:p-6',
+      ]"
+    >
+      <div :class="slotClass ?? 'space-y-5'">
         <slot></slot>
       </div>
     </div>
@@ -36,6 +40,9 @@ interface Props {
   title: string
   className?: string
   desc?: string
+  bodyClass?: string
+  slotClass?: string
+  hideHeader?: boolean
 }
 
 defineProps<Props>()

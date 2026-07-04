@@ -4,83 +4,6 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
-import { VitePWA } from 'vite-plugin-pwa'
-
-const pwaPlugin = VitePWA({
-  registerType: 'autoUpdate',
-  injectRegister: 'auto',
-  devOptions: {
-    enabled: true,
-  },
-  includeAssets: ['favicon.ico', 'pwa/apple-touch-icon.png', 'leaflet/marker-icon.png', 'leaflet/marker-icon-2x.png', 'leaflet/marker-shadow.png'],
-  manifest: {
-    name: 'Hệ Thống Quản Lý Doanh Nghiệp (HTQLDN)',
-    short_name: 'HTQLDN',
-    description: 'Nền tảng quản lý thông tin doanh nghiệp.',
-    start_url: '/',
-    scope: '/',
-    display: 'standalone',
-    theme_color: '#0f172a',
-    background_color: '#0f172a',
-    orientation: 'portrait',
-    icons: [
-      {
-        src: '/pwa/pwa-192x192.png',
-        sizes: '192x192',
-        type: 'image/png',
-      },
-      {
-        src: '/pwa/pwa-512x512.png',
-        sizes: '512x512',
-        type: 'image/png',
-      },
-      {
-        src: '/pwa/maskable-512x512.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'maskable',
-      },
-    ],
-  },
-  workbox: {
-    cleanupOutdatedCaches: true,
-    skipWaiting: true,
-    clientsClaim: true,
-    globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-    navigateFallbackDenylist: [/^\/api\//],
-    runtimeCaching: [
-      {
-        urlPattern: ({ request, url }) =>
-          request.destination === 'document' && url.pathname.startsWith('/'),
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'pages',
-          networkTimeoutSeconds: 5,
-        },
-      },
-      {
-        urlPattern: ({ request, url }) =>
-          ['style', 'script', 'worker'].includes(request.destination),
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: 'static-assets',
-        },
-      },
-      {
-        urlPattern: ({ request, url }) =>
-          request.destination === 'image',
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'images',
-          expiration: {
-            maxEntries: 100,
-            maxAgeSeconds: 60 * 60 * 24 * 30,
-          },
-        },
-      },
-    ],
-  },
-}) as any
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -90,29 +13,45 @@ export default defineConfig(({ mode }) => {
 
   if (mode === 'development') {
     console.info(`[vite] API prefix = ${apiPrefix}, proxy → ${proxyTarget}`)
+    console.info(
+      `[vite] Socket proxy /socket.io → ${env.VITE_SOCKET_PROXY_TARGET || 'http://127.0.0.1:6001'}`,
+    )
   }
 
   return {
-  plugins: [
-    vue(),
-    vueJsx(),
-    vueDevTools(),
-    pwaPlugin,
-  ],
-  envPrefix: 'VITE_',
-  server: {
-    port: 3000,
-    proxy: {
-      [apiPrefix]: {
-        target: proxyTarget,
-        changeOrigin: true,
+    plugins: [vue(), vueJsx(), vueDevTools()],
+    envPrefix: 'VITE_',
+    server: {
+      port: 3000,
+      proxy: {
+        [apiPrefix]: {
+          target: proxyTarget,
+          changeOrigin: true,
+          configure: (proxy) => {
+            proxy.on('error', (err, _req, res) => {
+              console.error(`[vite] API proxy error (${proxyTarget}):`, err.message)
+              if (res && !res.headersSent && 'writeHead' in res) {
+                res.writeHead(502, { 'Content-Type': 'application/json' })
+                res.end(
+                  JSON.stringify({
+                    message: `Không kết nối được backend tại ${proxyTarget}. Chạy php artisan serve và kiểm tra VITE_API_PROXY_TARGET.`,
+                  }),
+                )
+              }
+            })
+          },
+        },
+        '/socket.io': {
+          target: env.VITE_SOCKET_PROXY_TARGET || 'http://127.0.0.1:6001',
+          changeOrigin: true,
+          ws: true,
+        },
       },
     },
-  },
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
     },
-  },
   }
 })

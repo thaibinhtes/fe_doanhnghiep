@@ -11,7 +11,15 @@ export interface AuthUser {
   name: string
   email: string
   isActive: boolean
+  roleId?: number | null
+  donViId?: number | null
   role?: AuthRole | null
+  donVi?: {
+    id: number
+    ma: string
+    ten: string
+    cap: number
+  } | null
   permissions?: string[]
   createdAt?: string
 }

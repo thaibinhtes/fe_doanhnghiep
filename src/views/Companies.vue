@@ -1,184 +1,192 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb :pageTitle="currentPageTitle" />
-    <div class="space-y-5 sm:space-y-6">
-      <ComponentCard title="Danh sách doanh nghiệp" className="overflow-hidden">
-        <template #header-right>
-          <div
-            v-if="companyImportDocs"
-            class="inline-flex flex-wrap items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs text-blue-800 dark:border-blue-800/40 dark:bg-blue-900/20 dark:text-blue-200"
-          >
-            <span>Demo file import:</span>
-            <a
-              :href="toAbsoluteUrl(companyImportDocs.companyImportTemplateUrl)"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="underline"
-            >
-              Danh sách mới
-            </a>
-            <span>·</span>
-            <a
-              :href="toAbsoluteUrl(companyImportDocs.companyIdentityImportTemplateUrl)"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="underline"
-            >
-              Import định danh
-            </a>
-          </div>
-        </template>
+    <div
+      class="companies-page flex min-h-0 flex-1 flex-col max-lg:flex-none max-lg:overflow-visible lg:overflow-hidden"
+    >
+      <ComponentCard
+        title="Danh sách doanh nghiệp"
+        hide-header
+        className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
+        bodyClass="flex min-h-0 flex-1 flex-col overflow-hidden p-2 sm:p-3"
+        slotClass="flex min-h-0 flex-1 flex-col gap-2"
+      >
         <!-- Filters -->
-        <div class="mb-5 space-y-3 rounded-xl border border-gray-200 p-3 dark:border-gray-700">
-          <div class="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(240px,1.4fr)_170px_170px_minmax(360px,1.6fr)] xl:items-end">
-          <div class="w-full">
-            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Tìm kiếm
-            </label>
-            <input
-              type="text"
-              v-model="filter.search"
-              placeholder="Tên doanh nghiệp, Mã số..."
-              class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-            />
-          </div>
-          <div class="w-full">
-            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Trạng thái
-            </label>
-            <div class="relative z-20 bg-transparent">
-              <select
-                v-model="filter.trangThai"
-                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-              >
-                <option value="">Tất cả</option>
-                <option value="Đang hoạt động">Đang hoạt động</option>
-                <option value="Tạm ngừng">Tạm ngừng</option>
-                <option value="Giải thể">Giải thể</option>
-              </select>
-              <span
-                class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
-              >
-                <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </div>
-          </div>
-          <div class="w-full">
-            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Loại hình DN
-            </label>
-            <div class="relative z-20 bg-transparent">
-              <select
-                v-model="filter.loaiHinhDN"
-                class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-              >
-                <option value="">Tất cả</option>
-                <option value="Công ty TNHH">Công ty TNHH</option>
-                <option value="Công ty Cổ phần">Công ty Cổ Phần</option>
-                <option value="Doanh nghiệp tư nhân">Doanh nghiệp Tư Nhân</option>
-                <option value="Hợp danh">Hợp Danh</option>
-              </select>
-              <span
-                class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
-              >
-                <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </div>
-          </div>
-          <div class="w-full">
-            <AdministrativeFilter
-              v-model:provinceCode="filterProvinceCode"
-              v-model:wardCode="filterWardCode"
-              province-placeholder="Tất cả tỉnh/thành"
-              ward-placeholder="Tất cả phường/xã"
-              compact
-              @change="handleCompanyAdministrativeFilterChange"
-            />
-          </div>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-          <button
-            @click="resetFilters"
-            class="h-10 w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-          >
-            Đặt lại
-          </button>
-          <button
-            @click="handleExport"
-            v-if="auth.hasPermission('feature.companies.export')"
-            :disabled="exporting"
-            class="h-10 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-500 bg-white px-3.5 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-400 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            {{ exporting ? 'Đang xuất...' : 'Xuất Excel' }}
-          </button>
-          <details
-            v-if="auth.hasPermission('feature.companies.import')"
-            class="relative w-full sm:w-auto"
-          >
-            <summary
-              class="h-10 w-full sm:w-auto list-none inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-amber-500 bg-white px-3.5 text-sm font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
+        <div class="shrink-0 rounded-lg border border-gray-200 p-2 dark:border-gray-700">
+          <div class="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+            <div
+              class="grid min-w-0 flex-1 grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-[minmax(160px,1.2fr)_120px_120px_minmax(180px,1fr)_minmax(220px,1fr)] xl:items-center"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M12 21V9m0 0l4 4m-4-4l-4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Nhập Excel
-              <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
-                <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </summary>
-            <div class="absolute right-0 z-50 mt-2 min-w-[260px] rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-              <button
-                type="button"
-                @click="openImportModal('companies')"
-                class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-              >
-                Import danh sách mới
-              </button>
-              <button
-                type="button"
-                @click="openImportModal('identity')"
-                class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-              >
-                Import danh sách định danh doanh nghiệp
-              </button>
+              <input
+                type="text"
+                v-model="filter.search"
+                placeholder="Tìm kiếm tên, mã số..."
+                class="h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+              />
+              <div class="relative bg-transparent">
+                <select
+                  v-model="filter.trangThai"
+                  class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                >
+                  <option value="">Trạng thái</option>
+                  <option value="Đang hoạt động">Đang hoạt động</option>
+                  <option value="Tạm ngừng">Tạm ngừng</option>
+                  <option value="Giải thể">Giải thể</option>
+                </select>
+                <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                  <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+              </div>
+              <div class="relative bg-transparent">
+                <select
+                  v-model="filter.loaiHinhId"
+                  class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                >
+                  <option value="">Loại hình DN</option>
+                  <option v-for="type in businessTypes" :key="type.id" :value="type.id">
+                    {{ type.ten }}
+                  </option>
+                </select>
+                <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                  <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+              </div>
+              <div class="relative bg-transparent">
+                <select
+                  v-model="filter.donViId"
+                  class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                >
+                  <option value="">Đơn vị</option>
+                  <option v-for="opt in orgUnitOptions" :key="opt.id" :value="String(opt.id)">
+                    {{ opt.label }}
+                  </option>
+                </select>
+                <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                  <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+              </div>
+              <AdministrativeFilter
+                v-model:provinceCode="filterProvinceCode"
+                v-model:wardCode="filterWardCode"
+                province-placeholder="Tỉnh/thành"
+                ward-placeholder="Phường/xã"
+                compact
+                dense
+                @change="handleCompanyAdministrativeFilterChange"
+              />
             </div>
-          </details>
-          <router-link
-            to="/companies/map"
-            class="h-10 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-brand-500 bg-white px-3.5 text-sm font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-400 dark:bg-gray-900 dark:text-brand-400 dark:hover:bg-brand-500/10"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor"/>
-            </svg>
-            Xem bản đồ
-          </router-link>
-          <router-link
-            to="/companies/create"
-            class="h-10 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-3.5 text-sm font-medium text-white transition hover:bg-brand-600"
-          >
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-              <path d="M10 4.16669V15.8334M4.16669 10H15.8334" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            Tạo mới
-          </router-link>
+            <div class="flex shrink-0 flex-wrap items-center gap-1.5 xl:justify-end">
+              <button
+                @click="resetFilters"
+                class="inline-flex h-8 items-center justify-center rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                Đặt lại
+              </button>
+              <button
+                @click="handleExport"
+                v-if="auth.hasPermission('feature.companies.export')"
+                :disabled="exporting"
+                title="Xuất Excel"
+                class="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-emerald-500 bg-white px-2.5 text-xs font-medium text-emerald-600 transition hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-400 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="hidden sm:inline">{{ exporting ? 'Đang xuất...' : 'Xuất' }}</span>
+              </button>
+              <details
+                v-if="auth.hasPermission('feature.companies.import')"
+                class="relative"
+              >
+                <summary
+                  class="inline-flex h-8 list-none cursor-pointer items-center justify-center gap-1 rounded-lg border border-amber-500 bg-white px-2.5 text-xs font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 21V9m0 0l4 4m-4-4l-4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Nhập
+                </summary>
+                <div class="absolute right-0 z-50 mt-1 min-w-[240px] rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                  <button
+                    type="button"
+                    @click="openImportModal('companies')"
+                    class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                  >
+                    Import danh sách mới
+                  </button>
+                  <button
+                    type="button"
+                    @click="openImportModal('identity')"
+                    class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                  >
+                    Import định danh
+                  </button>
+                  <button
+                    type="button"
+                    @click="openImportHistory"
+                    class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                  >
+                    Lịch sử import
+                  </button>
+                </div>
+              </details>
+              <router-link
+                to="/companies/map"
+                title="Xem bản đồ"
+                class="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-brand-500 bg-white px-2.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-400 dark:bg-gray-900 dark:text-brand-400 dark:hover:bg-brand-500/10"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor"/>
+                </svg>
+                <span class="hidden sm:inline">Bản đồ</span>
+              </router-link>
+              <router-link
+                to="/companies/create"
+                class="inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-brand-500 px-2.5 text-xs font-medium text-white transition hover:bg-brand-600"
+              >
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 4.16669V15.8334M4.16669 10H15.8334" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Tạo mới
+              </router-link>
+              <div
+                v-if="companyImportDocs"
+                class="hidden 2xl:inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-[11px] text-blue-800 dark:border-blue-800/40 dark:bg-blue-900/20 dark:text-blue-200"
+              >
+                <a
+                  :href="toAbsoluteUrl(companyImportDocs.companyImportTemplateUrl)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="underline"
+                >
+                  Mẫu import
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
         <div
           v-if="selectedCompanyIds.length > 0"
-          class="mb-4 flex flex-col gap-2 rounded-lg border border-brand-200 bg-brand-50 p-3 sm:flex-row sm:items-center sm:justify-between dark:border-brand-800/40 dark:bg-brand-500/10"
+          class="flex shrink-0 flex-col gap-2 rounded-lg border border-brand-200 bg-brand-50 p-3 sm:flex-row sm:items-center sm:justify-between dark:border-brand-800/40 dark:bg-brand-500/10"
         >
           <p class="text-sm text-brand-700 dark:text-brand-300">
             Đã chọn {{ selectedCompanyIds.length }} doanh nghiệp
           </p>
           <div class="flex gap-2">
+            <button
+              v-if="auth.hasPermission('feature.companies.delete')"
+              type="button"
+              @click="openBulkDeleteConfirm"
+              class="inline-flex h-9 items-center justify-center rounded-lg bg-red-500 px-3 text-sm font-medium text-white transition hover:bg-red-600"
+            >
+              Xóa
+            </button>
             <button
               type="button"
               @click="handleBulkDinhDanh(true)"
@@ -196,12 +204,12 @@
           </div>
         </div>
 
-        <div v-if="store.error" class="mb-4 rounded-lg bg-red-50 p-[5px] text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div v-if="store.error" class="shrink-0 rounded-lg bg-red-50 p-[5px] text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
           {{ store.error }}
         </div>
 
         <!-- Mobile: card list -->
-        <div v-if="store.loading" class="flex items-center justify-center py-12 lg:hidden">
+        <div v-if="store.loading" class="flex shrink-0 items-center justify-center py-12 lg:hidden">
           <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
         </div>
         <div
@@ -210,7 +218,7 @@
         >
           Chưa có doanh nghiệp nào
         </div>
-        <div v-else class="grid gap-3 lg:hidden">
+        <div v-else class="grid min-h-0 flex-1 gap-3 overflow-y-auto lg:hidden">
           <CompanyMobileCard
             v-for="(company, index) in store.companies"
             :key="company.id"
@@ -225,14 +233,30 @@
         </div>
 
         <!-- Desktop: wide table -->
-        <div class="hidden lg:block overflow-x-auto">
-          <div v-if="store.loading" class="flex items-center justify-center py-12">
+        <div class="hidden min-h-0 flex-1 flex-col lg:flex">
+          <div
+            v-if="store.loading"
+            class="flex min-h-[240px] flex-1 items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700"
+          >
             <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
           </div>
 
-          <div v-else class="min-w-max w-full">
-            <!-- Header -->
-            <div class="flex border-b border-gray-200 dark:border-gray-700">
+          <div
+            v-else-if="store.companies.length === 0"
+            class="flex min-h-[240px] flex-1 items-center justify-center rounded-xl border border-gray-200 text-sm text-gray-400 dark:border-gray-700"
+          >
+            Chưa có doanh nghiệp nào
+          </div>
+
+          <div
+            v-else
+            class="companies-table-scroll min-h-0 flex-1 overflow-auto rounded-xl border border-gray-200 dark:border-gray-700"
+          >
+            <div class="min-w-max w-full">
+              <!-- Header -->
+              <div
+                class="sticky top-0 z-10 flex border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
+              >
               <div class="flex-none w-[46px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">
                 <input
                   type="checkbox"
@@ -264,9 +288,9 @@
               <div class="flex-none w-[170px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Định danh</div>
               <div class="flex-none w-[80px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Loại DN</div>
               <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Actions</div>
-            </div>
-            <!-- Body -->
-            <div class="divide-y divide-gray-200 dark:divide-gray-700">
+              </div>
+              <!-- Body -->
+              <div class="divide-y divide-gray-200 dark:divide-gray-700">
               <div
                 v-for="company, index in store.companies"
                 :key="company.id"
@@ -307,8 +331,8 @@
                 <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nguoiDaiDienTen || company.nguoiDaiDien?.fullName || '-' }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngaySinhNguoiDaiDien || company.nguoiDaiDien?.birthday || '-' }}</div>
                 <div class="flex-none w-[160px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.chuSoHuuTen || company.chuSoHuu?.fullName || '-' }}</div>
-                <div class="flex-none w-[200px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nganhNgheKDChinh }}</div>
-                <div class="flex-none w-[260px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nganhNgheKD }}</div>
+                <div class="flex-none w-[200px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ formatNganhNgheChinh(company) }}</div>
+                <div class="flex-none w-[260px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nganhNgheKDTen || '-' }}</div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngayCap }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngayDangKyThayDoi }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.loaiHinhDN }}</div>
@@ -364,6 +388,7 @@
                       {{ company.daCapNhatDinhDanh ? 'Huỷ đăng ký định danh' : 'Đăng ký định danh' }}
                     </button>
                     <button
+                      v-if="auth.hasPermission('feature.companies.delete')"
                       @click="handleDelete(company.id)"
                       class="inline-flex items-center justify-center rounded-lg bg-red-500 p-2 text-white transition hover:bg-red-600"
                       title="Xóa"
@@ -375,17 +400,32 @@
                   </div>
                 </div>
               </div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Total & Pagination -->
-        <div class="mt-5 flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-center">
+        <div
+          class="flex shrink-0 flex-col items-stretch justify-between gap-2 border-t border-gray-100 pt-2 dark:border-gray-800 sm:flex-row sm:items-center"
+        >
           <p class="text-center text-sm text-gray-500 dark:text-gray-400 sm:text-left">
             Tổng số: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ store.total }}</span> bản ghi
             <span class="lg:hidden text-gray-400"> · Trang {{ store.page }}/{{ store.totalPages || 1 }}</span>
           </p>
           <div class="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+            <label class="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <span class="whitespace-nowrap">Hiển thị</span>
+              <select
+                :value="store.perPage"
+                @change="handlePerPageChange"
+                class="h-9 rounded-lg border border-gray-300 bg-white px-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+              >
+                <option v-for="size in pageSizeOptions" :key="size" :value="size">
+                  {{ size }}
+                </option>
+              </select>
+            </label>
             <button
               @click="prevPage"
               :disabled="store.page === 1"
@@ -515,26 +555,19 @@
                 />
               </div>
 
-              <!-- Quận / Huyện -->
+              <!-- Tỉnh / Thành -->
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Tỉnh / Thành
                 </label>
-                <input
-                  type="text"
-                  v-model="editProvinceSearch"
-                  placeholder="Tìm tỉnh/thành..."
-                  class="mb-2 dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                />
-                <select
+                <ProvinceSelect
+                  ref="editProvinceSelectRef"
                   v-model="editSelectedProvinceCode"
-                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                >
-                  <option value="">Chọn tỉnh/thành</option>
-                  <option v-for="province in visibleEditProvinces" :key="province.code" :value="province.code">
-                    {{ province.code }} - {{ province.fullName }}
-                  </option>
-                </select>
+                  placeholder="Chọn tỉnh/thành"
+                  search-placeholder="Tìm tỉnh/thành..."
+                  empty-label="Chọn tỉnh/thành"
+                  show-code
+                />
               </div>
 
               <!-- Phường/xã -->
@@ -542,23 +575,14 @@
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Xã / Phường
                 </label>
-                <input
-                  type="text"
-                  v-model="editWardSearch"
-                  placeholder="Tìm phường/xã..."
-                  :disabled="!editSelectedProvinceCode"
-                  class="mb-2 dark:bg-dark-900 h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                />
-                <select
+                <WardSelect
+                  ref="editWardSelectRef"
                   v-model="editSelectedWardCode"
-                  :disabled="!editSelectedProvinceCode || loadingEditWards"
-                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                >
-                  <option value="">{{ loadingEditWards ? 'Đang tải...' : 'Chọn xã/phường' }}</option>
-                  <option v-for="ward in visibleEditWards" :key="ward.code" :value="ward.code">
-                    {{ ward.fullName }}
-                  </option>
-                </select>
+                  :province-code="editSelectedProvinceCode"
+                  placeholder="Chọn xã/phường"
+                  search-placeholder="Tìm phường/xã..."
+                  empty-label="Chọn xã/phường"
+                />
               </div>
 
               <!-- Kinh độ (long) -->
@@ -654,13 +678,13 @@
                 </label>
                 <div class="relative z-20 bg-transparent">
                   <select
-                    v-model="editForm.loaiHinhDN"
+                    v-model="editForm.dnLoaiHinhId"
                     class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                   >
-                    <option value="Công ty TNHH">Công ty TNHH</option>
-                    <option value="Công ty Cổ phần">Công ty Cổ phần</option>
-                    <option value="Doanh nghiệp tư nhân">Doanh nghiệp tư nhân</option>
-                    <option value="Hợp danh">Hợp danh</option>
+                    <option :value="null">Chọn loại hình</option>
+                    <option v-for="type in businessTypes" :key="type.id" :value="type.id">
+                      {{ type.ten }}
+                    </option>
                   </select>
                   <span
                     class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
@@ -775,10 +799,9 @@
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Ngành nghề kinh doanh chính
                 </label>
-                <input
-                  type="text"
+                <IndustryCategorySelect
                   v-model="editForm.nganhNgheKDChinh"
-                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                  placeholder="Tìm và chọn mã ngành nghề chính"
                 />
               </div>
 
@@ -787,10 +810,10 @@
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Ngành nghề kinh doanh
                 </label>
-                <textarea
+                <IndustryCategorySelect
                   v-model="editForm.nganhNgheKD"
-                  rows="3"
-                  class="dark:bg-dark-900 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                  multiple
+                  placeholder="Tìm và chọn các mã ngành nghề"
                 />
               </div>
 
@@ -979,11 +1002,46 @@
       </template>
     </Modal>
 
+    <!-- Delete confirm modal -->
+    <Modal v-if="isDeleteConfirmOpen" @close="closeDeleteConfirm">
+      <template v-slot:body>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900 sm:p-8">
+          <h5 class="font-semibold text-gray-800 text-lg dark:text-white/90">
+            Xác nhận xóa
+          </h5>
+          <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            {{ deleteConfirmMessage }}
+          </p>
+          <p class="mt-2 text-sm text-red-600 dark:text-red-400">
+            Hành động này không thể hoàn tác.
+          </p>
+          <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              @click="closeDeleteConfirm"
+              :disabled="deletingCompanies"
+              class="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              @click="confirmDelete"
+              :disabled="deletingCompanies"
+              class="inline-flex h-10 items-center justify-center rounded-lg bg-red-500 px-4 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+            >
+              {{ deletingCompanies ? 'Đang xóa...' : 'Xóa' }}
+            </button>
+          </div>
+        </div>
+      </template>
+    </Modal>
+
     <!-- Import Modal -->
     <Modal v-if="isImportModalOpen" @close="closeImportModal">
       <template v-slot:body>
         <div
-          class="no-scrollbar relative w-full max-w-[560px] max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6 lg:p-8"
+          class="no-scrollbar relative w-full max-w-[640px] max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6 lg:p-8"
         >
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -1005,6 +1063,64 @@
           </div>
 
           <div class="space-y-4">
+            <div
+              v-if="importMode === 'companies'"
+              class="rounded-xl border border-brand-200 bg-brand-50/60 p-4 dark:border-brand-800/60 dark:bg-brand-950/20"
+            >
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                Đơn vị import doanh nghiệp
+              </p>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Doanh nghiệp mới sẽ gán vào đơn vị của bạn. Hệ thống kiểm tra trùng trong phạm vi các đơn vị bên dưới.
+              </p>
+
+              <div v-if="loadingImportScope" class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                Đang tải thông tin đơn vị...
+              </div>
+
+              <div v-else-if="!importScopePrimaryUnit" class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+                Tài khoản chưa được gán đơn vị. Vui lòng liên hệ quản trị viên.
+              </div>
+
+              <div v-else class="mt-3 space-y-3">
+                <div class="flex items-start gap-3 rounded-lg border border-white/80 bg-white/80 px-3 py-2.5 dark:border-gray-700 dark:bg-gray-900/60">
+                  <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
+                    {{ importScopePrimaryUnit.cap }}
+                  </span>
+                  <div class="min-w-0">
+                    <p class="text-xs font-medium uppercase tracking-wide text-brand-700 dark:text-brand-300">
+                      Đơn vị gán import
+                    </p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                      {{ importScopePrimaryUnit.ma }} — {{ importScopePrimaryUnit.ten }}
+                    </p>
+                  </div>
+                </div>
+
+                <div v-if="importScopeChildUnits.length > 0">
+                  <p class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Đơn vị con trực thuộc ({{ importScopeChildUnits.length }})
+                  </p>
+                  <ul class="max-h-36 space-y-2 overflow-y-auto pr-1">
+                    <li
+                      v-for="unit in importScopeChildUnits"
+                      :key="unit.id"
+                      class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 dark:border-gray-700 dark:bg-gray-900/40"
+                    >
+                      <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                        {{ unit.cap }}
+                      </span>
+                      <div class="min-w-0">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">
+                          {{ unit.ma }} — {{ unit.ten }}
+                        </p>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
             <button
               v-if="importMode === 'companies'"
               type="button"
@@ -1015,8 +1131,155 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              {{ downloadingTemplate ? 'Đang tải mẫu...' : 'Tải file mẫu Excel' }}
+              {{ downloadingTemplate ? 'Đang tải mẫu...' : 'Tải file mẫu Excel (hệ thống)' }}
             </button>
+
+            <div
+              v-if="importMode === 'companies'"
+              class="rounded-xl border border-gray-200 p-4 dark:border-gray-700 space-y-3"
+            >
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Config mẫu (example)
+                </label>
+                <select
+                  v-model="selectedImportConfigId"
+                  class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  @change="applySelectedImportConfig"
+                >
+                  <option :value="''">— Chọn config mẫu —</option>
+                  <option v-for="config in importExampleConfigs" :key="config.id" :value="config.id">
+                    {{ config.name }}
+                  </option>
+                </select>
+                <p v-if="selectedImportConfigDescription" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  {{ selectedImportConfigDescription }}
+                </p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Format đã lưu (cá nhân)
+                </label>
+                <div class="flex flex-col gap-2 sm:flex-row">
+                  <select
+                    v-model="selectedImportFormatId"
+                    class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                    @change="applySelectedImportFormat"
+                  >
+                    <option :value="''">— Chọn format —</option>
+                    <option v-for="format in importFormats" :key="format.id" :value="format.id">
+                      {{ format.name }}
+                    </option>
+                  </select>
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center rounded-lg border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                    :disabled="!selectedImportFormatId || deletingImportFormat"
+                    @click="handleDeleteImportFormat"
+                  >
+                    {{ deletingImportFormat ? 'Đang xóa...' : 'Xóa' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div class="flex-1">
+                  <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Tên format mới
+                  </label>
+                  <input
+                    v-model="importFormatName"
+                    type="text"
+                    placeholder="VD: Template Sở KHĐT"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  />
+                </div>
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+                  :disabled="!importFormatName.trim() || savingImportFormat"
+                  @click="handleSaveImportFormat"
+                >
+                  {{ savingImportFormat ? 'Đang lưu...' : 'Lưu format' }}
+                </button>
+              </div>
+
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                Hàng bắt đầu đọc dữ liệu
+              </label>
+              <input
+                v-model.number="importStartRow"
+                type="number"
+                min="1"
+                max="1000"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              />
+              <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                Template đơn vị: header hàng 12, dữ liệu từ hàng 13. Đọc liên tục đến khi gặp hàng trống.
+              </p>
+
+              <button
+                type="button"
+                class="mt-3 text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
+                @click="showImportColumnConfig = !showImportColumnConfig"
+              >
+                {{ showImportColumnConfig ? 'Ẩn' : 'Cấu hình' }} ánh xạ cột
+              </button>
+
+              <div v-if="showImportColumnConfig" class="mt-3 max-h-64 overflow-y-auto space-y-2 pr-1">
+                <div
+                  v-for="(label, key) in importColumnLabels"
+                  :key="key"
+                  class="grid grid-cols-[1fr_88px] gap-2 items-center"
+                >
+                  <span class="text-xs text-gray-600 dark:text-gray-400">{{ label }}</span>
+                  <input
+                    v-model="importColumnInputs[key]"
+                    type="text"
+                    placeholder="—"
+                    class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  />
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 pt-1 sticky bottom-0 bg-white dark:bg-gray-900">
+                  Để trống = không map cột. Cột đơn (C), merge (D-G), cột đôi (AA-AB).
+                </p>
+              </div>
+
+              <button
+                type="button"
+                class="mt-3 text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
+                @click="showImportExtensions = !showImportExtensions"
+              >
+                {{ showImportExtensions ? 'Ẩn' : 'Cấu hình' }} mở rộng xử lý giá trị
+              </button>
+
+              <div v-if="showImportExtensions" class="mt-3 space-y-2">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Mặc định giữ nguyên giá trị Excel. Chỉ xử lý khi chọn mở rộng bên dưới.
+                </p>
+                <div
+                  v-for="item in availableImportValueExtensions"
+                  :key="item.field"
+                  class="grid grid-cols-[1fr_1fr] gap-2 items-center"
+                >
+                  <span class="text-xs text-gray-600 dark:text-gray-400">{{ item.fieldLabel }}</span>
+                  <select
+                    v-model="importValueExtensions[item.field]"
+                    class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  >
+                    <option value="">Không xử lý</option>
+                    <option
+                      v-for="ext in item.extensions"
+                      :key="ext.key"
+                      :value="ext.key"
+                    >
+                      {{ ext.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
             <p v-else class="text-sm text-gray-600 dark:text-gray-300">
               Cột yêu cầu: <strong>mã số doanh nghiệp</strong> | <strong>tên doanh nghiệp</strong> | <strong>định danh (1/0)</strong>.
@@ -1047,6 +1310,11 @@
               </p>
             </div>
 
+            <ImportLoadingSkeleton
+              v-if="importMode === 'companies' && importing && !importResult"
+              :subtitle="importQueuedMessage"
+            />
+
             <div
               v-if="importResult"
               class="rounded-lg border p-4 text-sm dark:border-gray-700"
@@ -1054,7 +1322,7 @@
             >
               <p class="font-medium text-gray-800 dark:text-gray-200">
                 <template v-if="importMode === 'companies'">
-                  {{ importResult.imported }} mới · {{ importResult.updated }} cập nhật · {{ importResult.failed }} lỗi
+                  {{ importResult.imported }} mới · {{ importResultDuplicates }} trùng · {{ importResult.failed }} lỗi
                 </template>
                 <template v-else>
                   {{ importResult.updated }} cập nhật định danh · {{ importResult.failed }} lỗi
@@ -1089,55 +1357,76 @@
               :disabled="!selectedImportFile || importing"
               class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
             >
-              {{ importing ? 'Đang nhập...' : 'Nhập dữ liệu' }}
+              {{ importSubmitLabel }}
             </button>
           </div>
         </div>
       </template>
     </Modal>
+
+    <ImportHistoryModal :open="isImportHistoryOpen" @close="isImportHistoryOpen = false" />
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import Modal from '@/components/profile/Modal.vue'
 import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
+import ImportLoadingSkeleton from '@/components/companies/ImportLoadingSkeleton.vue'
+import ImportHistoryModal from '@/components/companies/ImportHistoryModal.vue'
+import IndustryCategorySelect from '@/components/forms/FormElements/IndustryCategorySelect.vue'
+import ProvinceSelect from '@/components/forms/FormElements/ProvinceSelect.vue'
+import WardSelect from '@/components/forms/FormElements/WardSelect.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
-import type { Company, CapitalMemberInput, CompanyImportResult, CompanyIdentityBulkItem } from '@/types/company'
+import type { Company, CapitalMemberInput, CompanyImportResult, CompanyIdentityBulkItem, CompanyImportColumnMap, CompanyImportValueExtensionField, CompanyImportFormat, CompanyImportExampleConfig } from '@/types/company'
+import { COMPANY_IMPORT_COLUMN_LABELS } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
+import { columnsToDisplay, parseColumnInput } from '@/utils/excelColumns'
 import { companyService } from '@/services/companyService'
-import { locationService } from '@/services/locationService'
 import { settingService, type CompanyImportDocs } from '@/services/settingService'
+import { orgUnitService } from '@/services/orgUnitService'
+import { buildOrgUnitOptions, resolveImportScopeOrgUnits } from '@/types/orgUnit'
+import type { OrgUnit, ImportScopeOrgUnit } from '@/types/orgUnit'
 import { useAuthStore } from '@/stores/auth'
 import { useCompanyStatuses } from '@/composables/useCompanyStatuses'
-import type { ProvinceItem, WardItem } from '@/types/location'
+import { useCompanyBusinessTypes } from '@/composables/useCompanyBusinessTypes'
+import { useImportNotifications } from '@/composables/useImportNotifications'
 
 const store = useCompaniesStore()
 const auth = useAuthStore()
 const router = useRouter()
 const { identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()
-const currentPageTitle = ref('Danh sách doanh nghiệp')
+const { businessTypes, loadBusinessTypes } = useCompanyBusinessTypes()
 
 const filter = reactive({
   search: '',
   trangThai: '',
-  loaiHinhDN: '',
+  loaiHinhId: '' as string | number,
+  donViId: '' as string | number,
   quanHuyen: '',
   phuongXa: '',
 })
 
+const orgUnits = ref<OrgUnit[]>([])
+const orgUnitOptions = computed(() => buildOrgUnitOptions(orgUnits.value))
+const importScopeOrgUnits = ref<ImportScopeOrgUnit[]>([])
+const loadingImportScope = ref(false)
+
 const isEditModalOpen = ref(false)
 const isStatusModalOpen = ref(false)
 const isImportModalOpen = ref(false)
+const isImportHistoryOpen = ref(false)
 const selectedCompanyId = ref<number | null>(null)
 const statusCompanyId = ref<number | null>(null)
 const exporting = ref(false)
 const importing = ref(false)
+const importQueuedMessage = ref<string | null>(null)
+const activeImportJobId = ref<number | null>(null)
+let importPollTimer: ReturnType<typeof setInterval> | null = null
 const downloadingTemplate = ref(false)
 const savingStatus = ref(false)
 const selectedImportFile = ref<File | null>(null)
@@ -1145,17 +1434,31 @@ const importFileInput = ref<HTMLInputElement | null>(null)
 const importResult = ref<CompanyImportResult | null>(null)
 const importError = ref<string | null>(null)
 const importMode = ref<'companies' | 'identity'>('companies')
+const importStartRow = ref(13)
+const importColumnInputs = reactive<Record<string, string>>({})
+const importColumnLabels = reactive<Record<string, string>>({})
+const importValueExtensions = reactive<Record<string, string>>({})
+const availableImportValueExtensions = ref<CompanyImportValueExtensionField[]>([])
+const showImportColumnConfig = ref(false)
+const showImportExtensions = ref(false)
+const importFormats = ref<CompanyImportFormat[]>([])
+const importExampleConfigs = ref<CompanyImportExampleConfig[]>([])
+const selectedImportConfigId = ref<number | ''>('')
+const selectedImportFormatId = ref<number | ''>('')
+const importFormatName = ref('')
+const savingImportFormat = ref(false)
+const deletingImportFormat = ref(false)
 const selectedCompanyIds = ref<number[]>([])
+const isDeleteConfirmOpen = ref(false)
+const pendingDeleteIds = ref<number[]>([])
+const deletingCompanies = ref(false)
 const companyImportDocs = ref<CompanyImportDocs | null>(null)
 const filterProvinceCode = ref('')
 const filterWardCode = ref('')
-const editProvinceSearch = ref('')
-const editWardSearch = ref('')
-const editProvinces = ref<ProvinceItem[]>([])
-const editWards = ref<WardItem[]>([])
+const editProvinceSelectRef = ref<InstanceType<typeof ProvinceSelect> | null>(null)
+const editWardSelectRef = ref<InstanceType<typeof WardSelect> | null>(null)
 const editSelectedProvinceCode = ref('')
 const editSelectedWardCode = ref('')
-const loadingEditWards = ref(false)
 
 const editForm = reactive<Company>({
   id: 0,
@@ -1177,11 +1480,12 @@ const editForm = reactive<Company>({
   chuSoHuuTen: '',
   nguoiDaiDienID: null,
   chuSoHuuID: null,
-  nganhNgheKDChinh: '',
-  nganhNgheKD: '',
+  nganhNgheKDChinh: null as string | null,
+  nganhNgheKD: [] as string[],
   ngayCap: '',
   ngayDangKyThayDoi: '',
-  loaiHinhDN: 'Công ty TNHH',
+  loaiHinhDN: null,
+  dnLoaiHinhId: null as number | null,
   soLuongLaoDong: 0,
   dsThanhVienGopVon: [] as CapitalMemberInput[],
   dsCoDong: '',
@@ -1200,15 +1504,15 @@ const statusModalShowReason = computed(() => requiresReason(statusModal.dnTrangT
 const isAllSelectedOnPage = computed(
   () => store.companies.length > 0 && store.companies.every((company) => selectedCompanyIds.value.includes(company.id)),
 )
-const visibleEditProvinces = computed(() => {
-  const keyword = editProvinceSearch.value.trim().toLowerCase()
-  if (!keyword) return editProvinces.value
-  return editProvinces.value.filter((province) => province.fullName.toLowerCase().includes(keyword))
-})
-const visibleEditWards = computed(() => {
-  const keyword = editWardSearch.value.trim().toLowerCase()
-  if (!keyword) return editWards.value
-  return editWards.value.filter((ward) => ward.fullName.toLowerCase().includes(keyword))
+const deleteConfirmMessage = computed(() => {
+  const count = pendingDeleteIds.value.length
+  if (count <= 1) {
+    const company = store.companies.find((item) => item.id === pendingDeleteIds.value[0])
+    return company
+      ? `Bạn có chắc muốn xóa doanh nghiệp "${company.tenDoanhNghiep}"?`
+      : 'Bạn có chắc muốn xóa doanh nghiệp này?'
+  }
+  return `Bạn có chắc muốn xóa ${count} doanh nghiệp đã chọn?`
 })
 const importModalTitle = computed(() =>
   importMode.value === 'companies'
@@ -1217,9 +1521,301 @@ const importModalTitle = computed(() =>
 )
 const importModalDescription = computed(() =>
   importMode.value === 'companies'
-    ? 'Tải file .xlsx theo mẫu, hệ thống sẽ tạo mới hoặc cập nhật theo mã số DN'
+    ? 'Upload file Excel từ đơn vị. Import chạy nền — bạn sẽ nhận thông báo khi hoàn tất.'
     : 'File gồm 3 cột: mã số doanh nghiệp | tên doanh nghiệp | định danh (1/0)',
 )
+
+const importSubmitLabel = computed(() => {
+  if (!importing.value) {
+    return 'Nhập dữ liệu'
+  }
+  if (importMode.value === 'companies' && activeImportJobId.value) {
+    return 'Đang xử lý nền...'
+  }
+  return 'Đang nhập...'
+})
+
+const importResultDuplicates = computed(() => {
+  if (!importResult.value) return 0
+  return importResult.value.duplicates ?? importResult.value.updated ?? 0
+})
+
+const importScopePrimaryUnit = computed(() => importScopeOrgUnits.value.find((unit) => unit.isPrimary) ?? null)
+const importScopeChildUnits = computed(() => importScopeOrgUnits.value.filter((unit) => !unit.isPrimary))
+
+function openImportHistory() {
+  isImportHistoryOpen.value = true
+}
+
+async function loadImportScopeOrgUnits() {
+  loadingImportScope.value = true
+  try {
+    const donViId = auth.user?.donViId ?? null
+    const donVi = auth.user?.donVi ?? null
+
+    if (!donViId) {
+      importScopeOrgUnits.value = resolveImportScopeOrgUnits(null, donVi, orgUnits.value)
+      return
+    }
+
+    let directChildren: OrgUnit[] = []
+    try {
+      const response = await orgUnitService.getList({ parentId: donViId, isActive: true, perPage: 200 })
+      directChildren = response.data
+    } catch {
+      directChildren = []
+    }
+
+    importScopeOrgUnits.value = resolveImportScopeOrgUnits(donViId, donVi, orgUnits.value, directChildren)
+  } finally {
+    loadingImportScope.value = false
+  }
+}
+
+const {
+  trackImportJob,
+  clearImportJob,
+  onImportCompleted,
+  onImportFailed,
+} = useImportNotifications()
+
+function stopImportPolling() {
+  if (importPollTimer) {
+    clearInterval(importPollTimer)
+    importPollTimer = null
+  }
+}
+
+function finishQueuedImport(result: CompanyImportResult) {
+  importing.value = false
+  importQueuedMessage.value = null
+  activeImportJobId.value = null
+  clearImportJob()
+  stopImportPolling()
+  importResult.value = result
+  void store.fetchCompanies(currentCompanyFilters())
+}
+
+function finishQueuedImportFailed(message: string) {
+  importing.value = false
+  importQueuedMessage.value = null
+  activeImportJobId.value = null
+  clearImportJob()
+  stopImportPolling()
+  importError.value = message
+}
+
+function startImportPolling(importJobId: number) {
+  stopImportPolling()
+  importPollTimer = setInterval(async () => {
+    try {
+      const status = await companyService.getImportJobStatus(importJobId)
+      if (status.status === 'completed' && status.result) {
+        finishQueuedImport(status.result)
+      } else if (status.status === 'failed') {
+        finishQueuedImportFailed(status.errorMessage ?? 'Import thất bại.')
+      }
+    } catch {
+      // ignore transient polling errors
+    }
+  }, 4000)
+}
+const selectedImportConfigDescription = computed(() => {
+  const config = importExampleConfigs.value.find((item) => item.id === selectedImportConfigId.value)
+  return config?.description ?? ''
+})
+
+function applyImportMapping(options: {
+  startRow: number
+  columnMap: CompanyImportColumnMap
+  valueExtensions?: Record<string, string>
+}) {
+  importStartRow.value = options.startRow
+  applyImportColumnMap(options.columnMap, COMPANY_IMPORT_COLUMN_LABELS)
+  resetImportValueExtensions(availableImportValueExtensions.value)
+  for (const [field, preset] of Object.entries(options.valueExtensions ?? {})) {
+    if (field in importValueExtensions) {
+      importValueExtensions[field] = preset
+    }
+  }
+}
+
+function applyImportFormat(format: CompanyImportFormat) {
+  applyImportMapping({
+    startRow: format.startRow,
+    columnMap: format.columnMap,
+    valueExtensions: format.valueExtensions,
+  })
+}
+
+function applyImportExampleConfig(config: CompanyImportExampleConfig) {
+  applyImportMapping({
+    startRow: config.startRow,
+    columnMap: config.columnMap,
+    valueExtensions: config.valueExtensions,
+  })
+}
+
+function applySelectedImportConfig() {
+  if (selectedImportConfigId.value === '') return
+  const config = importExampleConfigs.value.find((item) => item.id === selectedImportConfigId.value)
+  if (config) {
+    selectedImportFormatId.value = ''
+    importFormatName.value = ''
+    applyImportExampleConfig(config)
+  }
+}
+
+function applySelectedImportFormat() {
+  if (selectedImportFormatId.value === '') return
+  const format = importFormats.value.find((item) => item.id === selectedImportFormatId.value)
+  if (format) {
+    selectedImportConfigId.value = ''
+    applyImportFormat(format)
+    importFormatName.value = format.name
+  }
+}
+
+async function loadImportExampleConfigs() {
+  try {
+    importExampleConfigs.value = await companyService.getImportConfigs()
+    if (importExampleConfigs.value.length > 0) {
+      selectedImportConfigId.value = importExampleConfigs.value[0].id
+      applyImportExampleConfig(importExampleConfigs.value[0])
+    }
+  } catch {
+    importExampleConfigs.value = []
+  }
+}
+
+async function loadImportFormats() {
+  try {
+    importFormats.value = await companyService.getImportFormats()
+  } catch {
+    importFormats.value = []
+  }
+}
+
+async function handleSaveImportFormat() {
+  const name = importFormatName.value.trim()
+  if (!name) return
+
+  savingImportFormat.value = true
+  importError.value = null
+  try {
+    const saved = await companyService.saveImportFormat({
+      name,
+      startRow: importStartRow.value,
+      columnMap: buildImportColumnMap(),
+      valueExtensions: buildImportValueExtensions(),
+    })
+    await loadImportFormats()
+    selectedImportFormatId.value = saved.id
+    importFormatName.value = saved.name
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    importError.value = axiosErr.response?.data?.message ?? 'Lưu format thất bại.'
+  } finally {
+    savingImportFormat.value = false
+  }
+}
+
+async function handleDeleteImportFormat() {
+  if (!selectedImportFormatId.value) return
+
+  deletingImportFormat.value = true
+  importError.value = null
+  try {
+    await companyService.deleteImportFormat(Number(selectedImportFormatId.value))
+    selectedImportFormatId.value = ''
+    importFormatName.value = ''
+    await loadImportFormats()
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    importError.value = axiosErr.response?.data?.message ?? 'Xóa format thất bại.'
+  } finally {
+    deletingImportFormat.value = false
+  }
+}
+
+function buildImportColumnMap(): CompanyImportColumnMap {
+  const map: CompanyImportColumnMap = {}
+  for (const [key, input] of Object.entries(importColumnInputs)) {
+    const columns = parseColumnInput(input)
+    if (columns.length > 0) {
+      map[key] = columns
+    }
+  }
+  return map
+}
+
+function buildImportValueExtensions(): Record<string, string> {
+  const extensions: Record<string, string> = {}
+  for (const [field, preset] of Object.entries(importValueExtensions)) {
+    if (preset) {
+      extensions[field] = preset
+    }
+  }
+  return extensions
+}
+
+function resetImportValueExtensions(fields: CompanyImportValueExtensionField[]) {
+  Object.keys(importValueExtensions).forEach((key) => delete importValueExtensions[key])
+  for (const item of fields) {
+    importValueExtensions[item.field] = ''
+  }
+}
+
+function applyImportColumnMap(columnMap: CompanyImportColumnMap, labels?: Record<string, string>) {
+  Object.keys(importColumnInputs).forEach((key) => delete importColumnInputs[key])
+  Object.keys(importColumnLabels).forEach((key) => delete importColumnLabels[key])
+
+  const allLabels = labels ?? {}
+
+  for (const [key, label] of Object.entries(allLabels)) {
+    importColumnLabels[key] = label
+    importColumnInputs[key] = key in columnMap ? columnsToDisplay(columnMap[key]) : ''
+  }
+}
+
+async function loadImportColumnMapDefaults() {
+  try {
+    const config = await companyService.getImportColumnMap()
+    importStartRow.value = config.startRow
+    applyImportColumnMap(config.columnMap, config.columnLabels)
+    availableImportValueExtensions.value = config.availableValueExtensions ?? []
+    resetImportValueExtensions(availableImportValueExtensions.value)
+  } catch {
+    availableImportValueExtensions.value = [
+      {
+        field: 'nganhNgheKDChinh',
+        fieldLabel: 'Ngành nghề KD chính',
+        extensions: [{ key: 'vsic_code', label: 'Trích mã VSIC (vd: 2391:Mô tả → 2391)' }],
+      },
+      {
+        field: 'nganhNgheKD',
+        fieldLabel: 'Ngành nghề KD',
+        extensions: [{ key: 'vsic_code_list', label: 'Trích mã VSIC từ danh sách (phân tách , hoặc ;)' }],
+      },
+    ]
+    resetImportValueExtensions(availableImportValueExtensions.value)
+    applyImportColumnMap(
+      {
+        tt: ['B'],
+        maSoDoanhNghiep: ['C'],
+        tenDoanhNghiep: ['D', 'E', 'F', 'G'],
+        diaChi: ['H', 'I', 'J', 'K', 'L', 'M', 'N'],
+        quanHuyen: ['O', 'P', 'Q'],
+        phuongXa: ['R', 'S', 'T'],
+        vonDieuLe: ['U', 'V', 'W'],
+        trangThai: ['X', 'Y', 'Z'],
+      },
+      COMPANY_IMPORT_COLUMN_LABELS,
+    )
+  }
+}
+
+const pageSizeOptions = [15, 25, 50, 100] as const
 
 const visiblePages = computed(() => {
   const pages: number[] = []
@@ -1247,10 +1843,17 @@ const nextPage = () => {
   if (store.page < store.totalPages) store.setPage(store.page + 1)
 }
 
+const handlePerPageChange = (event: Event) => {
+  const value = Number((event.target as HTMLSelectElement).value)
+  if (!Number.isFinite(value) || value <= 0) return
+  store.setPerPage(value)
+}
+
 const resetFilters = () => {
   filter.search = ''
   filter.trangThai = ''
-  filter.loaiHinhDN = ''
+  filter.loaiHinhId = ''
+  filter.donViId = ''
   filter.quanHuyen = ''
   filter.phuongXa = ''
   filterProvinceCode.value = ''
@@ -1322,7 +1925,8 @@ const handleBulkDinhDanh = async (daCapNhatDinhDanh: boolean) => {
 const currentCompanyFilters = () => ({
   search: filter.search,
   trangThai: filter.trangThai,
-  loaiHinhDN: filter.loaiHinhDN,
+  loaiHinhId: filter.loaiHinhId || undefined,
+  donViId: filter.donViId || undefined,
   quanHuyen: filter.quanHuyen,
   phuongXa: filter.phuongXa,
   page: store.page,
@@ -1346,7 +1950,8 @@ const handleExport = async () => {
     const blob = await companyService.exportExcel({
       search: filter.search,
       trangThai: filter.trangThai,
-      loaiHinhDN: filter.loaiHinhDN,
+      loaiHinhId: filter.loaiHinhId || undefined,
+      donViId: filter.donViId || undefined,
       quanHuyen: filter.quanHuyen,
       phuongXa: filter.phuongXa,
     })
@@ -1358,11 +1963,20 @@ const handleExport = async () => {
   }
 }
 
-const openImportModal = (mode: 'companies' | 'identity') => {
+const openImportModal = async (mode: 'companies' | 'identity') => {
   importMode.value = mode
   selectedImportFile.value = null
   importResult.value = null
   importError.value = null
+  showImportColumnConfig.value = true
+  showImportExtensions.value = false
+  selectedImportFormatId.value = ''
+  selectedImportConfigId.value = ''
+  importFormatName.value = ''
+  if (mode === 'companies') {
+    await loadImportColumnMapDefaults()
+    await Promise.all([loadImportExampleConfigs(), loadImportFormats(), loadImportScopeOrgUnits()])
+  }
   isImportModalOpen.value = true
 }
 
@@ -1399,18 +2013,38 @@ const handleImport = async () => {
   importing.value = true
   importError.value = null
   importResult.value = null
+  importQueuedMessage.value = null
 
   try {
-    const result = importMode.value === 'companies'
-      ? await companyService.importExcel(selectedImportFile.value)
-      : await companyService.importIdentityExcel(selectedImportFile.value)
+    if (importMode.value === 'companies') {
+      const queued = await companyService.importExcel(selectedImportFile.value, {
+        startRow: importStartRow.value,
+        columnMap: buildImportColumnMap(),
+        valueExtensions: buildImportValueExtensions(),
+      })
+
+      activeImportJobId.value = queued.importJobId
+      trackImportJob(queued.importJobId)
+      importQueuedMessage.value = `File "${queued.originalFilename ?? selectedImportFile.value.name}" đã được đưa vào hàng đợi.`
+      startImportPolling(queued.importJobId)
+      return
+    }
+
+    const result = await companyService.importIdentityExcel(selectedImportFile.value)
     importResult.value = result
     await store.fetchCompanies(currentCompanyFilters())
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { message?: string } } }
     importError.value = axiosErr.response?.data?.message ?? 'Nhập Excel thất bại.'
-  } finally {
     importing.value = false
+    activeImportJobId.value = null
+    importQueuedMessage.value = null
+    clearImportJob()
+    stopImportPolling()
+  } finally {
+    if (importMode.value === 'identity') {
+      importing.value = false
+    }
   }
 }
 
@@ -1418,47 +2052,26 @@ const goToMapUpdate = (company: Company) => {
   router.push(`/companies/${company.id}/map`)
 }
 
-const loadEditProvinces = async () => {
-  editProvinces.value = await locationService.getProvinces()
-}
-
-const loadCompanyImportDocs = async () => {
-  try {
-    companyImportDocs.value = await settingService.getCompanyImportDocs()
-  } catch {
-    companyImportDocs.value = {
-      companyImportTemplateUrl: '/api/doanh-nghiep/export-template',
-      companyIdentityImportTemplateUrl: '/api/doanh-nghiep/export-template-dinh-danh',
+const waitForRefData = async <T,>(getter: () => T[], attempts = 40, delayMs = 50): Promise<T[]> => {
+  for (let i = 0; i < attempts; i++) {
+    const data = getter()
+    if (data.length > 0) {
+      return data
     }
+    await new Promise((resolve) => setTimeout(resolve, delayMs))
   }
-}
-
-const loadEditWards = async () => {
-  if (!editSelectedProvinceCode.value) {
-    editWards.value = []
-    editSelectedWardCode.value = ''
-    return
-  }
-
-  loadingEditWards.value = true
-  try {
-    editWards.value = await locationService.getWardsByProvince(editSelectedProvinceCode.value)
-    if (!editWards.value.some((ward) => ward.code === editSelectedWardCode.value)) {
-      editSelectedWardCode.value = ''
-    }
-  } finally {
-    loadingEditWards.value = false
-  }
+  return getter()
 }
 
 watch(editSelectedProvinceCode, () => {
-  const province = editProvinces.value.find((item) => item.code === editSelectedProvinceCode.value)
+  const provinces = editProvinceSelectRef.value?.provinces ?? []
+  const province = provinces.find((item) => item.code === editSelectedProvinceCode.value)
   editForm.quanHuyen = province?.fullName ?? ''
-  void loadEditWards()
 })
 
 watch(editSelectedWardCode, () => {
-  const ward = editWards.value.find((item) => item.code === editSelectedWardCode.value)
+  const wards = editWardSelectRef.value?.wards ?? []
+  const ward = wards.find((item) => item.code === editSelectedWardCode.value)
   editForm.phuongXa = ward?.fullName ?? ''
 })
 
@@ -1466,6 +2079,8 @@ const openEditModal = async (company: Company) => {
   selectedCompanyId.value = company.id
   Object.assign(editForm, {
     ...company,
+    nganhNgheKDChinh: company.nganhNgheKDChinh ?? null,
+    nganhNgheKD: Array.isArray(company.nganhNgheKD) ? [...company.nganhNgheKD] : [],
     nguoiDaiDienTen: company.nguoiDaiDienTen || company.nguoiDaiDien?.fullName || '',
     ngaySinhNguoiDaiDien: company.ngaySinhNguoiDaiDien || company.nguoiDaiDien?.birthday || '',
     chuSoHuuTen: company.chuSoHuuTen || company.chuSoHuu?.fullName || '',
@@ -1477,18 +2092,21 @@ const openEditModal = async (company: Company) => {
       memberId: m.memberId ?? null,
     })),
   })
-  await loadEditProvinces()
-  const matchedProvince = editProvinces.value.find((item) => item.fullName === (company.quanHuyen ?? ''))
+
+  editSelectedProvinceCode.value = ''
+  editSelectedWardCode.value = ''
+  isEditModalOpen.value = true
+  await nextTick()
+
+  const provinces = await waitForRefData(() => editProvinceSelectRef.value?.provinces ?? [])
+  const matchedProvince = provinces.find((item) => item.fullName === (company.quanHuyen ?? ''))
   editSelectedProvinceCode.value = matchedProvince?.code ?? ''
-  if (!matchedProvince) {
-    editWards.value = []
-    editSelectedWardCode.value = ''
-  } else {
-    await loadEditWards()
-    const matchedWard = editWards.value.find((item) => item.fullName === (company.phuongXa ?? ''))
+
+  if (matchedProvince) {
+    const wards = await waitForRefData(() => editWardSelectRef.value?.wards ?? [])
+    const matchedWard = wards.find((item) => item.fullName === (company.phuongXa ?? ''))
     editSelectedWardCode.value = matchedWard?.code ?? ''
   }
-  isEditModalOpen.value = true
 }
 
 const closeEditModal = () => {
@@ -1496,9 +2114,17 @@ const closeEditModal = () => {
   selectedCompanyId.value = null
   editSelectedProvinceCode.value = ''
   editSelectedWardCode.value = ''
-  editProvinceSearch.value = ''
-  editWardSearch.value = ''
-  editWards.value = []
+}
+
+const loadCompanyImportDocs = async () => {
+  try {
+    companyImportDocs.value = await settingService.getCompanyImportDocs()
+  } catch {
+    companyImportDocs.value = {
+      companyImportTemplateUrl: '/api/doanh-nghiep/export-template',
+      companyIdentityImportTemplateUrl: '/api/doanh-nghiep/export-template-dinh-danh',
+    }
+  }
 }
 
 const openStatusModal = (company: Company) => {
@@ -1542,10 +2168,50 @@ const handleUpdate = async () => {
   closeEditModal()
 }
 
-const handleDelete = async (id: number) => {
-  if (confirm('Bạn có chắc muốn xóa doanh nghiệp này?')) {
-    await store.deleteCompany(id)
+const handleDelete = (id: number) => {
+  pendingDeleteIds.value = [id]
+  isDeleteConfirmOpen.value = true
+}
+
+const openBulkDeleteConfirm = () => {
+  if (selectedCompanyIds.value.length === 0) return
+  pendingDeleteIds.value = [...selectedCompanyIds.value]
+  isDeleteConfirmOpen.value = true
+}
+
+const closeDeleteConfirm = () => {
+  if (deletingCompanies.value) return
+  isDeleteConfirmOpen.value = false
+  pendingDeleteIds.value = []
+}
+
+const confirmDelete = async () => {
+  if (pendingDeleteIds.value.length === 0) return
+
+  deletingCompanies.value = true
+  try {
+    const idsToDelete = [...pendingDeleteIds.value]
+
+    if (idsToDelete.length === 1) {
+      await store.deleteCompany(idsToDelete[0])
+    } else {
+      const result = await store.bulkDeleteCompanies(idsToDelete)
+      if (result.failed > 0 && result.deleted === 0) {
+        store.error = result.errors[0]?.message ?? 'Xóa doanh nghiệp thất bại.'
+        return
+      }
+    }
+
+    selectedCompanyIds.value = selectedCompanyIds.value.filter(
+      (id) => !idsToDelete.includes(id),
+    )
+    isDeleteConfirmOpen.value = false
+    pendingDeleteIds.value = []
     await store.fetchCompanies(currentCompanyFilters())
+  } catch {
+    // store.error already set
+  } finally {
+    deletingCompanies.value = false
   }
 }
 
@@ -1564,6 +2230,14 @@ const addEditMember = () => {
 
 const removeEditMember = (idx: number) => {
   editForm.dsThanhVienGopVon?.splice(idx, 1)
+}
+
+const formatNganhNgheChinh = (company: Company) => {
+  if (!company.nganhNgheKDChinh) return '-'
+  if (company.nganhNgheKDChinhTen) {
+    return `${company.nganhNgheKDChinh} - ${company.nganhNgheKDChinhTen}`
+  }
+  return company.nganhNgheKDChinh
 }
 
 const statusClass = (status: string | null) => {
@@ -1586,7 +2260,7 @@ const dinhDanhClass = (isUpdated?: boolean) =>
 
 // Fetch when filters or page changes
 watch(
-  () => [filter.search, filter.trangThai, filter.loaiHinhDN, filter.quanHuyen, filter.phuongXa, store.page],
+  () => [filter.search, filter.trangThai, filter.loaiHinhId, filter.donViId, filter.quanHuyen, filter.phuongXa, store.page, store.perPage],
   () => {
     selectedCompanyIds.value = []
     store.fetchCompanies(currentCompanyFilters())
@@ -1595,8 +2269,62 @@ watch(
 )
 
 onMounted(async () => {
-  await loadStatuses()
-  await loadCompanyImportDocs()
+  orgUnits.value = await orgUnitService.getTree()
+  await Promise.all([loadStatuses(), loadBusinessTypes(), loadCompanyImportDocs()])
   store.fetchCompanies(currentCompanyFilters())
+
+  onImportCompleted((payload) => {
+    if (payload.result) {
+      finishQueuedImport(payload.result)
+    }
+  })
+
+  onImportFailed((payload) => {
+    finishQueuedImportFailed(payload.message ?? 'Import thất bại.')
+  })
+})
+
+onUnmounted(() => {
+  stopImportPolling()
 })
 </script>
+
+<style scoped>
+.companies-page {
+  overscroll-behavior: contain;
+}
+
+.companies-table-scroll :deep(.flex-none) {
+  padding: 0.125rem 0.375rem;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+
+.companies-table-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+}
+
+.companies-table-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.companies-table-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: rgb(203 213 225);
+}
+
+.companies-table-scroll::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.dark .companies-table-scroll {
+  scrollbar-color: rgb(71 85 105) transparent;
+}
+
+.dark .companies-table-scroll::-webkit-scrollbar-thumb {
+  background-color: rgb(71 85 105);
+}
+</style>

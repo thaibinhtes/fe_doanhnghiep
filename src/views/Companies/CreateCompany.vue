@@ -57,20 +57,19 @@
               />
             </div>
 
-            <!-- Tỉnh / Thành (ProvinceCode) -->
+            <!-- Tỉnh / Thành -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Tỉnh / Thành
               </label>
-              <select
+              <ProvinceSelect
+                ref="provinceSelectRef"
                 v-model="selectedProvinceCode"
-                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              >
-                <option value="">Chọn tỉnh/thành</option>
-                <option v-for="province in provinces" :key="province.code" :value="province.code">
-                  {{ province.code }} - {{ province.fullName }}
-                </option>
-              </select>
+                placeholder="Chọn tỉnh/thành"
+                search-placeholder="Tìm tỉnh/thành..."
+                empty-label="Chọn tỉnh/thành"
+                show-code
+              />
             </div>
 
             <!-- Xã / Phường -->
@@ -78,16 +77,14 @@
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Xã / Phường
               </label>
-              <select
+              <WardSelect
+                ref="wardSelectRef"
                 v-model="selectedWardCode"
-                :disabled="!selectedProvinceCode || loadingWards"
-                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              >
-                <option value="">{{ loadingWards ? 'Đang tải...' : 'Chọn xã/phường' }}</option>
-                <option v-for="ward in wards" :key="ward.code" :value="ward.code">
-                  {{ ward.fullName }}
-                </option>
-              </select>
+                :province-code="selectedProvinceCode"
+                placeholder="Chọn xã/phường"
+                search-placeholder="Tìm phường/xã..."
+                empty-label="Chọn xã/phường"
+              />
             </div>
 
             <!-- Kinh độ (long) -->
@@ -132,26 +129,43 @@
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ formatVND(form.vonDieuLe) }}</p>
             </div>
 
-            <!-- Trạng thái -->
+            <!-- Định danh -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Trạng thái định danh
+                Định danh
+              </label>
+              <div class="relative z-20 bg-transparent">
+                <select
+                  v-model="form.daCapNhatDinhDanh"
+                  class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                >
+                  <option :value="false">Chưa định danh</option>
+                  <option :value="true">Định danh</option>
+                </select>
+                <span
+                  class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
+                >
+                  <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- Trạng thái doanh nghiệp -->
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Trạng thái doanh nghiệp
               </label>
               <div class="relative z-20 bg-transparent">
                 <select
                   v-model.number="form.dnTrangThaiId"
                   class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                 >
-                  <optgroup label="Định danh">
-                    <option v-for="status in identityStatuses" :key="status.id" :value="status.id">
-                      {{ status.ten }}
-                    </option>
-                  </optgroup>
-                  <optgroup label="Trạng thái khác">
-                    <option v-for="status in otherStatuses" :key="status.id" :value="status.id">
-                      {{ status.ten }}
-                    </option>
-                  </optgroup>
+                  <option :value="null">Chọn trạng thái (tuỳ chọn)</option>
+                  <option v-for="status in otherStatuses" :key="status.id" :value="status.id">
+                    {{ status.ten }}
+                  </option>
                 </select>
                 <span
                   class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
@@ -183,13 +197,13 @@
               </label>
               <div class="relative z-20 bg-transparent">
                 <select
-                  v-model="form.loaiHinhDN"
+                  v-model="form.dnLoaiHinhId"
                   class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                 >
-                  <option value="Công ty TNHH">Công ty TNHH</option>
-                  <option value="Công ty Cổ phần">Công ty Cổ phần</option>
-                  <option value="Doanh nghiệp tư nhân">Doanh nghiệp tư nhân</option>
-                  <option value="Hợp danh">Hợp danh</option>
+                  <option :value="null">Chọn loại hình</option>
+                  <option v-for="type in businessTypes" :key="type.id" :value="type.id">
+                    {{ type.ten }}
+                  </option>
                 </select>
                 <span
                   class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
@@ -307,11 +321,9 @@
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Ngành nghề kinh doanh chính
               </label>
-              <input
-                type="text"
+              <IndustryCategorySelect
                 v-model="form.nganhNgheKDChinh"
-                placeholder="Nhập ngành nghề kinh doanh chính"
-                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                placeholder="Tìm và chọn mã ngành nghề chính"
               />
             </div>
 
@@ -320,11 +332,10 @@
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Ngành nghề kinh doanh
               </label>
-              <textarea
+              <IndustryCategorySelect
                 v-model="form.nganhNgheKD"
-                rows="3"
-                placeholder="Nhập các ngành nghề kinh doanh"
-                class="dark:bg-dark-900 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                multiple
+                placeholder="Tìm và chọn các mã ngành nghề"
               />
             </div>
 
@@ -446,23 +457,25 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
 import { useCompanyStatuses } from '@/composables/useCompanyStatuses'
-import { locationService } from '@/services/locationService'
+import { useCompanyBusinessTypes } from '@/composables/useCompanyBusinessTypes'
 import { formatVND } from '@/utils/formatters'
 import type { CapitalMemberInput } from '@/types/company'
-import type { ProvinceItem, WardItem } from '@/types/location'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import IndustryCategorySelect from '@/components/forms/FormElements/IndustryCategorySelect.vue'
+import ProvinceSelect from '@/components/forms/FormElements/ProvinceSelect.vue'
+import WardSelect from '@/components/forms/FormElements/WardSelect.vue'
 
 const router = useRouter()
 const store = useCompaniesStore()
-const { identityStatuses, otherStatuses, defaultStatusId, requiresReason, loadStatuses } = useCompanyStatuses()
+const { identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()
+const { businessTypes, loadBusinessTypes, defaultTypeId } = useCompanyBusinessTypes()
 const currentPageTitle = 'Tạo doanh nghiệp'
-const provinces = ref<ProvinceItem[]>([])
-const wards = ref<WardItem[]>([])
+const provinceSelectRef = ref<InstanceType<typeof ProvinceSelect> | null>(null)
+const wardSelectRef = ref<InstanceType<typeof WardSelect> | null>(null)
 const selectedProvinceCode = ref('')
 const selectedWardCode = ref('')
-const loadingWards = ref(false)
 
 const form = reactive({
   maSoDoanhNghiep: '',
@@ -473,17 +486,18 @@ const form = reactive({
   long: null as number | null,
   lat: null as number | null,
   vonDieuLe: '',
+  daCapNhatDinhDanh: false,
   dnTrangThaiId: null as number | null,
   lyDoTrangThai: '',
   dienThoai: '',
   nguoiDaiDienTen: '',
   ngaySinhNguoiDaiDien: '',
   chuSoHuuTen: '',
-  nganhNgheKDChinh: '',
-  nganhNgheKD: '',
+  nganhNgheKDChinh: null as string | null,
+  nganhNgheKD: [] as string[],
   ngayCap: '',
   ngayDangKyThayDoi: '',
-  loaiHinhDN: 'Công ty TNHH',
+  dnLoaiHinhId: null as number | null,
   soLuongLaoDong: 0,
   dsThanhVienGopVon: [] as CapitalMemberInput[],
   dsCoDong: '',
@@ -492,49 +506,40 @@ const form = reactive({
 
 const showReasonField = computed(() => requiresReason(form.dnTrangThaiId))
 
-watch(defaultStatusId, (value) => {
-  if (value && !form.dnTrangThaiId) {
-    form.dnTrangThaiId = value
-  }
-})
+const isOtherStatusSelected = computed(() =>
+  otherStatuses.value.some((status) => status.id === form.dnTrangThaiId),
+)
 
-const loadProvinces = async () => {
-  provinces.value = await locationService.getProvinces()
-}
+const buildSubmitPayload = () => {
+  const payload = { ...form }
 
-const loadWards = async () => {
-  if (!selectedProvinceCode.value) {
-    wards.value = []
-    selectedWardCode.value = ''
-    return
-  }
-
-  loadingWards.value = true
-  try {
-    wards.value = await locationService.getWardsByProvince(selectedProvinceCode.value)
-    if (!wards.value.some((ward) => ward.code === selectedWardCode.value)) {
-      selectedWardCode.value = ''
+  if (!isOtherStatusSelected.value) {
+    const ma = form.daCapNhatDinhDanh ? 'da_dinh_danh' : 'chua_dinh_danh'
+    const status = identityStatuses.value.find((item) => item.ma === ma)
+    if (status) {
+      payload.dnTrangThaiId = status.id
     }
-  } finally {
-    loadingWards.value = false
   }
+
+  return payload
 }
 
 watch(selectedProvinceCode, () => {
-  const province = provinces.value.find((item) => item.code === selectedProvinceCode.value)
+  const provinces = provinceSelectRef.value?.provinces ?? []
+  const province = provinces.find((item) => item.code === selectedProvinceCode.value)
   form.quanHuyen = province?.fullName ?? ''
-  void loadWards()
 })
 
 watch(selectedWardCode, () => {
-  const ward = wards.value.find((item) => item.code === selectedWardCode.value)
+  const wards = wardSelectRef.value?.wards ?? []
+  const ward = wards.find((item) => item.code === selectedWardCode.value)
   form.phuongXa = ward?.fullName ?? ''
 })
 
 onMounted(async () => {
-  await Promise.all([loadStatuses(), loadProvinces()])
-  if (defaultStatusId.value) {
-    form.dnTrangThaiId = defaultStatusId.value
+  await Promise.all([loadStatuses(), loadBusinessTypes()])
+  if (defaultTypeId.value) {
+    form.dnLoaiHinhId = defaultTypeId.value
   }
 })
 
@@ -552,7 +557,7 @@ const removeMember = (idx: number) => {
 
 const handleSubmit = async () => {
   try {
-    await store.createCompany({ ...form })
+    await store.createCompany(buildSubmitPayload())
     router.push('/companies')
   } catch {
     // Error already handled in store

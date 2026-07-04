@@ -1,14 +1,12 @@
 <template>
   <header
-    class="sticky top-0 flex w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b"
+    class="flex h-14 w-full shrink-0 items-center border-gray-200 bg-white z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b"
   >
-    <div class="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
-      <div
-        class="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4"
-      >
+    <div class="flex h-full w-full items-center justify-between gap-2 px-3 lg:px-6">
+      <div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <button
           @click="handleToggle"
-          class="flex items-center justify-center w-10 h-10 text-gray-500 border-gray-200 rounded-lg z-99999 dark:border-gray-800 dark:text-gray-400 lg:h-11 lg:w-11 lg:border"
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 dark:border-gray-800 dark:text-gray-400 lg:h-10 lg:w-10"
           :class="[
             isMobileOpen
               ? 'lg:bg-transparent dark:lg:bg-transparent bg-gray-100 dark:bg-gray-800'
@@ -47,17 +45,45 @@
             />
           </svg>
         </button>
-        <!-- <HeaderLogo /> -->
-        <!-- <SearchBar /> -->
+        <nav
+          v-if="showPageNav"
+          class="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden"
+          aria-label="Breadcrumb"
+        >
+          <router-link
+            to="/dashboard"
+            class="hidden shrink-0 text-xs text-gray-500 transition hover:text-gray-700 sm:inline dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            Home
+          </router-link>
+          <svg
+            v-if="pageTitle"
+            class="hidden shrink-0 text-gray-400 sm:block"
+            width="14"
+            height="14"
+            viewBox="0 0 17 16"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M6.0765 12.667L10.2432 8.50033L6.0765 4.33366"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <h1
+            v-if="pageTitle"
+            class="truncate text-sm font-semibold text-gray-800 dark:text-white/90 sm:text-base"
+          >
+            {{ pageTitle }}
+          </h1>
+        </nav>
       </div>
 
-      <div
-        :class="[isApplicationMenuOpen ? 'flex' : 'hidden']"
-        class="items-center justify-between w-full gap-4 px-5 py-4 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none"
-      >
-        <div class="flex items-center gap-2 2xsm:gap-3">
-          <InstallAppButton />
-        </div>
+      <div class="flex shrink-0 items-center gap-2 2xsm:gap-3">
+        <InstallAppButton />
         <UserMenu />
       </div>
     </div>
@@ -65,12 +91,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useSidebar } from '@/composables/useSidebar'
 import UserMenu from './header/UserMenu.vue'
 import InstallAppButton from '../common/InstallAppButton.vue'
 
+const route = useRoute()
 const { toggleSidebar, toggleMobileSidebar, isMobileOpen } = useSidebar()
+
+const guestRoutes = new Set(['Signin', 'Signup', '404 Error'])
+
+const pageTitle = computed(() => {
+  const title = route.meta.title
+  return typeof title === 'string' ? title : ''
+})
+
+const showPageNav = computed(() => !guestRoutes.has(String(route.name ?? '')))
 
 const handleToggle = () => {
   if (window.innerWidth >= 1024) {
@@ -78,11 +115,5 @@ const handleToggle = () => {
   } else {
     toggleMobileSidebar()
   }
-}
-
-const isApplicationMenuOpen = ref(false)
-
-const toggleApplicationMenu = () => {
-  isApplicationMenuOpen.value = !isApplicationMenuOpen.value
 }
 </script>

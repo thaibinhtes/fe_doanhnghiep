@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import { TableIcon, UserGroupIcon, SettingsIcon, PieChartIcon } from '@/icons'
+import { TableIcon, UserGroupIcon, SettingsIcon, PieChartIcon, LayoutDashboardIcon } from '@/icons'
 
 export interface MenuSubItem {
   name: string
@@ -21,6 +21,17 @@ export interface MenuGroup {
 }
 
 export const menuConfig: MenuGroup[] = [
+  {
+    title: 'Tổng quan',
+    items: [
+      {
+        name: 'Dashboard',
+        icon: LayoutDashboardIcon,
+        path: '/dashboard',
+        permission: 'menu.dashboard',
+      },
+    ],
+  },
   {
     title: 'Danh mục',
     items: [
@@ -70,14 +81,39 @@ export const menuConfig: MenuGroup[] = [
         name: 'Quản lý địa chính',
         icon: SettingsIcon,
         path: '/admin/cadastral',
-        permission: 'menu.admin.roles',
+        permission: 'menu.admin.cadastral',
+      },
+      {
+        name: 'Loại hình doanh nghiệp',
+        icon: SettingsIcon,
+        path: '/admin/business-types',
+        permission: 'menu.admin.business-types',
+      },
+      {
+        name: 'Danh mục ngành nghề',
+        icon: SettingsIcon,
+        path: '/admin/industry-categories',
+        permission: 'menu.admin.industry-categories',
+      },
+      {
+        name: 'Quản lý đơn vị',
+        icon: SettingsIcon,
+        path: '/admin/org-units',
+        permission: 'menu.admin.org-units',
+      },
+      {
+        name: 'Quản lý người dùng',
+        icon: SettingsIcon,
+        path: '/admin/users',
+        permission: 'menu.admin.users',
       },
     ],
   },
 ]
 
 export const routePermissions: Record<string, string> = {
-  '/': 'menu.companies.list',
+  '/': 'menu.dashboard',
+  '/dashboard': 'menu.dashboard',
   '/companies': 'menu.companies.list',
   '/companies/map': 'menu.companies.map',
   '/companies/identity': 'menu.companies.identity',
@@ -88,7 +124,11 @@ export const routePermissions: Record<string, string> = {
   '/reports/summary': 'menu.reports.summary',
   '/reports/progress': 'menu.reports.progress',
   '/admin/roles': 'menu.admin.roles',
-  '/admin/cadastral': 'menu.admin.roles',
+  '/admin/cadastral': 'menu.admin.cadastral',
+  '/admin/business-types': 'menu.admin.business-types',
+  '/admin/industry-categories': 'menu.admin.industry-categories',
+  '/admin/org-units': 'menu.admin.org-units',
+  '/admin/users': 'menu.admin.users',
 }
 
 export function getRoutePermission(path: string): string | undefined {
@@ -101,4 +141,20 @@ export function getRoutePermission(path: string): string | undefined {
   }
 
   return undefined
+}
+
+/** First menu route the user may open (stable order from routePermissions). */
+export function getFirstAccessibleRoute(hasPermission: (key: string) => boolean): string {
+  const paths = Object.keys(routePermissions)
+    .filter((path) => path !== '/')
+    .sort((a, b) => a.length - b.length)
+
+  for (const path of paths) {
+    const permission = routePermissions[path]
+    if (permission && hasPermission(permission)) {
+      return path
+    }
+  }
+
+  return '/dashboard'
 }

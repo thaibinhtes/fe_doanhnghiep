@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { getRoutePermission } from '@/config/menu'
+import { getRoutePermission, getFirstAccessibleRoute } from '@/config/menu'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,15 +10,19 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'Companies Index',
-      component: () => import('../views/Companies.vue'),
-      meta: { title: 'Danh sách doanh nghiệp', requiresAuth: true },
+      redirect: '/dashboard',
+    },
+    {
+      path: '/dashboard',
+      name: 'Dashboard',
+      component: () => import('../views/Dashboard.vue'),
+      meta: { title: 'Dashboard', requiresAuth: true },
     },
     {
       path: '/companies',
       name: 'Companies',
       component: () => import('../views/Companies.vue'),
-      meta: { title: 'Danh sách doanh nghiệp', requiresAuth: true },
+      meta: { title: 'Danh sách doanh nghiệp', requiresAuth: true, fillViewport: true },
     },
     {
       path: '/companies/create',
@@ -67,6 +71,30 @@ const router = createRouter({
       name: 'Cadastral Management',
       component: () => import('../views/Admin/CadastralManagement.vue'),
       meta: { title: 'Quản lý địa chính', requiresAuth: true },
+    },
+    {
+      path: '/admin/business-types',
+      name: 'Company Business Types',
+      component: () => import('../views/Admin/CompanyBusinessTypes.vue'),
+      meta: { title: 'Loại hình doanh nghiệp', requiresAuth: true },
+    },
+    {
+      path: '/admin/industry-categories',
+      name: 'Industry Categories',
+      component: () => import('../views/Admin/IndustryCategories.vue'),
+      meta: { title: 'Danh mục ngành nghề', requiresAuth: true },
+    },
+    {
+      path: '/admin/org-units',
+      name: 'Org Units',
+      component: () => import('../views/Admin/OrgUnits.vue'),
+      meta: { title: 'Quản lý đơn vị', requiresAuth: true },
+    },
+    {
+      path: '/admin/users',
+      name: 'User Management',
+      component: () => import('../views/Admin/UserManagement.vue'),
+      meta: { title: 'Quản lý người dùng', requiresAuth: true },
     },
     {
       path: '/companies/statuses',
@@ -124,8 +152,13 @@ router.beforeEach(async (to, _from, next) => {
     await auth.init()
   }
 
+  const homePath = () => getFirstAccessibleRoute((key) => auth.hasPermission(key))
+
   if (to.meta.guestOnly && auth.isAuthenticated) {
-    return next({ path: '/' })
+    if (to.query.error === 'no-permission') {
+      return next()
+    }
+    return next({ path: homePath() })
   }
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
@@ -134,6 +167,11 @@ router.beforeEach(async (to, _from, next) => {
 
   const requiredPermission = getRoutePermission(to.path)
   if (requiredPermission && auth.isAuthenticated && !auth.hasPermission(requiredPermission)) {
+    const fallback = homePath()
+    if (fallback !== to.path) {
+      return next({ path: fallback })
+    }
+    await auth.logout()
     return next({ path: '/signin', query: { error: 'no-permission' } })
   }
 

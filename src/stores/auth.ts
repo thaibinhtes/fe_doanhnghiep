@@ -9,6 +9,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUser | null>(null)
   const token = ref<string | null>(localStorage.getItem(TOKEN_KEY))
   const loading = ref(false)
+  const initializing = ref(false)
   const initialized = ref(false)
   const error = ref<string | null>(null)
 
@@ -75,13 +76,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function init() {
     if (initialized.value) return
-    loading.value = true
+    initializing.value = true
     try {
       if (token.value) {
         await fetchUser()
       }
     } finally {
-      loading.value = false
+      initializing.value = false
       initialized.value = true
     }
   }
@@ -103,6 +104,7 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     token,
     loading,
+    initializing,
     initialized,
     error,
     isAuthenticated,

@@ -14,7 +14,7 @@ export const useCompaniesStore = defineStore('companies', () => {
     last_page: 1,
     links: [],
     path: '',
-    per_page: 15,
+    per_page: 50,
     to: 1,
     total: 0,
   })
@@ -49,8 +49,15 @@ export const useCompaniesStore = defineStore('companies', () => {
         chuSoHuuTen: c.chuSoHuuTen || c.chuSoHuu?.fullName || null,
         nguoiDaiDien: c.nguoiDaiDien || null,
         chuSoHuu: c.chuSoHuu || null,
-        nganhNgheKDChinh: c.nganhNgheKDChinh || '-',
-        nganhNgheKD: c.nganhNgheKD || '-',
+        donViId: c.donViId ?? null,
+        donVi: c.donVi ?? null,
+        createdByUserId: c.createdByUserId ?? null,
+        createdByUser: c.createdByUser ?? null,
+        nganhNgheKDChinh: c.nganhNgheKDChinh ?? null,
+        nganhNgheKDChinhTen: c.nganhNgheKDChinhTen ?? null,
+        nganhNgheKD: Array.isArray(c.nganhNgheKD) ? c.nganhNgheKD : [],
+        nganhNgheKDList: c.nganhNgheKDList ?? [],
+        nganhNgheKDTen: c.nganhNgheKDTen ?? null,
         ngayCap: c.ngayCap || '-',
         ngayDangKyThayDoi: c.ngayDangKyThayDoi || '-',
         loaiHinhDN: c.loaiHinhDN || '-',
@@ -120,6 +127,27 @@ export const useCompaniesStore = defineStore('companies', () => {
     }
   }
 
+  async function bulkDeleteCompanies(ids: number[]) {
+    loading.value = true
+    error.value = null
+    try {
+      const result = await companyService.bulkDelete(ids)
+      const failedIds = new Set(result.errors.map((err) => err.id))
+      const deletedIds = ids.filter((id) => !failedIds.has(id))
+      if (deletedIds.length > 0) {
+        companies.value = companies.value.filter((c) => !deletedIds.includes(c.id))
+        meta.value.total = Math.max(0, meta.value.total - result.deleted)
+      }
+      return result
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Không thể xóa doanh nghiệp'
+      console.error('bulkDeleteCompanies error:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function updateCompanyDinhDanh(id: number, daCapNhatDinhDanh: boolean) {
     loading.value = true
     error.value = null
@@ -148,6 +176,11 @@ export const useCompaniesStore = defineStore('companies', () => {
     meta.value.current_page = newPage
   }
 
+  function setPerPage(size: number) {
+    meta.value.per_page = size
+    meta.value.current_page = 1
+  }
+
   function resetError() {
     error.value = null
   }
@@ -166,7 +199,9 @@ export const useCompaniesStore = defineStore('companies', () => {
     updateCompany,
     updateCompanyDinhDanh,
     deleteCompany,
+    bulkDeleteCompanies,
     setPage,
+    setPerPage,
     resetError,
   }
 })
