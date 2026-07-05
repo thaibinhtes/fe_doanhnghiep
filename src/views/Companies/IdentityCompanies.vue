@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb :pageTitle="currentPageTitle" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Định danh công ty">
         <div class="mb-4 flex flex-col gap-3">
@@ -97,14 +96,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { useCompaniesStore } from '@/stores/companies'
 
 const store = useCompaniesStore()
-const currentPageTitle = computed(() => 'Định danh công ty')
 const search = ref('')
 const dinhDanhStatus = ref<'true' | 'false' | ''>('')
 

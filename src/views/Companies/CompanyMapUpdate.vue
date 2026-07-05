@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb :pageTitle="currentPageTitle" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Cập nhật tọa độ trên bản đồ">
         <div v-if="loading" class="flex h-[520px] items-center justify-center">
@@ -97,7 +96,6 @@ import 'leaflet/dist/leaflet.css'
 import { defaultMarkerIcon, setupLeafletIcons } from '@/utils/leafletIcons'
 import { companyService } from '@/services/companyService'
 import type { Company } from '@/types/company'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 
@@ -108,8 +106,6 @@ const SELECTED_ZOOM = 16
 setupLeafletIcons()
 
 const route = useRoute()
-const currentPageTitle = 'Cập nhật tọa độ'
-
 const mapContainer = ref<HTMLElement | null>(null)
 const company = ref<Company | null>(null)
 const loading = ref(true)

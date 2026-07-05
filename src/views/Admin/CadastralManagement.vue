@@ -1,7 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb pageTitle="Quản lý địa chính" />
-
     <div class="space-y-5 sm:space-y-6">
       <div class="flex flex-wrap gap-2 border-b border-gray-200 pb-1 dark:border-gray-700">
         <button
@@ -258,7 +256,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 import { locationService } from '@/services/locationService'

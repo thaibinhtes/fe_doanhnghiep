@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb :pageTitle="currentPageTitle" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Danh sách thành viên" className="overflow-hidden">
         <!-- Filters -->
@@ -107,17 +106,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import MemberItem from '@/components/members/MemberItem.vue'
 import { useMembersStore } from '@/stores/members'
 
 const membersStore = useMembersStore()
 const search = ref('')
-
-const currentPageTitle = computed(() => 'Danh sách thành viên')
 
 onMounted(() => {
   membersStore.fetchMembers()

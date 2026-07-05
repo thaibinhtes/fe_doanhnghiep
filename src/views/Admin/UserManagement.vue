@@ -1,7 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb pageTitle="Quản lý người dùng" />
-
     <div class="space-y-5">
       <ComponentCard title="Danh sách người dùng">
         <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -175,7 +173,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import Modal from '@/components/profile/Modal.vue'
 import { useAuthStore } from '@/stores/auth'

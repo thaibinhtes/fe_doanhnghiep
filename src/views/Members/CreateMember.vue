@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb :pageTitle="currentPageTitle" />
     <div class="mx-auto w-full max-w-3xl">
       <ComponentCard title="Thêm thành viên mới">
         <form @submit.prevent="handleSubmit" class="space-y-5">
@@ -118,18 +117,15 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from 'vue'
+import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { useMembersStore } from '@/stores/members'
 import { formatVND } from '@/utils/formatters'
 
 const router = useRouter()
 const membersStore = useMembersStore()
-
-const currentPageTitle = computed(() => 'Thêm thành viên mới')
 
 const form = reactive({
   cccd: '',

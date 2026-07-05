@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb pageTitle="Báo cáo tổng hợp" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Báo cáo tổng hợp trạng thái doanh nghiệp">
         <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -70,7 +69,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { reportService } from '@/services/reportService'
 import { useAuthStore } from '@/stores/auth'

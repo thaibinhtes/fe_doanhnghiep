@@ -1,6 +1,7 @@
 import api from './api'
 import type {
   IndustryCategory,
+  IndustryCategoryImportResult,
   IndustryCategoryListResponse,
   IndustryCategoryPayload,
 } from '@/types/industryCategory'
@@ -146,5 +147,27 @@ export const industryCategoryService = {
 
   async delete(id: number): Promise<void> {
     await api.delete(`${BASE_PATH}/${id}`)
+  },
+
+  async exportCatalog(): Promise<Blob> {
+    const { data } = await api.get<Blob>(`${BASE_PATH}-export`, {
+      responseType: 'blob',
+    })
+    return data
+  },
+
+  async importCatalog(file: File): Promise<IndustryCategoryImportResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const { data } = await api.post<{ data: IndustryCategoryImportResult; message: string }>(
+      `${BASE_PATH}-import`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120_000,
+      },
+    )
+    return data.data
   },
 }

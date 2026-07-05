@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb :pageTitle="currentPageTitle" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Thông tin doanh nghiệp">
         <form @submit.prevent="handleSubmit" class="space-y-6">
@@ -460,7 +459,6 @@ import { useCompanyStatuses } from '@/composables/useCompanyStatuses'
 import { useCompanyBusinessTypes } from '@/composables/useCompanyBusinessTypes'
 import { formatVND } from '@/utils/formatters'
 import type { CapitalMemberInput } from '@/types/company'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import IndustryCategorySelect from '@/components/forms/FormElements/IndustryCategorySelect.vue'
@@ -471,7 +469,6 @@ const router = useRouter()
 const store = useCompaniesStore()
 const { identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()
 const { businessTypes, loadBusinessTypes, defaultTypeId } = useCompanyBusinessTypes()
-const currentPageTitle = 'Tạo doanh nghiệp'
 const provinceSelectRef = ref<InstanceType<typeof ProvinceSelect> | null>(null)
 const wardSelectRef = ref<InstanceType<typeof WardSelect> | null>(null)
 const selectedProvinceCode = ref('')

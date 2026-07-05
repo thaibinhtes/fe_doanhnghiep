@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb pageTitle="Quản lý loại hình doanh nghiệp" />
     <div class="space-y-5 sm:space-y-6">
       <div class="grid gap-4 sm:grid-cols-3">
         <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
@@ -182,7 +181,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import Modal from '@/components/ui/Modal.vue'
 import { businessTypeService } from '@/services/businessTypeService'

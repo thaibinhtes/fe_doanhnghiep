@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb pageTitle="Dashboard" />
     <div class="space-y-5 sm:space-y-6">
       <div v-if="loading" class="flex items-center justify-center py-16">
         <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
@@ -63,7 +62,6 @@
 import { computed, onMounted, ref } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { dashboardService } from '@/services/dashboardService'
 import type { DashboardData } from '@/types/dashboard'

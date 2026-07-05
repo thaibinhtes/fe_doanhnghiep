@@ -39,3 +39,10 @@ export const CAP_LABELS: Record<number, string> = {
   4: 'Cấp 4',
   5: 'Cấp 5',
 }
+
+export interface IndustryCategoryImportResult {
+  imported: number
+  updated: number
+  failed: number
+  errors: Array<{ row: number; message: string }>
+}

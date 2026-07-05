@@ -1,7 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb pageTitle="Danh mục ngành nghề (VSIC)" />
-
     <div class="space-y-4">
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center gap-2 rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 dark:border-neutral-600 dark:bg-neutral-900">
@@ -44,6 +42,29 @@
         >
           Thu gọn tất cả
         </button>
+        <button
+          v-if="canSyncCatalog"
+          type="button"
+          class="h-8 rounded border border-emerald-500 bg-white px-3 text-sm text-emerald-700 hover:bg-emerald-50 dark:border-emerald-400 dark:bg-neutral-800 dark:text-emerald-300"
+          :disabled="exportingCatalog"
+          @click="handleExportCatalog"
+        >
+          {{ exportingCatalog ? 'Đang xuất...' : 'Xuất Excel' }}
+        </button>
+        <label
+          v-if="canSyncCatalog"
+          class="inline-flex h-8 cursor-pointer items-center rounded border border-amber-500 bg-white px-3 text-sm text-amber-700 hover:bg-amber-50 dark:border-amber-400 dark:bg-neutral-800 dark:text-amber-300"
+          :class="{ 'pointer-events-none opacity-50': importingCatalog }"
+        >
+          {{ importingCatalog ? 'Đang nhập...' : 'Nhập Excel' }}
+          <input
+            ref="importCatalogInput"
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            class="hidden"
+            @change="handleImportCatalog"
+          />
+        </label>
         <button
           v-if="canManage"
           type="button"
@@ -236,11 +257,10 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import Modal from '@/components/ui/Modal.vue'
 import { industryCategoryService } from '@/services/industryCategoryService'
 import { useAuthStore } from '@/stores/auth'
-import type { IndustryCategory, IndustryCategoryPayload } from '@/types/industryCategory'
+import type { IndustryCategory, IndustryCategoryImportResult, IndustryCategoryPayload } from '@/types/industryCategory'
 import { CAP_LABELS } from '@/types/industryCategory'
 import {
   applyCap1Collapse,
@@ -252,9 +272,15 @@ import {
 
 const auth = useAuthStore()
 const canManage = computed(() => auth.hasPermission('feature.industry-categories.manage'))
+const canSyncCatalog = computed(
+  () => auth.hasPermission('feature.industry-categories.sync') && auth.user?.donVi?.ma === 'ROOT',
+)
 
 const loading = ref(true)
 const saving = ref(false)
+const exportingCatalog = ref(false)
+const importingCatalog = ref(false)
+const importCatalogInput = ref<HTMLInputElement | null>(null)
 const isModalOpen = ref(false)
 const editingId = ref<number | null>(null)
 const error = ref<string | null>(null)
@@ -461,6 +487,56 @@ const handleDelete = async (item: IndustryCategory) => {
     await loadAll()
   } catch (err: unknown) {
     alert(err instanceof Error ? err.message : 'Không thể xóa')
+  }
+}
+
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+const handleExportCatalog = async () => {
+  exportingCatalog.value = true
+  try {
+    const blob = await industryCategoryService.exportCatalog()
+    downloadBlob(blob, `danh-muc-nganh-nghe_${new Date().toISOString().slice(0, 10)}.xlsx`)
+    message.value = 'Xuất danh mục ngành nghề thành công'
+  } catch (err: unknown) {
+    const apiMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+    alert(apiMessage || 'Xuất Excel thất bại')
+  } finally {
+    exportingCatalog.value = false
+  }
+}
+
+const handleImportCatalog = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  if (!confirm(`Import danh mục ngành nghề từ file "${file.name}"? Dữ liệu trùng mã sẽ được cập nhật.`)) {
+    input.value = ''
+    return
+  }
+
+  importingCatalog.value = true
+  try {
+    const result: IndustryCategoryImportResult = await industryCategoryService.importCatalog(file)
+    message.value = `${result.imported} mới · ${result.updated} cập nhật · ${result.failed} lỗi`
+    if (result.errors.length > 0) {
+      alert(result.errors.slice(0, 5).map((err) => `Dòng ${err.row}: ${err.message}`).join('\n'))
+    }
+    await loadAll()
+  } catch (err: unknown) {
+    const apiMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+    alert(apiMessage || 'Import thất bại')
+  } finally {
+    importingCatalog.value = false
+    input.value = ''
   }
 }
 

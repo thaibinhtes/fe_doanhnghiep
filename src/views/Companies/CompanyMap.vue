@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb :pageTitle="currentPageTitle" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Bản đồ doanh nghiệp">
         <div class="mb-4 rounded-lg border border-gray-200 p-3 dark:border-gray-700">
@@ -150,14 +149,11 @@ import 'leaflet/dist/leaflet.css'
 import { defaultMarkerIcon, setupLeafletIcons } from '@/utils/leafletIcons'
 import { companyService } from '@/services/companyService'
 import type { Company } from '@/types/company'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 
 const FOCUS_ZOOM = 16
-
-const currentPageTitle = 'Bản đồ doanh nghiệp'
 
 setupLeafletIcons()
 

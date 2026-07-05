@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb pageTitle="Báo cáo tiến độ định danh" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Biểu theo dõi tiến độ định danh tổ chức cho doanh nghiệp">
         <div class="mb-5 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/40">
@@ -171,7 +170,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { reportService } from '@/services/reportService'
 import { useAuthStore } from '@/stores/auth'

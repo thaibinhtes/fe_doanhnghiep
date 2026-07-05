@@ -1,6 +1,5 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb pageTitle="Phân quyền theo vai trò" />
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Quản lý phân quyền">
         <div v-if="loading" class="flex items-center justify-center py-12">
@@ -88,7 +87,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { roleService } from '@/services/roleService'
 import type { PermissionGroup, RoleItem } from '@/types/auth'
