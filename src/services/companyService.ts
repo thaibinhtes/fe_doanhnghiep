@@ -210,8 +210,7 @@ export const companyService = {
       `${BASE_PATH}/import`,
       formData,
       {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 120_000,
+        timeout: 600_000,
       },
     )
     return data.data
@@ -294,7 +293,7 @@ export const companyService = {
       `${BASE_PATH}/import-dinh-danh`,
       formData,
       {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 600_000,
       },
     )
     return data.data

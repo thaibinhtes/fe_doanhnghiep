@@ -164,8 +164,7 @@ export const industryCategoryService = {
       `${BASE_PATH}-import`,
       formData,
       {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 120_000,
+        timeout: 600_000,
       },
     )
     return data.data

@@ -13,13 +13,16 @@ const api = axios.create({
 if (import.meta.env.DEV) {
   console.info('[API] prefix =', API_PREFIX)
 }
-
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    // FormData: let browser set multipart boundary (manual Content-Type breaks upload → 422)
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type']
     }
     return config
   },
