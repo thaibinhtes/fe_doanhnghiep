@@ -1818,7 +1818,7 @@ async function loadImportColumnMapDefaults() {
   }
 }
 
-const pageSizeOptions = [15, 25, 50, 100] as const
+const pageSizeOptions = [15, 25, 50, 100, 200, 300, 400, 500] as const
 
 const visiblePages = computed(() => {
   const pages: number[] = []
