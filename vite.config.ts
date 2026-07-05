@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
   if (mode === 'development') {
     console.info(`[vite] API prefix = ${apiPrefix}, proxy → ${proxyTarget}`)
     console.info(
-      `[vite] Socket proxy /socket.io → ${env.VITE_SOCKET_PROXY_TARGET || 'http://127.0.0.1:6001'}`,
+      `[vite] Socket proxy /socket.io → ${env.VITE_SOCKET_PROXY_TARGET || 'http://127.0.0.1:3001'}`,
     )
   }
 
@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
           },
         },
         '/socket.io': {
-          target: env.VITE_SOCKET_PROXY_TARGET || 'http://127.0.0.1:6001',
+          target: env.VITE_SOCKET_PROXY_TARGET || 'http://127.0.0.1:3001',
           changeOrigin: true,
           ws: true,
         },
