@@ -88,6 +88,7 @@ export interface Company {
   dsCoDong?: string | null
   loaiDN: string | null
   donViId?: number | null
+  donViTen?: string | null
   donVi?: {
     id: number
     ma: string

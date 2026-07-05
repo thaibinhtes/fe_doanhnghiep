@@ -268,6 +268,7 @@
               <div class="flex-none w-[50px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">TT</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Mã số doanh nghiệp</div>
               <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tên doanh nghiệp</div>
+              <div class="flex-none w-[180px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Đơn vị trực thuộc</div>
               <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Địa chỉ trụ sở chính</div>
               <div class="flex-none w-[120px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Quận / Huyện</div>
               <div class="flex-none w-[120px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Phường/xã</div>
@@ -307,6 +308,7 @@
                 <div class="flex-none w-[50px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ index + 1 }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.maSoDoanhNghiep }}</div>
                 <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tenDoanhNghiep }}</div>
+                <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ formatDonVi(company) }}</div>
                 <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.diaChi }}</div>
                 <div class="flex-none w-[120px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.quanHuyen }}</div>
                 <div class="flex-none w-[120px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.phuongXa }}</div>
@@ -2238,6 +2240,13 @@ const formatNganhNgheChinh = (company: Company) => {
     return `${company.nganhNgheKDChinh} - ${company.nganhNgheKDChinhTen}`
   }
   return company.nganhNgheKDChinh
+}
+
+const formatDonVi = (company: Company) => {
+  const ten = company.donViTen ?? company.donVi?.ten
+  if (!ten) return '-'
+  const ma = company.donVi?.ma
+  return ma && ma !== 'ROOT' ? `${ma} — ${ten}` : ten
 }
 
 const statusClass = (status: string | null) => {

@@ -1,8 +1,8 @@
-# Production nginx — qldn.zsellers.com (FE + proxy /api → backend :8000)
+# Production nginx — qldn.zsellers.com (FE + proxy /api → backend Docker :8000)
 #
-# Lỗi "upload_max_filesize=2M" KHÔNG do FE nginx — do PHP backend chưa 520M.
-# Kiểm tra: curl -s https://qldn.zsellers.com/api/health | jq .data.php
-# Phải thấy uploadMaxFilesize: "520M". Nếu vẫn 2M → rebuild backend Docker.
+# Trước deploy: cd backend && sudo sh docker/deploy.sh
+# (script dừng php artisan serve cũ trên :8000, chạy Docker 520M cùng port)
+# Kiểm tra: curl -s http://127.0.0.1:8000/health.php → "520M"
 #
 # Reload: sudo nginx -t && sudo systemctl reload nginx
 
@@ -22,7 +22,7 @@ server {
         allow all;
     }
 
-    # ── Backend API (Laravel :8000) ─────────────────────────────────────
+    # ── Backend API (Docker Laravel :8000) ──────────────────────────────
     location /api {
         client_max_body_size 520m;
 
@@ -34,7 +34,6 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # Upload Excel lớn — không buffer body trước khi gửi backend
         proxy_request_buffering off;
         proxy_connect_timeout 600s;
         proxy_send_timeout 7200s;
@@ -42,7 +41,6 @@ server {
         send_timeout 7200s;
     }
 
-    # ── WebSocket import (socket :3001) ─────────────────────────────────
     location /socket.io {
         proxy_pass http://127.0.0.1:3001;
         proxy_http_version 1.1;
@@ -55,7 +53,6 @@ server {
         proxy_read_timeout 86400s;
     }
 
-    # ── Frontend (Vite/nginx :9000) ───────────────────────────────────
     location / {
         proxy_pass http://127.0.0.1:9000;
         proxy_http_version 1.1;
