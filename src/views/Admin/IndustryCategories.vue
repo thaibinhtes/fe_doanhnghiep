@@ -43,28 +43,38 @@
           Thu gọn tất cả
         </button>
         <button
-          v-if="canSyncCatalog"
+          v-if="canManage"
           type="button"
-          class="h-8 rounded border border-emerald-500 bg-white px-3 text-sm text-emerald-700 hover:bg-emerald-50 dark:border-emerald-400 dark:bg-neutral-800 dark:text-emerald-300"
+          class="inline-flex h-8 items-center gap-1.5 rounded border border-emerald-500 bg-white px-3 text-sm text-emerald-700 hover:bg-emerald-50 dark:border-emerald-400 dark:bg-neutral-800 dark:text-emerald-300"
           :disabled="exportingCatalog"
+          title="Xuất danh mục ngành nghề ra Excel"
           @click="handleExportCatalog"
         >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
           {{ exportingCatalog ? 'Đang xuất...' : 'Xuất Excel' }}
         </button>
-        <label
-          v-if="canSyncCatalog"
-          class="inline-flex h-8 cursor-pointer items-center rounded border border-amber-500 bg-white px-3 text-sm text-amber-700 hover:bg-amber-50 dark:border-amber-400 dark:bg-neutral-800 dark:text-amber-300"
-          :class="{ 'pointer-events-none opacity-50': importingCatalog }"
+        <button
+          v-if="canManage"
+          type="button"
+          class="inline-flex h-8 items-center gap-1.5 rounded border border-amber-500 bg-white px-3 text-sm text-amber-700 hover:bg-amber-50 dark:border-amber-400 dark:bg-neutral-800 dark:text-amber-300"
+          :disabled="importingCatalog"
+          title="Import Excel — bản ghi đã tồn tại sẽ bỏ qua, chỉ thêm mới"
+          @click="openImportCatalog"
         >
-          {{ importingCatalog ? 'Đang nhập...' : 'Nhập Excel' }}
-          <input
-            ref="importCatalogInput"
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            class="hidden"
-            @change="handleImportCatalog"
-          />
-        </label>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 21V9m0 0l4 4m-4-4l-4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ importingCatalog ? 'Đang import...' : 'Import Excel' }}
+        </button>
+        <input
+          ref="importCatalogInput"
+          type="file"
+          accept=".xlsx,.xls,.csv"
+          class="hidden"
+          @change="handleImportCatalog"
+        />
         <button
           v-if="canManage"
           type="button"
@@ -272,9 +282,6 @@ import {
 
 const auth = useAuthStore()
 const canManage = computed(() => auth.hasPermission('feature.industry-categories.manage'))
-const canSyncCatalog = computed(
-  () => auth.hasPermission('feature.industry-categories.sync') && auth.user?.donVi?.ma === 'ROOT',
-)
 
 const loading = ref(true)
 const saving = ref(false)
@@ -499,6 +506,10 @@ const downloadBlob = (blob: Blob, filename: string) => {
   URL.revokeObjectURL(url)
 }
 
+const openImportCatalog = () => {
+  importCatalogInput.value?.click()
+}
+
 const handleExportCatalog = async () => {
   exportingCatalog.value = true
   try {
@@ -518,7 +529,7 @@ const handleImportCatalog = async (event: Event) => {
   const file = input.files?.[0]
   if (!file) return
 
-  if (!confirm(`Import danh mục ngành nghề từ file "${file.name}"? Dữ liệu trùng mã sẽ được cập nhật.`)) {
+  if (!confirm(`Import danh mục ngành nghề từ file "${file.name}"?\n\nBản ghi đã tồn tại sẽ bỏ qua. Chỉ thêm các bản ghi mới.`)) {
     input.value = ''
     return
   }
@@ -526,14 +537,14 @@ const handleImportCatalog = async (event: Event) => {
   importingCatalog.value = true
   try {
     const result: IndustryCategoryImportResult = await industryCategoryService.importCatalog(file)
-    message.value = `${result.imported} mới · ${result.updated} cập nhật · ${result.failed} lỗi`
+    message.value = `${result.imported} mới · ${result.skipped} bỏ qua · ${result.failed} lỗi`
     if (result.errors.length > 0) {
       alert(result.errors.slice(0, 5).map((err) => `Dòng ${err.row}: ${err.message}`).join('\n'))
     }
     await loadAll()
   } catch (err: unknown) {
     const apiMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-    alert(apiMessage || 'Import thất bại')
+    alert(apiMessage || 'Đồng bộ thất bại')
   } finally {
     importingCatalog.value = false
     input.value = ''

@@ -42,7 +42,7 @@ export const CAP_LABELS: Record<number, string> = {
 
 export interface IndustryCategoryImportResult {
   imported: number
-  updated: number
+  skipped: number
   failed: number
   errors: Array<{ row: number; message: string }>
 }
