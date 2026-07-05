@@ -272,6 +272,7 @@ import { industryCategoryService } from '@/services/industryCategoryService'
 import { useAuthStore } from '@/stores/auth'
 import type { IndustryCategory, IndustryCategoryImportResult, IndustryCategoryPayload } from '@/types/industryCategory'
 import { CAP_LABELS } from '@/types/industryCategory'
+import { formatImportUploadError } from '@/utils/apiError'
 import {
   applyCap1Collapse,
   buildIndustryTree,
@@ -543,8 +544,7 @@ const handleImportCatalog = async (event: Event) => {
     }
     await loadAll()
   } catch (err: unknown) {
-    const apiMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-    alert(apiMessage || 'Đồng bộ thất bại')
+    alert(formatImportUploadError(err, 'Import Excel thất bại.'))
   } finally {
     importingCatalog.value = false
     input.value = ''

@@ -1338,7 +1338,7 @@
               </ul>
             </div>
 
-            <div v-if="importError" class="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+            <div v-if="importError" class="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400 whitespace-pre-line">
               {{ importError }}
             </div>
           </div>
@@ -1391,6 +1391,7 @@ import { settingService, type CompanyImportDocs } from '@/services/settingServic
 import { orgUnitService } from '@/services/orgUnitService'
 import { buildOrgUnitOptions, resolveImportScopeOrgUnits } from '@/types/orgUnit'
 import type { OrgUnit, ImportScopeOrgUnit } from '@/types/orgUnit'
+import { formatImportUploadError } from '@/utils/apiError'
 import { useAuthStore } from '@/stores/auth'
 import { useCompanyStatuses } from '@/composables/useCompanyStatuses'
 import { useCompanyBusinessTypes } from '@/composables/useCompanyBusinessTypes'
@@ -2034,8 +2035,7 @@ const handleImport = async () => {
     importResult.value = result
     await store.fetchCompanies(currentCompanyFilters())
   } catch (err: unknown) {
-    const axiosErr = err as { response?: { data?: { message?: string } } }
-    importError.value = axiosErr.response?.data?.message ?? 'Nhập Excel thất bại.'
+    importError.value = formatImportUploadError(err, 'Nhập Excel thất bại.')
     importing.value = false
     activeImportJobId.value = null
     importQueuedMessage.value = null
