@@ -44,11 +44,12 @@
           <div v-if="store.loading" class="py-12 text-center text-sm text-gray-500">Đang tải...</div>
           <div v-else-if="store.cooperatives.length === 0" class="py-12 text-center text-sm text-gray-500">Không có hợp tác xã.</div>
 
-          <div v-else class="lg:hidden grid gap-3 p-1">
-            <CooperativeMobileCard v-for="(item, index) in store.cooperatives" :key="item.id" :cooperative="item" :index="index" show-actions @delete="confirmDelete" />
-          </div>
+          <template v-else>
+            <div class="grid gap-3 p-1 lg:hidden">
+              <CooperativeMobileCard v-for="(item, index) in store.cooperatives" :key="item.id" :cooperative="item" :index="index" show-actions @delete="confirmDelete" />
+            </div>
 
-          <div v-else class="hidden lg:block min-w-max">
+            <div class="hidden min-w-max lg:block">
             <table class="min-w-full text-sm">
               <thead class="sticky top-0 z-10 bg-gray-50 text-left text-xs uppercase text-gray-500 dark:bg-gray-900 dark:text-gray-400">
                 <tr>
@@ -93,7 +94,8 @@
                 </tr>
               </tbody>
             </table>
-          </div>
+            </div>
+          </template>
         </div>
 
         <div class="shrink-0 flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 pt-2 text-sm dark:border-gray-700">
