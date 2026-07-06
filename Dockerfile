@@ -7,8 +7,8 @@ WORKDIR /app
 ENV NODE_OPTIONS=--max-old-space-size=2048
 ENV CI=true
 
-COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
 
 COPY . .
 
