@@ -35,6 +35,7 @@ export interface ImportSocketPayload {
   }
   message?: string
   timestamp?: string
+  entity?: string
   row?: number
   maSoDoanhNghiep?: string | null
   tenDoanhNghiep?: string | null

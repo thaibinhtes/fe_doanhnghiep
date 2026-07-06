@@ -188,7 +188,7 @@ import { orgUnitService } from '@/services/orgUnitService'
 import { userService } from '@/services/userService'
 import type { OrgUnit } from '@/types/orgUnit'
 import { buildOrgUnitOptions } from '@/types/orgUnit'
-import type { AppUser } from '@/types/user'
+import type { AppUser, UserPayload } from '@/types/user'
 import type { RoleItem } from '@/types/auth'
 
 const auth = useAuthStore()
@@ -290,7 +290,7 @@ const closeModal = () => {
 }
 
 const saveUser = async () => {
-  const payload: Record<string, unknown> = {
+  const payload: UserPayload = {
     name: form.name.trim(),
     email: form.email.trim(),
     roleId: form.roleId,

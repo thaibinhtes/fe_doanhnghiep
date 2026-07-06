@@ -152,7 +152,7 @@
                     class="border border-gray-200 px-3 py-3 text-center dark:border-gray-700"
                     :class="metricKey === 'chuaDinhDanh' ? 'font-semibold text-red-600 dark:text-red-400' : ''"
                   >
-                    {{ row.periods[range.key]?.[metricKey as keyof typeof report.metricLabels] ?? 0 }}
+                    {{ row.periods[range.key]?.[metricKey as keyof ProgressReportMetrics] ?? 0 }}
                   </td>
                 </template>
                 <td class="border border-gray-200 px-3 py-3 text-center dark:border-gray-700">
@@ -173,7 +173,7 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { reportService } from '@/services/reportService'
 import { useAuthStore } from '@/stores/auth'
-import type { ProgressReport } from '@/types/report'
+import type { ProgressReport, ProgressReportMetrics } from '@/types/report'
 
 const auth = useAuthStore()
 const loading = ref(true)
