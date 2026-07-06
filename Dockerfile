@@ -3,8 +3,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --legacy-peer-deps
+# Tránh OOM trên VPS nhỏ khi vite build
+ENV NODE_OPTIONS=--max-old-space-size=2048
+ENV CI=true
+
+COPY package.json package-lock.json ./
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 

@@ -11,8 +11,9 @@ export default defineConfig(({ mode }) => {
   const apiPrefix = env.VITE_API_PREFIX || '/api'
   // 127.0.0.1 tránh Node resolve localhost → ::1 trúng Docker cùng port 8000
   const proxyTarget = (env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:8000').replace(/\/$/, '')
+  const isDev = mode === 'development'
 
-  if (mode === 'development') {
+  if (isDev) {
     console.info(`[vite] API prefix = ${apiPrefix}, proxy → ${proxyTarget}`)
     console.info(
       `[vite] Socket proxy /socket.io → ${env.VITE_SOCKET_PROXY_TARGET || 'http://127.0.0.1:3001'}`,
@@ -20,7 +21,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [vue(), vueJsx(), vueDevTools()],
+    plugins: [vue(), vueJsx(), ...(isDev ? [vueDevTools()] : [])],
     envPrefix: 'VITE_',
     server: {
       port: 3000,
