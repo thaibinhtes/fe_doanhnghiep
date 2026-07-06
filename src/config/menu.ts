@@ -47,7 +47,6 @@ export const menuConfig: MenuGroup[] = [
         icon: TableIcon,
         subItems: [
           { name: 'Doanh nghiệp', path: '/companies', permission: 'menu.companies.list' },
-          { name: 'Thành viên', path: '/members', permission: 'menu.members.list' },
         ],
       },
       {
@@ -60,7 +59,6 @@ export const menuConfig: MenuGroup[] = [
             permission: 'menu.cooperatives.list',
             permissions: ['menu.cooperatives.list', 'menu.companies.list'],
           },
-          { name: 'Thành viên', path: '/cooperatives/members', permission: 'menu.members.list' },
         ],
       },
       {
