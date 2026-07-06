@@ -39,6 +39,31 @@
           </ComponentCard>
         </div>
 
+        <ComponentCard :title="`Định danh trong tháng — ${identityMonthly?.monthLabel ?? ''}`">
+          <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Số lượt đăng ký / hủy định danh theo ngày
+              <span v-if="identityMonthly">
+                · Tổng tháng: {{ identityMonthly.totals.daDinhDanh }} đã định danh,
+                {{ identityMonthly.totals.chuaDinhDanh }} hủy định danh
+              </span>
+            </p>
+            <input
+              v-model="identityMonth"
+              type="month"
+              class="h-9 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+              @change="loadIdentityMonthly"
+            />
+          </div>
+          <VueApexCharts
+            v-if="identityMonthly"
+            type="bar"
+            height="360"
+            :options="identityMonthlyChartOptions"
+            :series="identityMonthlySeries"
+          />
+        </ComponentCard>
+
         <ComponentCard title="Tiến độ định danh theo kỳ báo cáo">
           <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
             {{ dashboard.progress.title }} · {{ dashboard.progress.reportDateLabel }}
@@ -64,12 +89,14 @@ import VueApexCharts from 'vue3-apexcharts'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { dashboardService } from '@/services/dashboardService'
-import type { DashboardData } from '@/types/dashboard'
+import type { DashboardData, DashboardIdentityMonthlyStats } from '@/types/dashboard'
 import type { ProgressReportMetrics } from '@/types/report'
 
 const loading = ref(true)
 const error = ref<string | null>(null)
 const dashboard = ref<DashboardData | null>(null)
+const identityMonthly = ref<DashboardIdentityMonthlyStats | null>(null)
+const identityMonth = ref(new Date().toISOString().slice(0, 7))
 
 const chartFont = 'Outfit, sans-serif'
 const chartColors = ['#465fff', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#64748b']
@@ -176,6 +203,39 @@ const progressChartOptions = computed(() => {
   }
 })
 
+const identityMonthlySeries = computed(() => {
+  if (!identityMonthly.value) return []
+
+  return [
+    {
+      name: 'Đã định danh',
+      data: identityMonthly.value.days.map((day) => day.daDinhDanh),
+    },
+    {
+      name: 'Chưa định danh',
+      data: identityMonthly.value.days.map((day) => day.chuaDinhDanh),
+    },
+  ]
+})
+
+const identityMonthlyChartOptions = computed(() => ({
+  chart: { fontFamily: chartFont, type: 'bar', toolbar: { show: false }, stacked: false },
+  colors: ['#10b981', '#f59e0b'],
+  plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
+  dataLabels: { enabled: false },
+  xaxis: {
+    categories: identityMonthly.value?.days.map((day) => day.label) ?? [],
+    labels: { rotate: -45, trim: true },
+  },
+  yaxis: {
+    labels: { formatter: (val: number) => Math.round(val).toString() },
+    min: 0,
+    forceNiceScale: true,
+  },
+  legend: { position: 'top' },
+  grid: { strokeDashArray: 4 },
+}))
+
 const formatDate = (iso: string) => {
   try {
     return new Date(iso).toLocaleString('vi-VN')
@@ -184,11 +244,23 @@ const formatDate = (iso: string) => {
   }
 }
 
+const loadIdentityMonthly = async () => {
+  try {
+    identityMonthly.value = await dashboardService.getIdentityMonthlyByDay(identityMonth.value)
+  } catch {
+    identityMonthly.value = null
+  }
+}
+
 const loadDashboard = async () => {
   loading.value = true
   error.value = null
   try {
-    dashboard.value = await dashboardService.getDashboard()
+    const [dashboardData] = await Promise.all([
+      dashboardService.getDashboard(),
+      loadIdentityMonthly(),
+    ])
+    dashboard.value = dashboardData
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { message?: string } } }
     error.value = axiosErr.response?.data?.message ?? 'Không thể tải dữ liệu dashboard'

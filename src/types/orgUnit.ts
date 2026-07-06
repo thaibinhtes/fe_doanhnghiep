@@ -100,6 +100,29 @@ export function findOrgUnitById(items: OrgUnit[], id: number): OrgUnit | null {
   return null
 }
 
+export function findOrgUnitAncestors(items: OrgUnit[], donViId: number): ImportScopeOrgUnit[] {
+  const unit = findOrgUnitById(items, donViId)
+  if (!unit) return []
+
+  const ancestors: ImportScopeOrgUnit[] = []
+  let parentId = unit.parentId
+
+  while (parentId) {
+    const parent = findOrgUnitById(items, parentId)
+    if (!parent) break
+    ancestors.unshift({
+      id: parent.id,
+      ma: parent.ma,
+      ten: parent.ten,
+      cap: parent.cap,
+      isPrimary: false,
+    })
+    parentId = parent.parentId
+  }
+
+  return ancestors
+}
+
 export function resolveImportScopeOrgUnits(
   donViId: number | null | undefined,
   donVi: { id: number; ma: string; ten: string; cap: number } | null | undefined,
@@ -130,7 +153,10 @@ export function resolveImportScopeOrgUnits(
       ? directChildren
       : (primaryFromTree?.children ?? []).filter((item) => item.isActive !== false)
 
+  const ancestors = findOrgUnitAncestors(tree, donViId)
+
   return [
+    ...ancestors,
     primary,
     ...children.map((item) => ({
       id: item.id,

@@ -13,6 +13,26 @@ export interface DashboardIdentity {
   chuaDinhDanh: number
 }
 
+export interface DashboardIdentityMonthlyDay {
+  date: string
+  label: string
+  daDinhDanh: number
+  chuaDinhDanh: number
+}
+
+export interface DashboardIdentityMonthlyStats {
+  month: string
+  monthLabel: string
+  from: string
+  to: string
+  totals: {
+    daDinhDanh: number
+    chuaDinhDanh: number
+  }
+  days: DashboardIdentityMonthlyDay[]
+  generatedAt: string
+}
+
 export interface DashboardProgressTotalRow {
   stt: number | null
   key: string
