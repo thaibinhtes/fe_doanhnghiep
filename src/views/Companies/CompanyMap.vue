@@ -6,8 +6,10 @@
           <AdministrativeFilter
             v-model:provinceCode="filterProvinceCode"
             v-model:wardCode="filterWardCode"
-            province-placeholder="Tất cả tỉnh/thành"
-            ward-placeholder="Tất cả phường/xã"
+            :hide-province="HIDE_PROVINCE_FILTER"
+            :default-province-code="DEFAULT_PROVINCE_CODE"
+            ward-placeholder="Phường/xã"
+            ward-search-placeholder="Tìm phường/xã..."
             @change="handleAdministrativeFilterChange"
           />
         </div>
@@ -152,6 +154,8 @@ import type { Company } from '@/types/company'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
+import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
+import { locationService } from '@/services/locationService'
 
 const FOCUS_ZOOM = 16
 
@@ -164,7 +168,7 @@ const error = ref<string | null>(null)
 const sidebarSearch = ref('')
 const selectedCompanyId = ref<number | null>(null)
 const isSidebarOpen = ref(true)
-const filterProvinceCode = ref('')
+const filterProvinceCode = ref(DEFAULT_PROVINCE_CODE)
 const filterWardCode = ref('')
 const filterQuanHuyen = ref('')
 const filterPhuongXa = ref('')
@@ -315,6 +319,14 @@ const handleAdministrativeFilterChange = (payload: {
 }
 
 onMounted(async () => {
+  if (HIDE_PROVINCE_FILTER) {
+    const provinces = await locationService.getProvinces()
+    const province = provinces.find((item) => item.code === DEFAULT_PROVINCE_CODE)
+    if (province) {
+      filterQuanHuyen.value = province.fullName
+    }
+  }
+
   await loadCompanies()
   if (mappedCompanies.value.length > 0) {
     await initMap()

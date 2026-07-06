@@ -3,7 +3,7 @@
     <div class="space-y-5">
       <ComponentCard title="Danh sách người dùng">
         <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div class="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <input
               v-model="filter.search"
               type="search"
@@ -11,6 +11,7 @@
               class="h-11 rounded-lg border border-gray-300 px-4 text-sm dark:border-gray-700 dark:bg-gray-900"
             />
             <select
+              v-if="isRootUser"
               v-model="filter.donViId"
               class="h-11 rounded-lg border border-gray-300 px-4 text-sm dark:border-gray-700 dark:bg-gray-900"
             >
@@ -24,7 +25,7 @@
               class="h-11 rounded-lg border border-gray-300 px-4 text-sm dark:border-gray-700 dark:bg-gray-900"
             >
               <option value="">Tất cả vai trò</option>
-              <option v-for="role in roles" :key="role.id" :value="String(role.id)">
+              <option v-for="role in assignableRoles" :key="role.id" :value="String(role.id)">
                 {{ role.name }}
               </option>
             </select>
@@ -137,17 +138,24 @@
             </div>
             <div>
               <label class="mb-1.5 block text-sm font-medium">Vai trò</label>
-              <select v-model.number="form.roleId" class="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm dark:border-gray-700 dark:bg-gray-900">
-                <option :value="null">Không gán</option>
-                <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.name }}</option>
+              <select v-model.number="form.roleId" required class="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm dark:border-gray-700 dark:bg-gray-900">
+                <option :value="null" disabled>Chọn vai trò</option>
+                <option v-for="role in assignableRoles" :key="role.id" :value="role.id">{{ role.name }}</option>
               </select>
+              <p v-if="!isRootUser" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Chỉ được gán vai trò cấp thấp hơn vai trò của bạn.
+              </p>
             </div>
-            <div>
+            <div v-if="isRootUser">
               <label class="mb-1.5 block text-sm font-medium">Đơn vị</label>
               <select v-model.number="form.donViId" class="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm dark:border-gray-700 dark:bg-gray-900">
                 <option :value="null">Không gán</option>
                 <option v-for="opt in orgUnitOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
               </select>
+            </div>
+            <div v-else class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm dark:border-gray-700 dark:bg-gray-800/60">
+              <p class="text-gray-500 dark:text-gray-400">Đơn vị trực thuộc</p>
+              <p class="mt-1 font-medium text-gray-800 dark:text-white/90">{{ creatorOrgUnitLabel }}</p>
             </div>
             <div class="sm:col-span-2">
               <label class="inline-flex items-center gap-2 text-sm">
@@ -177,7 +185,6 @@ import ComponentCard from '@/components/common/ComponentCard.vue'
 import Modal from '@/components/profile/Modal.vue'
 import { useAuthStore } from '@/stores/auth'
 import { orgUnitService } from '@/services/orgUnitService'
-import { roleService } from '@/services/roleService'
 import { userService } from '@/services/userService'
 import type { OrgUnit } from '@/types/orgUnit'
 import { buildOrgUnitOptions } from '@/types/orgUnit'
@@ -186,12 +193,13 @@ import type { RoleItem } from '@/types/auth'
 
 const auth = useAuthStore()
 const canManage = computed(() => auth.hasPermission('feature.users.manage'))
+const isRootUser = computed(() => auth.user?.role?.slug === 'root')
 
 const loading = ref(false)
 const message = ref('')
 const deletingId = ref<number | null>(null)
 const users = ref<AppUser[]>([])
-const roles = ref<RoleItem[]>([])
+const assignableRoles = ref<RoleItem[]>([])
 const orgUnits = ref<OrgUnit[]>([])
 const isModalOpen = ref(false)
 const editingId = ref<number | null>(null)
@@ -213,6 +221,12 @@ const form = reactive({
 
 const orgUnitOptions = computed(() => buildOrgUnitOptions(orgUnits.value))
 
+const creatorOrgUnitLabel = computed(() => {
+  const donVi = auth.user?.donVi
+  if (!donVi) return 'Chưa gắn đơn vị'
+  return `${donVi.ma} — ${donVi.ten}`
+})
+
 const loadUsers = async () => {
   loading.value = true
   try {
@@ -229,12 +243,10 @@ const loadUsers = async () => {
 }
 
 const loadLookups = async () => {
-  const [roleList, unitTree] = await Promise.all([
-    roleService.getRoles(),
-    orgUnitService.getTree(),
-  ])
-  roles.value = roleList
-  orgUnits.value = unitTree
+  assignableRoles.value = await userService.getAssignableRoles()
+  if (isRootUser.value) {
+    orgUnits.value = await orgUnitService.getTree()
+  }
 }
 
 const resetFilters = () => {
@@ -255,6 +267,9 @@ const resetForm = () => {
 const openCreate = () => {
   editingId.value = null
   resetForm()
+  if (!isRootUser.value) {
+    form.donViId = auth.user?.donViId ?? null
+  }
   isModalOpen.value = true
 }
 
@@ -275,13 +290,16 @@ const closeModal = () => {
 }
 
 const saveUser = async () => {
-  const payload = {
+  const payload: Record<string, unknown> = {
     name: form.name.trim(),
     email: form.email.trim(),
     roleId: form.roleId,
-    donViId: form.donViId,
     isActive: form.isActive,
     ...(form.password ? { password: form.password } : {}),
+  }
+
+  if (isRootUser.value) {
+    payload.donViId = form.donViId
   }
 
   if (editingId.value) {

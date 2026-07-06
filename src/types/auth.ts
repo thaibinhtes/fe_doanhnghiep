@@ -2,6 +2,7 @@ export interface AuthRole {
   id: number
   name: string
   slug: string
+  level?: number
   description?: string | null
   permissionKeys?: string[]
 }
@@ -55,6 +56,7 @@ export interface RoleItem {
   id: number
   name: string
   slug: string
+  level?: number
   description?: string | null
   permissions?: PermissionItem[]
   permissionKeys?: string[]

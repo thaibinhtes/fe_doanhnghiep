@@ -1,10 +1,19 @@
 import type { Component } from 'vue'
-import { TableIcon, UserGroupIcon, SettingsIcon, PieChartIcon, LayoutDashboardIcon } from '@/icons'
+import {
+  TableIcon,
+  UserGroupIcon,
+  SettingsIcon,
+  PieChartIcon,
+  LayoutDashboardIcon,
+  BoxCubeIcon,
+  GridIcon,
+} from '@/icons'
 
 export interface MenuSubItem {
   name: string
-  path: string
+  path?: string
   permission: string
+  subItems?: MenuSubItem[]
 }
 
 export interface MenuItem {
@@ -22,7 +31,7 @@ export interface MenuGroup {
 
 export const menuConfig: MenuGroup[] = [
   {
-    title: 'Tổng quan',
+    title: '',
     items: [
       {
         name: 'Dashboard',
@@ -30,82 +39,94 @@ export const menuConfig: MenuGroup[] = [
         path: '/dashboard',
         permission: 'menu.dashboard',
       },
-    ],
-  },
-  {
-    title: 'Danh mục',
-    items: [
       {
         name: 'Quản lý doanh nghiệp',
         icon: TableIcon,
         subItems: [
-          { name: 'Danh sách doanh nghiệp', path: '/companies', permission: 'menu.companies.list' },
-          { name: 'Bản đồ doanh nghiệp', path: '/companies/map', permission: 'menu.companies.map' },
-          { name: 'Định danh doanh nghiệp', path: '/companies/identity', permission: 'menu.companies.identity' },
-          { name: 'Tạo doanh nghiệp', path: '/companies/create', permission: 'menu.companies.create' },
-          { name: 'Trạng thái doanh nghiệp', path: '/companies/statuses', permission: 'menu.companies.statuses' },
+          { name: 'Doanh nghiệp', path: '/companies', permission: 'menu.companies.list' },
+          { name: 'Thành viên', path: '/members', permission: 'menu.members.list' },
         ],
       },
       {
-        name: 'Thành viên',
-        icon: UserGroupIcon,
+        name: 'Quản lý hợp tác xã',
+        icon: BoxCubeIcon,
         subItems: [
-          { name: 'Danh sách thành viên', path: '/members', permission: 'menu.members.list' },
-          { name: 'Tạo thành viên', path: '/members/create', permission: 'menu.members.create' },
+          { name: 'Hợp tác xã', path: '/cooperatives', permission: 'menu.companies.list' },
+          { name: 'Thành viên', path: '/cooperatives/members', permission: 'menu.members.list' },
         ],
       },
       {
-        name: 'Báo cáo',
+        name: 'Định danh tổ chức',
+        icon: GridIcon,
+        subItems: [
+          { name: 'Bản đồ số', path: '/companies/map', permission: 'menu.companies.map' },
+          { name: 'Định danh', path: '/companies/identity', permission: 'menu.companies.identity' },
+        ],
+      },
+      {
+        name: 'Báo cáo - thống kê',
         icon: PieChartIcon,
         subItems: [
           { name: 'Báo cáo tổng hợp', path: '/reports/summary', permission: 'menu.reports.summary' },
-          {
-            name: 'Báo cáo tiến độ định danh',
-            path: '/reports/progress',
-            permission: 'menu.reports.progress',
-          },
+          { name: 'Báo cáo tiến độ', path: '/reports/progress', permission: 'menu.reports.progress' },
         ],
       },
-    ],
-  },
-  {
-    title: 'Hệ thống',
-    items: [
       {
-        name: 'Phân quyền',
+        name: 'Hệ thống và danh mục',
         icon: SettingsIcon,
-        path: '/admin/roles',
-        permission: 'menu.admin.roles',
-      },
-      {
-        name: 'Quản lý địa chính',
-        icon: SettingsIcon,
-        path: '/admin/cadastral',
-        permission: 'menu.admin.cadastral',
-      },
-      {
-        name: 'Loại hình doanh nghiệp',
-        icon: SettingsIcon,
-        path: '/admin/business-types',
-        permission: 'menu.admin.business-types',
-      },
-      {
-        name: 'Danh mục ngành nghề',
-        icon: SettingsIcon,
-        path: '/admin/industry-categories',
-        permission: 'menu.admin.industry-categories',
-      },
-      {
-        name: 'Quản lý đơn vị',
-        icon: SettingsIcon,
-        path: '/admin/org-units',
-        permission: 'menu.admin.org-units',
-      },
-      {
-        name: 'Quản lý người dùng',
-        icon: SettingsIcon,
-        path: '/admin/users',
-        permission: 'menu.admin.users',
+        subItems: [
+          {
+            name: 'Danh mục đơn vị hành chính',
+            permission: 'menu.admin.cadastral',
+            subItems: [
+              {
+                name: 'Đơn vị hành chính cũ',
+                path: '/admin/cadastral?tab=legacy',
+                permission: 'menu.admin.cadastral',
+              },
+              {
+                name: 'Đơn vị hành chính mới',
+                path: '/admin/cadastral?tab=lookup',
+                permission: 'menu.admin.cadastral',
+              },
+              {
+                name: 'Ánh xạ đơn vị hành chính',
+                path: '/admin/cadastral?tab=mapping',
+                permission: 'menu.admin.cadastral',
+              },
+            ],
+          },
+          {
+            name: 'Danh mục ngành nghề',
+            path: '/admin/industry-categories',
+            permission: 'menu.admin.industry-categories',
+          },
+          {
+            name: 'Danh mục loại hình doanh nghiệp',
+            path: '/admin/business-types',
+            permission: 'menu.admin.business-types',
+          },
+          {
+            name: 'Danh mục loại hình hợp tác xã',
+            path: '/admin/cooperative-business-types',
+            permission: 'menu.admin.business-types',
+          },
+          {
+            name: 'Danh mục đơn vị',
+            path: '/admin/org-units',
+            permission: 'menu.admin.org-units',
+          },
+          {
+            name: 'Danh mục người dùng',
+            path: '/admin/users',
+            permission: 'menu.admin.users',
+          },
+          {
+            name: 'Phân quyền',
+            path: '/admin/roles',
+            permission: 'menu.admin.roles',
+          },
+        ],
       },
     ],
   },
@@ -119,6 +140,8 @@ export const routePermissions: Record<string, string> = {
   '/companies/identity': 'menu.companies.identity',
   '/companies/create': 'menu.companies.create',
   '/companies/statuses': 'menu.companies.statuses',
+  '/cooperatives': 'menu.companies.list',
+  '/cooperatives/members': 'menu.members.list',
   '/members': 'menu.members.list',
   '/members/create': 'menu.members.create',
   '/reports/summary': 'menu.reports.summary',
@@ -126,17 +149,19 @@ export const routePermissions: Record<string, string> = {
   '/admin/roles': 'menu.admin.roles',
   '/admin/cadastral': 'menu.admin.cadastral',
   '/admin/business-types': 'menu.admin.business-types',
+  '/admin/cooperative-business-types': 'menu.admin.business-types',
   '/admin/industry-categories': 'menu.admin.industry-categories',
   '/admin/org-units': 'menu.admin.org-units',
   '/admin/users': 'menu.admin.users',
 }
 
 export function getRoutePermission(path: string): string | undefined {
-  if (routePermissions[path]) {
-    return routePermissions[path]
+  const pathname = path.split('?')[0]
+  if (routePermissions[pathname]) {
+    return routePermissions[pathname]
   }
 
-  if (/^\/companies\/\d+\/map$/.test(path)) {
+  if (/^\/companies\/\d+\/map$/.test(pathname)) {
     return 'menu.companies.map'
   }
 
@@ -157,4 +182,32 @@ export function getFirstAccessibleRoute(hasPermission: (key: string) => boolean)
   }
 
   return '/dashboard'
+}
+
+export function filterMenuSubItems(
+  subItems: MenuSubItem[],
+  hasPermission: (key: string) => boolean,
+): MenuSubItem[] {
+  return subItems
+    .map((sub) => {
+      if (sub.subItems?.length) {
+        const nested = filterMenuSubItems(sub.subItems, hasPermission)
+        if (nested.length === 0) return null
+        if (!hasPermission(sub.permission)) return null
+        return { ...sub, subItems: nested }
+      }
+
+      if (!hasPermission(sub.permission)) return null
+      return sub
+    })
+    .filter((sub): sub is MenuSubItem => sub !== null)
+}
+
+export function collectSubItemPaths(subItems: MenuSubItem[]): string[] {
+  const paths: string[] = []
+  for (const sub of subItems) {
+    if (sub.path) paths.push(sub.path)
+    if (sub.subItems?.length) paths.push(...collectSubItemPaths(sub.subItems))
+  }
+  return paths
 }

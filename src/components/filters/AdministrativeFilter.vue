@@ -1,6 +1,6 @@
 <template>
   <div ref="rootRef" :class="rootClass">
-    <div>
+    <div v-if="!hideProvince">
       <label v-if="!compact" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
         {{ provinceLabel }}
       </label>
@@ -12,6 +12,20 @@
         :empty-label="provincePlaceholder"
         :show-code="showProvinceCode"
         :dense="compact && dense"
+        :auto-select-first="autoSelectFirst"
+      />
+    </div>
+    <div v-else class="hidden" aria-hidden="true">
+      <ProvinceSelect
+        ref="provinceSelectRef"
+        v-model="localProvinceCode"
+        :placeholder="provincePlaceholder"
+        :search-placeholder="provinceSearchPlaceholder"
+        :empty-label="provincePlaceholder"
+        :show-code="showProvinceCode"
+        :dense="compact && dense"
+        :auto-select-first="autoSelectFirst"
+        :default-code="defaultProvinceCode"
       />
     </div>
     <div>
@@ -35,6 +49,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import ProvinceSelect from '@/components/forms/FormElements/ProvinceSelect.vue'
 import WardSelect from '@/components/forms/FormElements/WardSelect.vue'
+import { DEFAULT_PROVINCE_CODE } from '@/config/hanhChinh'
 
 const props = withDefaults(defineProps<{
   provinceCode?: string
@@ -48,6 +63,9 @@ const props = withDefaults(defineProps<{
   showProvinceCode?: boolean
   compact?: boolean
   dense?: boolean
+  hideProvince?: boolean
+  defaultProvinceCode?: string
+  autoSelectFirst?: boolean
 }>(), {
   provinceCode: '',
   wardCode: '',
@@ -60,9 +78,15 @@ const props = withDefaults(defineProps<{
   showProvinceCode: false,
   compact: false,
   dense: false,
+  hideProvince: false,
+  defaultProvinceCode: DEFAULT_PROVINCE_CODE,
+  autoSelectFirst: false,
 })
 
 const rootClass = computed(() => {
+  if (props.hideProvince) {
+    return props.compact && props.dense ? 'grid grid-cols-1 gap-1.5' : 'grid grid-cols-1 gap-2'
+  }
   if (!props.compact) return 'grid gap-4 md:grid-cols-2'
   if (props.dense) return 'grid grid-cols-2 gap-1.5'
   return 'grid gap-2 md:grid-cols-2'
@@ -93,6 +117,23 @@ const emitChange = () => {
   })
 }
 
+const syncDefaultProvince = () => {
+  const provinces = provinceSelectRef.value?.provinces ?? []
+  if (provinces.length === 0) return
+
+  const preferredCode = props.defaultProvinceCode
+    || (props.autoSelectFirst || props.hideProvince ? provinces[0]?.code : '')
+
+  if (!preferredCode) return
+
+  if (localProvinceCode.value !== preferredCode) {
+    localProvinceCode.value = preferredCode
+    return
+  }
+
+  emitChange()
+}
+
 watch(
   () => props.provinceCode,
   (value) => {
@@ -104,6 +145,13 @@ watch(
   () => props.wardCode,
   (value) => {
     localWardCode.value = value ?? ''
+  },
+)
+
+watch(
+  () => provinceSelectRef.value?.provinces?.length,
+  () => {
+    syncDefaultProvince()
   },
 )
 
@@ -121,6 +169,7 @@ watch(localWardCode, (value) => {
 })
 
 onMounted(() => {
+  syncDefaultProvince()
   emitChange()
 })
 </script>

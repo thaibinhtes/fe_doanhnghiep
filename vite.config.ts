@@ -9,7 +9,8 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const apiPrefix = env.VITE_API_PREFIX || '/api'
-  const proxyTarget = env.VITE_API_PROXY_TARGET || 'https://qldn.zsellers.com'
+  // 127.0.0.1 tránh Node resolve localhost → ::1 trúng Docker cùng port 8000
+  const proxyTarget = (env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:8000').replace(/\/$/, '')
 
   if (mode === 'development') {
     console.info(`[vite] API prefix = ${apiPrefix}, proxy → ${proxyTarget}`)

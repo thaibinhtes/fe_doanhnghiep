@@ -12,161 +12,159 @@
       >
         <!-- Filters -->
         <div class="shrink-0 rounded-lg border border-gray-200 p-2 dark:border-gray-700">
-          <div class="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
-            <div
-              class="grid min-w-0 flex-1 grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-[minmax(160px,1.2fr)_120px_120px_minmax(180px,1fr)_minmax(220px,1fr)] xl:items-center"
-            >
-              <input
-                type="text"
-                v-model="filter.search"
-                placeholder="Tìm kiếm tên, mã số..."
-                class="h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-              />
-              <div class="relative bg-transparent">
-                <select
-                  v-model="filter.trangThai"
-                  class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                >
-                  <option value="">Trạng thái</option>
-                  <option value="Đang hoạt động">Đang hoạt động</option>
-                  <option value="Tạm ngừng">Tạm ngừng</option>
-                  <option value="Giải thể">Giải thể</option>
-                </select>
-                <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                  <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
-                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </span>
-              </div>
-              <div class="relative bg-transparent">
-                <select
-                  v-model="filter.loaiHinhId"
-                  class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                >
-                  <option value="">Loại hình DN</option>
-                  <option v-for="type in businessTypes" :key="type.id" :value="type.id">
-                    {{ type.ten }}
-                  </option>
-                </select>
-                <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                  <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
-                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </span>
-              </div>
-              <div class="relative bg-transparent">
-                <select
-                  v-model="filter.donViId"
-                  class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                >
-                  <option value="">Đơn vị</option>
-                  <option v-for="opt in orgUnitOptions" :key="opt.id" :value="String(opt.id)">
-                    {{ opt.label }}
-                  </option>
-                </select>
-                <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                  <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
-                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </span>
-              </div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <input
+              type="text"
+              v-model="filter.search"
+              placeholder="Tìm kiếm tên, mã số..."
+              class="h-9 w-[180px] shrink-0 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+            />
+            <div class="relative w-[120px] shrink-0 bg-transparent">
+              <select
+                v-model="filter.trangThai"
+                class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+              >
+                <option value="">Trạng thái</option>
+                <option value="Đang hoạt động">Đang hoạt động</option>
+                <option value="Tạm ngừng">Tạm ngừng</option>
+                <option value="Giải thể">Giải thể</option>
+              </select>
+              <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </div>
+            <div class="relative w-[120px] shrink-0 bg-transparent">
+              <select
+                v-model="filter.loaiHinhId"
+                class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+              >
+                <option value="">Loại hình DN</option>
+                <option v-for="type in businessTypes" :key="type.id" :value="type.id">
+                  {{ type.ten }}
+                </option>
+              </select>
+              <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </div>
+            <div class="relative w-[160px] shrink-0 bg-transparent">
+              <select
+                v-model="filter.donViId"
+                class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+              >
+                <option value="">Đơn vị</option>
+                <option v-for="opt in orgUnitOptions" :key="opt.id" :value="String(opt.id)">
+                  {{ opt.label }}
+                </option>
+              </select>
+              <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+            </div>
+            <div class="w-[200px] shrink-0">
               <AdministrativeFilter
                 v-model:provinceCode="filterProvinceCode"
                 v-model:wardCode="filterWardCode"
-                province-placeholder="Tỉnh/thành"
+                :hide-province="HIDE_PROVINCE_FILTER"
+                :default-province-code="DEFAULT_PROVINCE_CODE"
                 ward-placeholder="Phường/xã"
+                ward-search-placeholder="Tìm phường/xã..."
                 compact
                 dense
                 @change="handleCompanyAdministrativeFilterChange"
               />
             </div>
-            <div class="flex shrink-0 flex-wrap items-center gap-1.5 xl:justify-end">
-              <button
-                @click="resetFilters"
-                class="inline-flex h-8 items-center justify-center rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                Đặt lại
-              </button>
-              <button
-                @click="handleExport"
-                v-if="auth.hasPermission('feature.companies.export')"
-                :disabled="exporting"
-                title="Xuất Excel"
-                class="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-emerald-500 bg-white px-2.5 text-xs font-medium text-emerald-600 transition hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-400 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span class="hidden sm:inline">{{ exporting ? 'Đang xuất...' : 'Xuất' }}</span>
-              </button>
-              <details
-                v-if="auth.hasPermission('feature.companies.import')"
-                class="relative"
-              >
-                <summary
-                  class="inline-flex h-8 list-none cursor-pointer items-center justify-center gap-1 rounded-lg border border-amber-500 bg-white px-2.5 text-xs font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 21V9m0 0l4 4m-4-4l-4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Nhập
-                </summary>
-                <div class="absolute right-0 z-50 mt-1 min-w-[240px] rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-                  <button
-                    type="button"
-                    @click="openImportModal('companies')"
-                    class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                  >
-                    Import danh sách mới
-                  </button>
-                  <button
-                    type="button"
-                    @click="openImportModal('identity')"
-                    class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                  >
-                    Import định danh
-                  </button>
-                  <button
-                    type="button"
-                    @click="openImportHistory"
-                    class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                  >
-                    Lịch sử import
-                  </button>
-                </div>
-              </details>
-              <router-link
-                to="/companies/map"
-                title="Xem bản đồ"
-                class="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-brand-500 bg-white px-2.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-400 dark:bg-gray-900 dark:text-brand-400 dark:hover:bg-brand-500/10"
+            <button
+              @click="resetFilters"
+              class="inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              Đặt lại
+            </button>
+            <button
+              @click="handleExport"
+              v-if="auth.hasPermission('feature.companies.export')"
+              :disabled="exporting"
+              title="Xuất Excel"
+              class="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg border border-emerald-500 bg-white px-2.5 text-xs font-medium text-emerald-600 transition hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-400 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="hidden sm:inline">{{ exporting ? 'Đang xuất...' : 'Xuất' }}</span>
+            </button>
+            <details
+              v-if="auth.hasPermission('feature.companies.import')"
+              class="relative shrink-0"
+            >
+              <summary
+                class="inline-flex h-8 list-none cursor-pointer items-center justify-center gap-1 rounded-lg border border-amber-500 bg-white px-2.5 text-xs font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor"/>
+                  <path d="M12 21V9m0 0l4 4m-4-4l-4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <span class="hidden sm:inline">Bản đồ</span>
-              </router-link>
-              <router-link
-                to="/companies/create"
-                class="inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-brand-500 px-2.5 text-xs font-medium text-white transition hover:bg-brand-600"
-              >
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 4.16669V15.8334M4.16669 10H15.8334" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                Tạo mới
-              </router-link>
-              <div
-                v-if="companyImportDocs"
-                class="hidden 2xl:inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-[11px] text-blue-800 dark:border-blue-800/40 dark:bg-blue-900/20 dark:text-blue-200"
-              >
-                <a
-                  :href="toAbsoluteUrl(companyImportDocs.companyImportTemplateUrl)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="underline"
+                Nhập
+              </summary>
+              <div class="absolute right-0 z-50 mt-1 min-w-[240px] rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                <button
+                  type="button"
+                  @click="openImportModal('companies')"
+                  class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
                 >
-                  Mẫu import
-                </a>
+                  Import danh sách mới
+                </button>
+                <button
+                  type="button"
+                  @click="openImportModal('identity')"
+                  class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  Import định danh
+                </button>
+                <button
+                  type="button"
+                  @click="openImportHistory"
+                  class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  Lịch sử import
+                </button>
               </div>
+            </details>
+            <router-link
+              to="/companies/map"
+              title="Xem bản đồ"
+              class="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg border border-brand-500 bg-white px-2.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-400 dark:bg-gray-900 dark:text-brand-400 dark:hover:bg-brand-500/10"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" fill="currentColor"/>
+              </svg>
+              <span class="hidden sm:inline">Bản đồ</span>
+            </router-link>
+            <router-link
+              to="/companies/create"
+              class="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg bg-brand-500 px-2.5 text-xs font-medium text-white transition hover:bg-brand-600"
+            >
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+                <path d="M10 4.16669V15.8334M4.16669 10H15.8334" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Tạo mới
+            </router-link>
+            <div
+              v-if="companyImportDocs"
+              class="hidden shrink-0 items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-[11px] text-blue-800 2xl:inline-flex dark:border-blue-800/40 dark:bg-blue-900/20 dark:text-blue-200"
+            >
+              <a
+                :href="toAbsoluteUrl(companyImportDocs.companyImportTemplateUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="underline"
+              >
+                Mẫu import
+              </a>
             </div>
           </div>
         </div>
@@ -557,8 +555,8 @@
                 />
               </div>
 
-              <!-- Tỉnh / Thành -->
-              <div>
+              <!-- Tỉnh / Thành (ẩn tạm — mặc định An Giang) -->
+              <div v-if="!HIDE_PROVINCE_FILTER">
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Tỉnh / Thành
                 </label>
@@ -569,6 +567,14 @@
                   search-placeholder="Tìm tỉnh/thành..."
                   empty-label="Chọn tỉnh/thành"
                   show-code
+                  :default-code="DEFAULT_PROVINCE_CODE"
+                />
+              </div>
+              <div v-else class="hidden" aria-hidden="true">
+                <ProvinceSelect
+                  ref="editProvinceSelectRef"
+                  v-model="editSelectedProvinceCode"
+                  :default-code="DEFAULT_PROVINCE_CODE"
                 />
               </div>
 
@@ -1384,6 +1390,8 @@ import IndustryCategorySelect from '@/components/forms/FormElements/IndustryCate
 import ProvinceSelect from '@/components/forms/FormElements/ProvinceSelect.vue'
 import WardSelect from '@/components/forms/FormElements/WardSelect.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
+import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
+import { locationService } from '@/services/locationService'
 import type { Company, CapitalMemberInput, CompanyImportResult, CompanyIdentityBulkItem, CompanyImportColumnMap, CompanyImportValueExtensionField, CompanyImportFormat, CompanyImportExampleConfig } from '@/types/company'
 import { COMPANY_IMPORT_COLUMN_LABELS } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
@@ -1456,11 +1464,11 @@ const isDeleteConfirmOpen = ref(false)
 const pendingDeleteIds = ref<number[]>([])
 const deletingCompanies = ref(false)
 const companyImportDocs = ref<CompanyImportDocs | null>(null)
-const filterProvinceCode = ref('')
+const filterProvinceCode = ref(DEFAULT_PROVINCE_CODE)
 const filterWardCode = ref('')
 const editProvinceSelectRef = ref<InstanceType<typeof ProvinceSelect> | null>(null)
 const editWardSelectRef = ref<InstanceType<typeof WardSelect> | null>(null)
-const editSelectedProvinceCode = ref('')
+const editSelectedProvinceCode = ref(DEFAULT_PROVINCE_CODE)
 const editSelectedWardCode = ref('')
 
 const editForm = reactive<Company>({
@@ -1857,10 +1865,14 @@ const resetFilters = () => {
   filter.trangThai = ''
   filter.loaiHinhId = ''
   filter.donViId = ''
-  filter.quanHuyen = ''
   filter.phuongXa = ''
-  filterProvinceCode.value = ''
   filterWardCode.value = ''
+  if (!HIDE_PROVINCE_FILTER) {
+    filter.quanHuyen = ''
+    filterProvinceCode.value = ''
+  } else {
+    filterProvinceCode.value = DEFAULT_PROVINCE_CODE
+  }
   store.setPage(1)
 }
 
@@ -2280,6 +2292,15 @@ watch(
 onMounted(async () => {
   orgUnits.value = await orgUnitService.getTree()
   await Promise.all([loadStatuses(), loadBusinessTypes(), loadCompanyImportDocs()])
+
+  if (HIDE_PROVINCE_FILTER) {
+    const provinces = await locationService.getProvinces()
+    const province = provinces.find((item) => item.code === DEFAULT_PROVINCE_CODE)
+    if (province) {
+      filter.quanHuyen = province.fullName
+    }
+  }
+
   store.fetchCompanies(currentCompanyFilters())
 
   onImportCompleted((payload) => {

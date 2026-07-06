@@ -255,6 +255,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
@@ -265,6 +266,7 @@ import type { HanhChinhMappingItem, ImportCounts, SyncResult } from '@/types/han
 import type { WardItem } from '@/types/location'
 
 const auth = useAuthStore()
+const route = useRoute()
 const canManage = computed(() => auth.hasPermission('feature.cadastral.manage'))
 
 const tabs = [
@@ -275,7 +277,14 @@ const tabs = [
 
 type TabKey = (typeof tabs)[number]['key']
 
-const activeTab = ref<TabKey>('lookup')
+const resolveTabFromQuery = (value: unknown): TabKey => {
+  const tab = String(value ?? 'lookup')
+  if (tab === 'legacy') return 'import'
+  if (tabs.some((item) => item.key === tab)) return tab as TabKey
+  return 'lookup'
+}
+
+const activeTab = ref<TabKey>(resolveTabFromQuery(route.query.tab))
 
 const loading = ref(true)
 const wards = ref<WardItem[]>([])
@@ -400,6 +409,13 @@ const loadMappings = async (page = 1) => {
 watch(selectedProvinceCode, () => {
   loadAll()
 })
+
+watch(
+  () => route.query.tab,
+  (tab) => {
+    activeTab.value = resolveTabFromQuery(tab)
+  },
+)
 
 watch(activeTab, (tab) => {
   if (tab === 'mapping' && mappings.value.length === 0) {

@@ -27,6 +27,8 @@ const props = withDefaults(
     showCode?: boolean
     disabled?: boolean
     dense?: boolean
+    autoSelectFirst?: boolean
+    defaultCode?: string
   }>(),
   {
     placeholder: 'Chọn tỉnh/thành',
@@ -35,6 +37,8 @@ const props = withDefaults(
     showCode: true,
     disabled: false,
     dense: false,
+    autoSelectFirst: false,
+    defaultCode: '',
   },
 )
 
@@ -57,6 +61,13 @@ onMounted(async () => {
   loading.value = true
   try {
     provinces.value = await locationService.getProvinces()
+    const initialCode = props.modelValue
+      || props.defaultCode
+      || (props.autoSelectFirst && provinces.value[0] ? provinces.value[0].code : '')
+
+    if (initialCode && initialCode !== props.modelValue) {
+      emit('update:modelValue', initialCode)
+    }
   } finally {
     loading.value = false
   }

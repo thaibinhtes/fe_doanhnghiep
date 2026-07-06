@@ -41,6 +41,7 @@
         <div class="flex flex-col gap-4">
           <div v-for="(menuGroup, groupIndex) in menuGroups" :key="groupIndex">
             <h2
+              v-if="menuGroup.title"
               :class="[
                 'mb-4 text-xs uppercase flex leading-[20px] text-gray-400',
                 !isExpanded && !isHovered
@@ -53,7 +54,7 @@
               </template>
               <HorizontalDots v-else />
             </h2>
-            <ul class="flex flex-col gap-4">
+            <ul class="flex flex-col gap-4" :class="{ 'mt-0': !menuGroup.title }">
               <li v-for="(item, index) in menuGroup.items" :key="item.name">
                 <button
                   v-if="item.subItems"
@@ -135,56 +136,75 @@
                     "
                   >
                     <ul class="mt-2 space-y-1 ml-9">
-                      <li v-for="subItem in item.subItems" :key="subItem.name">
+                      <li
+                        v-for="(subItem, subIndex) in item.subItems"
+                        :key="subItem.name"
+                      >
+                        <template v-if="subItem.subItems?.length">
+                          <button
+                            type="button"
+                            class="menu-dropdown-item menu-dropdown-item-inactive w-full text-left"
+                            :class="{
+                              'menu-dropdown-item-active': isNestedSubmenuOpen(
+                                groupIndex,
+                                index,
+                                subIndex,
+                                subItem,
+                              ),
+                            }"
+                            @click="toggleNestedSubmenu(groupIndex, index, subIndex)"
+                          >
+                            <span>{{ subItem.name }}</span>
+                            <ChevronDownIcon
+                              :class="[
+                                'ml-auto h-4 w-4 shrink-0 transition-transform duration-200',
+                                {
+                                  'rotate-180': isNestedSubmenuOpen(
+                                    groupIndex,
+                                    index,
+                                    subIndex,
+                                    subItem,
+                                  ),
+                                },
+                              ]"
+                            />
+                          </button>
+                          <ul
+                            v-show="isNestedSubmenuOpen(groupIndex, index, subIndex, subItem)"
+                            class="mt-1 space-y-1 border-l border-gray-200 pl-3 dark:border-gray-700"
+                          >
+                            <li
+                              v-for="nestedItem in subItem.subItems"
+                              :key="nestedItem.name"
+                            >
+                              <router-link
+                                v-if="nestedItem.path"
+                                :to="nestedItem.path"
+                                :class="[
+                                  'menu-dropdown-item text-sm',
+                                  {
+                                    'menu-dropdown-item-active': isActive(nestedItem.path),
+                                    'menu-dropdown-item-inactive': !isActive(nestedItem.path),
+                                  },
+                                ]"
+                              >
+                                {{ nestedItem.name }}
+                              </router-link>
+                            </li>
+                          </ul>
+                        </template>
                         <router-link
+                          v-else-if="subItem.path"
                           :to="subItem.path"
                           :class="[
                             'menu-dropdown-item',
                             {
-                              'menu-dropdown-item-active': isActive(
-                                subItem.path
-                              ),
-                              'menu-dropdown-item-inactive': !isActive(
-                                subItem.path
-                              ),
+                              'menu-dropdown-item-active': isActive(subItem.path),
+                              'menu-dropdown-item-inactive': !isActive(subItem.path),
                             },
                           ]"
                         >
                           {{ subItem.name }}
-                          <span class="flex items-center gap-1 ml-auto">
-                            <span
-                              v-if="subItem.new"
-                              :class="[
-                                'menu-dropdown-badge',
-                                {
-                                  'menu-dropdown-badge-active': isActive(
-                                    subItem.path
-                                  ),
-                                  'menu-dropdown-badge-inactive': !isActive(
-                                    subItem.path
-                                  ),
-                                },
-                              ]"
-                            >
-                              mới
-                            </span>
-                            <span
-                              v-if="subItem.pro"
-                              :class="[
-                                'menu-dropdown-badge',
-                                {
-                                  'menu-dropdown-badge-active': isActive(
-                                    subItem.path
-                                  ),
-                                  'menu-dropdown-badge-inactive': !isActive(
-                                    subItem.path
-                                  ),
-                                },
-                              ]"
-                            >
-                              cao cấp
-                            </span>
-                          </span>
                         </router-link>
                       </li>
                     </ul>
@@ -195,25 +215,29 @@
           </div>
         </div>
       </nav>
-      <!-- <SidebarWidget v-if="isExpanded || isHovered || isMobileOpen" /> -->
     </div>
   </aside>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import {
   ChevronDownIcon,
   HorizontalDots,
 } from "../../icons";
 import { useSidebar } from "@/composables/useSidebar";
-import { menuConfig } from "@/config/menu";
+import {
+  menuConfig,
+  filterMenuSubItems,
+  collectSubItemPaths,
+} from "@/config/menu";
 import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
 const auth = useAuthStore();
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
+const openNestedSubmenu = ref(null);
 
 const menuGroups = computed(() =>
   menuConfig
@@ -222,9 +246,7 @@ const menuGroups = computed(() =>
       items: group.items
         .map((item) => {
           if (item.subItems) {
-            const subItems = item.subItems.filter((sub) =>
-              auth.hasPermission(sub.permission),
-            );
+            const subItems = filterMenuSubItems(item.subItems, auth.hasPermission);
             if (subItems.length === 0) return null;
             return { ...item, subItems };
           }
@@ -240,30 +262,70 @@ const menuGroups = computed(() =>
     .filter((group) => group.items.length > 0),
 );
 
-const isActive = (path) => route.path === path;
+const isActive = (path) => {
+  if (!path) return false;
+
+  const [pathname, queryString] = path.split("?");
+  if (route.path !== pathname) return false;
+
+  if (!queryString) {
+    if (pathname === "/admin/cadastral") {
+      return !route.query.tab || route.query.tab === "lookup";
+    }
+    return true;
+  }
+
+  const expected = new URLSearchParams(queryString);
+  for (const [key, value] of expected.entries()) {
+    if (key === 'tab' && value === 'legacy') {
+      const current = String(route.query.tab ?? '')
+      if (current !== 'legacy' && current !== 'import') return false
+      continue
+    }
+    if (String(route.query[key] ?? "") !== value) return false;
+  }
+  return true;
+};
 
 const toggleSubmenu = (groupIndex, itemIndex) => {
   const key = `${groupIndex}-${itemIndex}`;
   openSubmenu.value = openSubmenu.value === key ? null : key;
 };
 
+const nestedSubmenuKey = (groupIndex, itemIndex, subIndex) =>
+  `${groupIndex}-${itemIndex}-${subIndex}`;
+
+const toggleNestedSubmenu = (groupIndex, itemIndex, subIndex) => {
+  const key = nestedSubmenuKey(groupIndex, itemIndex, subIndex);
+  openNestedSubmenu.value = openNestedSubmenu.value === key ? null : key;
+};
+
+const isNestedSubmenuOpen = (groupIndex, itemIndex, subIndex, subItem) => {
+  const key = nestedSubmenuKey(groupIndex, itemIndex, subIndex);
+  return (
+    openNestedSubmenu.value === key ||
+    collectSubItemPaths(subItem.subItems ?? []).some((path) => isActive(path))
+  );
+};
+
 const isAnySubmenuRouteActive = computed(() => {
   return menuGroups.value.some((group) =>
     group.items.some(
       (item) =>
-        item.subItems && item.subItems.some((subItem) => isActive(subItem.path))
-    )
+        item.subItems &&
+        collectSubItemPaths(item.subItems).some((path) => isActive(path)),
+    ),
   );
 });
 
 const isSubmenuOpen = (groupIndex, itemIndex) => {
   const key = `${groupIndex}-${itemIndex}`;
+  const item = menuGroups.value[groupIndex]?.items[itemIndex];
   return (
     openSubmenu.value === key ||
     (isAnySubmenuRouteActive.value &&
-      menuGroups.value[groupIndex].items[itemIndex].subItems?.some((subItem) =>
-        isActive(subItem.path)
-      ))
+      item?.subItems &&
+      collectSubItemPaths(item.subItems).some((path) => isActive(path)))
   );
 };
 
@@ -271,7 +333,7 @@ const startTransition = (el) => {
   el.style.height = "auto";
   const height = el.scrollHeight;
   el.style.height = "0px";
-  el.offsetHeight; // force reflow
+  el.offsetHeight;
   el.style.height = height + "px";
 };
 

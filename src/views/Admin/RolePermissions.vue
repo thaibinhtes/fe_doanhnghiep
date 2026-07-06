@@ -33,6 +33,9 @@
                 </h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400">
                   Chọn menu và tính năng được phép truy cập
+                  <span v-if="!isRootUser" class="block text-xs text-amber-600 dark:text-amber-400">
+                    Chỉ hiển thị các quyền thấp hơn hoặc bằng quyền của bạn.
+                  </span>
                 </p>
               </div>
               <button
@@ -85,11 +88,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { roleService } from '@/services/roleService'
+import { useAuthStore } from '@/stores/auth'
 import type { PermissionGroup, RoleItem } from '@/types/auth'
+
+const auth = useAuthStore()
+const isRootUser = computed(() => auth.user?.role?.slug === 'root')
 
 const loading = ref(true)
 const saving = ref(false)

@@ -25,6 +25,18 @@ const router = createRouter({
       meta: { title: 'Danh sách doanh nghiệp', requiresAuth: true, fillViewport: true },
     },
     {
+      path: '/cooperatives',
+      name: 'Cooperatives',
+      component: () => import('../views/Cooperatives.vue'),
+      meta: { title: 'Hợp tác xã', requiresAuth: true, fillViewport: true },
+    },
+    {
+      path: '/cooperatives/members',
+      name: 'Cooperative Members',
+      component: () => import('../views/Members.vue'),
+      meta: { title: 'Thành viên hợp tác xã', requiresAuth: true },
+    },
+    {
       path: '/companies/create',
       name: 'Create Company',
       component: () => import('../views/Companies/CreateCompany.vue'),
@@ -77,6 +89,12 @@ const router = createRouter({
       name: 'Company Business Types',
       component: () => import('../views/Admin/CompanyBusinessTypes.vue'),
       meta: { title: 'Loại hình doanh nghiệp', requiresAuth: true },
+    },
+    {
+      path: '/admin/cooperative-business-types',
+      name: 'Cooperative Business Types',
+      component: () => import('../views/Admin/CompanyBusinessTypes.vue'),
+      meta: { title: 'Danh mục loại hình hợp tác xã', requiresAuth: true, entitySegment: 'htx' },
     },
     {
       path: '/admin/industry-categories',

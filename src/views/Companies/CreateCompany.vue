@@ -56,8 +56,8 @@
               />
             </div>
 
-            <!-- Tỉnh / Thành -->
-            <div>
+            <!-- Tỉnh / Thành (ẩn tạm — mặc định An Giang) -->
+            <div v-if="!HIDE_PROVINCE_FILTER">
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Tỉnh / Thành
               </label>
@@ -68,6 +68,14 @@
                 search-placeholder="Tìm tỉnh/thành..."
                 empty-label="Chọn tỉnh/thành"
                 show-code
+                :default-code="DEFAULT_PROVINCE_CODE"
+              />
+            </div>
+            <div v-else class="hidden" aria-hidden="true">
+              <ProvinceSelect
+                ref="provinceSelectRef"
+                v-model="selectedProvinceCode"
+                :default-code="DEFAULT_PROVINCE_CODE"
               />
             </div>
 
@@ -464,6 +472,8 @@ import ComponentCard from '@/components/common/ComponentCard.vue'
 import IndustryCategorySelect from '@/components/forms/FormElements/IndustryCategorySelect.vue'
 import ProvinceSelect from '@/components/forms/FormElements/ProvinceSelect.vue'
 import WardSelect from '@/components/forms/FormElements/WardSelect.vue'
+import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
+import { locationService } from '@/services/locationService'
 
 const router = useRouter()
 const store = useCompaniesStore()
@@ -471,7 +481,7 @@ const { identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCom
 const { businessTypes, loadBusinessTypes, defaultTypeId } = useCompanyBusinessTypes()
 const provinceSelectRef = ref<InstanceType<typeof ProvinceSelect> | null>(null)
 const wardSelectRef = ref<InstanceType<typeof WardSelect> | null>(null)
-const selectedProvinceCode = ref('')
+const selectedProvinceCode = ref(DEFAULT_PROVINCE_CODE)
 const selectedWardCode = ref('')
 
 const form = reactive({
@@ -537,6 +547,14 @@ onMounted(async () => {
   await Promise.all([loadStatuses(), loadBusinessTypes()])
   if (defaultTypeId.value) {
     form.dnLoaiHinhId = defaultTypeId.value
+  }
+
+  if (HIDE_PROVINCE_FILTER) {
+    const provinces = await locationService.getProvinces()
+    const province = provinces.find((item) => item.code === DEFAULT_PROVINCE_CODE)
+    if (province) {
+      form.quanHuyen = province.fullName
+    }
   }
 })
 

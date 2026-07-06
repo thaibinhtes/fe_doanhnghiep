@@ -41,4 +41,11 @@ export const userService = {
   async delete(id: number): Promise<void> {
     await api.delete(`${BASE_PATH}/${id}`)
   },
+
+  async getAssignableRoles(): Promise<import('@/types/auth').RoleItem[]> {
+    const { data } = await api.get<{ data: import('@/types/auth').RoleItem[] }>(
+      `${BASE_PATH}/assignable-roles`,
+    )
+    return data.data
+  },
 }
