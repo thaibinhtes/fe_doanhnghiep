@@ -1,3 +1,5 @@
+import type { AuthUser } from '@/types/auth'
+
 export interface OrgUnit {
   id: number
   parentId: number | null
@@ -57,6 +59,42 @@ export function flattenOrgUnitTree(items: OrgUnit[], depth = 0): OrgUnitTreeRow[
   }
 
   return rows
+}
+
+/** ROOT (đơn vị gốc) hoặc role root — xem toàn bộ cây đơn vị. */
+export function hasUnrestrictedOrgScope(user: AuthUser | null | undefined): boolean {
+  if (!user) return false
+  if (user.role?.slug === 'root') return true
+  return user.donVi?.ma === 'ROOT'
+}
+
+export function extractOrgUnitSubtree(items: OrgUnit[], donViId: number): OrgUnit[] {
+  const unit = findOrgUnitById(items, donViId)
+  return unit ? [unit] : []
+}
+
+export function buildScopedOrgUnitOptions(
+  tree: OrgUnit[],
+  user: AuthUser | null | undefined,
+): Array<{ id: number; label: string; cap: number }> {
+  if (!user || hasUnrestrictedOrgScope(user)) {
+    return buildOrgUnitOptions(tree)
+  }
+  if (!user.donViId) return []
+  return buildOrgUnitOptions(extractOrgUnitSubtree(tree, user.donViId))
+}
+
+export function defaultOrgUnitFilterValue(
+  options: Array<{ id: number }>,
+  user: AuthUser | null | undefined,
+): string {
+  if (hasUnrestrictedOrgScope(user)) {
+    return ''
+  }
+  if (user?.donViId && options.some((opt) => opt.id === user.donViId)) {
+    return String(user.donViId)
+  }
+  return options[0] ? String(options[0].id) : ''
 }
 
 export function buildOrgUnitOptions(items: OrgUnit[], depth = 0): Array<{ id: number; label: string; cap: number }> {
@@ -128,6 +166,7 @@ export function resolveImportScopeOrgUnits(
   donVi: { id: number; ma: string; ten: string; cap: number } | null | undefined,
   tree: OrgUnit[],
   directChildren: OrgUnit[] = [],
+  includeAncestors = false,
 ): ImportScopeOrgUnit[] {
   if (!donViId) {
     return donVi
@@ -153,7 +192,7 @@ export function resolveImportScopeOrgUnits(
       ? directChildren
       : (primaryFromTree?.children ?? []).filter((item) => item.isActive !== false)
 
-  const ancestors = findOrgUnitAncestors(tree, donViId)
+  const ancestors = includeAncestors && donViId ? findOrgUnitAncestors(tree, donViId) : []
 
   return [
     ...ancestors,

@@ -7,7 +7,7 @@
             <div class="grid min-w-0 flex-1 grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(220px,1fr)] xl:items-center">
               <input v-model="filter.search" type="text" placeholder="Tìm kiếm tên, mã số thuế..." class="h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
               <select v-model="filter.donViId" class="h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                <option value="">Đơn vị</option>
+                <option v-if="hasUnrestrictedOrgScopeFlag" value="">Đơn vị</option>
                 <option v-for="opt in orgUnitOptions" :key="opt.id" :value="String(opt.id)">{{ opt.label }}</option>
               </select>
               <AdministrativeFilter
@@ -421,8 +421,7 @@ import { useAuthStore } from '@/stores/auth'
 import { cooperativeService } from '@/services/cooperativeService'
 import { orgUnitService } from '@/services/orgUnitService'
 import type { OrgUnit, ImportScopeOrgUnit } from '@/types/orgUnit'
-import { resolveImportScopeOrgUnits } from '@/types/orgUnit'
-import { locationService } from '@/services/locationService'
+import { buildScopedOrgUnitOptions, defaultOrgUnitFilterValue, hasUnrestrictedOrgScope, resolveImportScopeOrgUnits } from '@/types/orgUnit'
 import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
 import { columnsToDisplay, parseColumnInput } from '@/utils/excelColumns'
 import { formatImportUploadError } from '@/utils/apiError'
@@ -489,17 +488,12 @@ const importSubmitLabel = computed(() => {
   return 'Đang nhập...'
 })
 
-const orgUnitOptions = computed(() => {
-  const flatten = (nodes: OrgUnit[], depth = 0): Array<{ id: number; label: string }> => {
-    const result: Array<{ id: number; label: string }> = []
-    for (const node of nodes) {
-      result.push({ id: node.id, label: `${'— '.repeat(depth)}${node.ten}` })
-      if (node.children?.length) result.push(...flatten(node.children, depth + 1))
-    }
-    return result
-  }
-  return flatten(orgUnits.value)
-})
+const orgUnitOptions = computed(() => buildScopedOrgUnitOptions(orgUnits.value, auth.user))
+const hasUnrestrictedOrgScopeFlag = computed(() => hasUnrestrictedOrgScope(auth.user))
+
+const applyDefaultOrgUnitFilter = () => {
+  filter.donViId = defaultOrgUnitFilterValue(orgUnitOptions.value, auth.user)
+}
 
 function currentFilters(): CooperativeFilters {
   return {
@@ -518,7 +512,7 @@ function handleAdministrativeFilterChange(payload: { provinceName: string; wardN
 function resetFilters() {
   filter.search = ''
   filter.phuongXa = ''
-  filter.donViId = ''
+  applyDefaultOrgUnitFilter()
   filterWardCode.value = ''
   filterProvinceCode.value = DEFAULT_PROVINCE_CODE
   store.setPage(1)
@@ -567,7 +561,7 @@ async function loadImportScopeOrgUnits() {
     const donVi = auth.user?.donVi ?? null
 
     if (!donViId) {
-      importScopeOrgUnits.value = resolveImportScopeOrgUnits(null, donVi, orgUnits.value)
+      importScopeOrgUnits.value = resolveImportScopeOrgUnits(null, donVi, orgUnits.value, [], hasUnrestrictedOrgScope(auth.user))
       return
     }
 
@@ -579,7 +573,7 @@ async function loadImportScopeOrgUnits() {
       directChildren = []
     }
 
-    importScopeOrgUnits.value = resolveImportScopeOrgUnits(donViId, donVi, orgUnits.value, directChildren)
+    importScopeOrgUnits.value = resolveImportScopeOrgUnits(donViId, donVi, orgUnits.value, directChildren, hasUnrestrictedOrgScope(auth.user))
   } finally {
     loadingImportScope.value = false
   }
@@ -833,11 +827,7 @@ onImportFailed((payload) => {
 
 onMounted(async () => {
   orgUnits.value = await orgUnitService.getTree()
-  if (HIDE_PROVINCE_FILTER) {
-    const provinces = await locationService.getProvinces()
-    const province = provinces.find((item) => item.code === DEFAULT_PROVINCE_CODE)
-    // HTX filter uses phuongXa only
-  }
+  applyDefaultOrgUnitFilter()
   await store.fetchCooperatives(currentFilters())
 })
 

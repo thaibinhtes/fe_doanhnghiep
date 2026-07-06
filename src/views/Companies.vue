@@ -56,7 +56,7 @@
                 v-model="filter.donViId"
                 class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
               >
-                <option value="">Đơn vị</option>
+                <option v-if="hasUnrestrictedOrgScopeFlag" value="">Đơn vị</option>
                 <option v-for="opt in orgUnitOptions" :key="opt.id" :value="String(opt.id)">
                   {{ opt.label }}
                 </option>
@@ -1391,7 +1391,6 @@ import ProvinceSelect from '@/components/forms/FormElements/ProvinceSelect.vue'
 import WardSelect from '@/components/forms/FormElements/WardSelect.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
-import { locationService } from '@/services/locationService'
 import type { Company, CapitalMemberInput, CompanyImportResult, CompanyIdentityBulkItem, CompanyImportColumnMap, CompanyImportValueExtensionField, CompanyImportFormat, CompanyImportExampleConfig } from '@/types/company'
 import { COMPANY_IMPORT_COLUMN_LABELS } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
@@ -1399,7 +1398,7 @@ import { columnsToDisplay, parseColumnInput } from '@/utils/excelColumns'
 import { companyService } from '@/services/companyService'
 import { settingService, type CompanyImportDocs } from '@/services/settingService'
 import { orgUnitService } from '@/services/orgUnitService'
-import { buildOrgUnitOptions, resolveImportScopeOrgUnits } from '@/types/orgUnit'
+import { buildScopedOrgUnitOptions, defaultOrgUnitFilterValue, hasUnrestrictedOrgScope, resolveImportScopeOrgUnits } from '@/types/orgUnit'
 import type { OrgUnit, ImportScopeOrgUnit } from '@/types/orgUnit'
 import { formatImportUploadError } from '@/utils/apiError'
 import { useAuthStore } from '@/stores/auth'
@@ -1423,7 +1422,8 @@ const filter = reactive({
 })
 
 const orgUnits = ref<OrgUnit[]>([])
-const orgUnitOptions = computed(() => buildOrgUnitOptions(orgUnits.value))
+const orgUnitOptions = computed(() => buildScopedOrgUnitOptions(orgUnits.value, auth.user))
+const hasUnrestrictedOrgScopeFlag = computed(() => hasUnrestrictedOrgScope(auth.user))
 const importScopeOrgUnits = ref<ImportScopeOrgUnit[]>([])
 const loadingImportScope = ref(false)
 
@@ -1565,7 +1565,7 @@ async function loadImportScopeOrgUnits() {
     const donVi = auth.user?.donVi ?? null
 
     if (!donViId) {
-      importScopeOrgUnits.value = resolveImportScopeOrgUnits(null, donVi, orgUnits.value)
+      importScopeOrgUnits.value = resolveImportScopeOrgUnits(null, donVi, orgUnits.value, [], hasUnrestrictedOrgScope(auth.user))
       return
     }
 
@@ -1577,7 +1577,7 @@ async function loadImportScopeOrgUnits() {
       directChildren = []
     }
 
-    importScopeOrgUnits.value = resolveImportScopeOrgUnits(donViId, donVi, orgUnits.value, directChildren)
+    importScopeOrgUnits.value = resolveImportScopeOrgUnits(donViId, donVi, orgUnits.value, directChildren, hasUnrestrictedOrgScope(auth.user))
   } finally {
     loadingImportScope.value = false
   }
@@ -1860,17 +1860,22 @@ const handlePerPageChange = (event: Event) => {
   store.setPerPage(value)
 }
 
+const applyDefaultOrgUnitFilter = () => {
+  filter.donViId = defaultOrgUnitFilterValue(orgUnitOptions.value, auth.user)
+}
+
 const resetFilters = () => {
   filter.search = ''
   filter.trangThai = ''
   filter.loaiHinhId = ''
-  filter.donViId = ''
+  applyDefaultOrgUnitFilter()
   filter.phuongXa = ''
   filterWardCode.value = ''
   if (!HIDE_PROVINCE_FILTER) {
     filter.quanHuyen = ''
     filterProvinceCode.value = ''
   } else {
+    filter.quanHuyen = ''
     filterProvinceCode.value = DEFAULT_PROVINCE_CODE
   }
   store.setPage(1)
@@ -1882,7 +1887,9 @@ const handleCompanyAdministrativeFilterChange = (payload: {
   provinceName: string
   wardName: string
 }) => {
-  filter.quanHuyen = payload.provinceName
+  if (!HIDE_PROVINCE_FILTER) {
+    filter.quanHuyen = payload.provinceName
+  }
   filter.phuongXa = payload.wardName
   store.setPage(1)
 }
@@ -1942,7 +1949,7 @@ const currentCompanyFilters = () => ({
   trangThai: filter.trangThai,
   loaiHinhId: filter.loaiHinhId || undefined,
   donViId: filter.donViId || undefined,
-  quanHuyen: filter.quanHuyen,
+  quanHuyen: filter.quanHuyen || undefined,
   phuongXa: filter.phuongXa,
   page: store.page,
   per_page: store.perPage,
@@ -1967,7 +1974,7 @@ const handleExport = async () => {
       trangThai: filter.trangThai,
       loaiHinhId: filter.loaiHinhId || undefined,
       donViId: filter.donViId || undefined,
-      quanHuyen: filter.quanHuyen,
+      quanHuyen: filter.quanHuyen || undefined,
       phuongXa: filter.phuongXa,
     })
     downloadBlob(blob, `doanh-nghiep_${new Date().toISOString().slice(0, 10)}.xlsx`)
@@ -2291,15 +2298,8 @@ watch(
 
 onMounted(async () => {
   orgUnits.value = await orgUnitService.getTree()
+  applyDefaultOrgUnitFilter()
   await Promise.all([loadStatuses(), loadBusinessTypes(), loadCompanyImportDocs()])
-
-  if (HIDE_PROVINCE_FILTER) {
-    const provinces = await locationService.getProvinces()
-    const province = provinces.find((item) => item.code === DEFAULT_PROVINCE_CODE)
-    if (province) {
-      filter.quanHuyen = province.fullName
-    }
-  }
 
   store.fetchCompanies(currentCompanyFilters())
 
