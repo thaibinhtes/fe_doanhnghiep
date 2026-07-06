@@ -66,13 +66,24 @@ function showToast(type: ToastType, title: string, message?: string, duration = 
   }, duration)
 }
 
-function formatCompanyLabel(payload: ImportSocketPayload): string {
+function formatImportLabel(payload: ImportSocketPayload): string {
+  if (payload.entity === 'hop-tac-xa') {
+    const name = payload.tenHtx?.trim()
+    const mst = payload.maSoThue?.trim()
+    if (name && mst) return `${name} (${mst})`
+    return name || mst || `Dòng ${payload.row ?? ''}`
+  }
+
   const name = payload.tenDoanhNghiep?.trim()
   const msdn = payload.maSoDoanhNghiep?.trim()
   if (name && msdn) {
     return `${name} (${msdn})`
   }
   return name || msdn || `Dòng ${payload.row ?? ''}`
+}
+
+function isCompanyImportPayload(payload: ImportSocketPayload): boolean {
+  return payload.entity !== 'hop-tac-xa'
 }
 
 const {
@@ -84,18 +95,27 @@ const {
 
 onMounted(() => {
   onImportRowSuccess((payload) => {
-    showToast('success', 'Import thành công', formatCompanyLabel(payload))
+    if (!isCompanyImportPayload(payload)) {
+      showToast('success', 'Import HTX thành công', formatImportLabel(payload))
+      return
+    }
+    showToast('success', 'Import thành công', formatImportLabel(payload))
   })
 
   onImportRowDuplicate((payload) => {
-    showToast('warning', 'Doanh nghiệp trùng', formatCompanyLabel(payload))
+    if (!isCompanyImportPayload(payload)) {
+      showToast('warning', 'HTX trùng', formatImportLabel(payload))
+      return
+    }
+    showToast('warning', 'Doanh nghiệp trùng', formatImportLabel(payload))
   })
 
   onImportCompleted((payload) => {
     const duplicates = payload.result?.duplicates ?? payload.result?.updated ?? 0
+    const title = payload.entity === 'hop-tac-xa' ? 'Import HTX hoàn tất' : 'Import Excel hoàn tất'
     showToast(
       'success',
-      'Import Excel hoàn tất',
+      title,
       payload.message ??
         (payload.result
           ? `${payload.result.imported} mới, ${duplicates} trùng, ${payload.result.failed} lỗi`

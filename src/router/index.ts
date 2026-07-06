@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { getRoutePermission, getFirstAccessibleRoute } from '@/config/menu'
+import { getRoutePermission, getFirstAccessibleRoute, hasRouteAccess } from '@/config/menu'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -184,7 +184,7 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   const requiredPermission = getRoutePermission(to.path)
-  if (requiredPermission && auth.isAuthenticated && !auth.hasPermission(requiredPermission)) {
+  if (requiredPermission && auth.isAuthenticated && !hasRouteAccess(requiredPermission, auth.hasPermission)) {
     const fallback = homePath()
     if (fallback !== to.path) {
       return next({ path: fallback })

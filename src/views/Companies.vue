@@ -87,6 +87,16 @@
               Đặt lại
             </button>
             <button
+              v-if="hasUnrestrictedOrgScopeFlag && auth.hasPermission('feature.companies.delete')"
+              type="button"
+              :disabled="!filter.donViId || clearingByUnit"
+              title="Xóa toàn bộ doanh nghiệp theo đơn vị đang chọn"
+              class="inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-red-300 bg-white px-2.5 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-800 dark:bg-gray-900 dark:text-red-400 dark:hover:bg-red-950/30"
+              @click="openClearByUnitModal"
+            >
+              Xóa theo đơn vị
+            </button>
+            <button
               @click="handleExport"
               v-if="auth.hasPermission('feature.companies.export')"
               :disabled="exporting"
@@ -1010,6 +1020,48 @@
       </template>
     </Modal>
 
+    <!-- Clear by org unit (ROOT only) -->
+    <Modal v-if="isClearByUnitOpen" @close="closeClearByUnitModal">
+      <template v-slot:body>
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900 sm:p-8">
+          <h5 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+            Xóa toàn bộ doanh nghiệp theo đơn vị
+          </h5>
+          <p v-if="clearByUnitPreview" class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            Đơn vị: <strong>{{ clearByUnitPreview.donViMa }} — {{ clearByUnitPreview.donViTen }}</strong>
+            <span v-if="clearByUnitPreview.scopeDonViCount > 1" class="block mt-1 text-xs text-gray-500">
+              Bao gồm {{ clearByUnitPreview.scopeDonViCount }} đơn vị (đơn vị chọn + đơn vị con).
+            </span>
+          </p>
+          <p v-if="clearByUnitPreview" class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            Sẽ xóa <strong class="text-red-600">{{ clearByUnitPreview.count.toLocaleString('vi-VN') }}</strong> doanh nghiệp.
+          </p>
+          <p v-if="clearByUnitError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ clearByUnitError }}</p>
+          <p class="mt-2 text-sm text-red-600 dark:text-red-400">
+            Hành động này không thể hoàn tác.
+          </p>
+          <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              :disabled="clearingByUnit"
+              class="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+              @click="closeClearByUnitModal"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              :disabled="clearingByUnit || !clearByUnitPreview || clearByUnitPreview.count === 0"
+              class="inline-flex h-10 items-center justify-center rounded-lg bg-red-500 px-4 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+              @click="confirmClearByUnit"
+            >
+              {{ clearingByUnit ? 'Đang xóa...' : 'Xóa toàn bộ' }}
+            </button>
+          </div>
+        </div>
+      </template>
+    </Modal>
+
     <!-- Delete confirm modal -->
     <Modal v-if="isDeleteConfirmOpen" @close="closeDeleteConfirm">
       <template v-slot:body>
@@ -1463,6 +1515,16 @@ const selectedCompanyIds = ref<number[]>([])
 const isDeleteConfirmOpen = ref(false)
 const pendingDeleteIds = ref<number[]>([])
 const deletingCompanies = ref(false)
+const isClearByUnitOpen = ref(false)
+const clearingByUnit = ref(false)
+const clearByUnitPreview = ref<{
+  donViId: number
+  donViMa?: string
+  donViTen?: string
+  scopeDonViCount: number
+  count: number
+} | null>(null)
+const clearByUnitError = ref<string | null>(null)
 const companyImportDocs = ref<CompanyImportDocs | null>(null)
 const filterProvinceCode = ref(DEFAULT_PROVINCE_CODE)
 const filterWardCode = ref('')
@@ -2206,6 +2268,49 @@ const closeDeleteConfirm = () => {
   pendingDeleteIds.value = []
 }
 
+const openClearByUnitModal = async () => {
+  const donViId = Number(filter.donViId)
+  if (!donViId) return
+
+  clearByUnitError.value = null
+  clearByUnitPreview.value = null
+  isClearByUnitOpen.value = true
+
+  try {
+    clearByUnitPreview.value = await companyService.previewClearByDonVi(donViId)
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    clearByUnitError.value = axiosErr.response?.data?.message ?? 'Không tải được thông tin xóa theo đơn vị.'
+  }
+}
+
+const closeClearByUnitModal = () => {
+  if (clearingByUnit.value) return
+  isClearByUnitOpen.value = false
+  clearByUnitPreview.value = null
+  clearByUnitError.value = null
+}
+
+const confirmClearByUnit = async () => {
+  const donViId = Number(filter.donViId)
+  if (!donViId || !clearByUnitPreview.value) return
+
+  clearingByUnit.value = true
+  clearByUnitError.value = null
+  try {
+    await companyService.clearByDonVi(donViId)
+    selectedCompanyIds.value = []
+    store.setPage(1)
+    await store.fetchCompanies(currentCompanyFilters())
+    closeClearByUnitModal()
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    clearByUnitError.value = axiosErr.response?.data?.message ?? 'Xóa theo đơn vị thất bại.'
+  } finally {
+    clearingByUnit.value = false
+  }
+}
+
 const confirmDelete = async () => {
   if (pendingDeleteIds.value.length === 0) return
 
@@ -2304,12 +2409,12 @@ onMounted(async () => {
   store.fetchCompanies(currentCompanyFilters())
 
   onImportCompleted((payload) => {
-    if (payload.result) {
-      finishQueuedImport(payload.result)
-    }
+    if (payload.entity === 'hop-tac-xa' || !payload.result) return
+    finishQueuedImport(payload.result)
   })
 
   onImportFailed((payload) => {
+    if (payload.entity === 'hop-tac-xa') return
     finishQueuedImportFailed(payload.message ?? 'Import thất bại.')
   })
 })

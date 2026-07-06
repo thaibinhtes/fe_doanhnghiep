@@ -23,10 +23,20 @@
             </div>
             <div class="flex shrink-0 flex-wrap items-center gap-1.5 xl:justify-end">
               <button type="button" class="inline-flex h-8 items-center rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300" @click="resetFilters">Đặt lại</button>
-              <button v-if="auth.hasPermission('feature.companies.export')" type="button" :disabled="exporting" class="inline-flex h-8 items-center gap-1 rounded-lg border border-emerald-500 px-2.5 text-xs font-medium text-emerald-600 disabled:opacity-50" @click="handleExport">
+              <button
+                v-if="hasUnrestrictedOrgScopeFlag && (auth.hasPermission('feature.cooperatives.delete') || auth.hasPermission('feature.companies.delete'))"
+                type="button"
+                :disabled="!filter.donViId || clearingByUnit"
+                title="Xóa toàn bộ hợp tác xã theo đơn vị đang chọn"
+                class="inline-flex h-8 items-center rounded-lg border border-red-300 bg-white px-2.5 text-xs font-medium text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-800 dark:bg-gray-900 dark:text-red-400"
+                @click="openClearByUnitModal"
+              >
+                Xóa theo đơn vị
+              </button>
+              <button v-if="canExportCooperatives" type="button" :disabled="exporting" class="inline-flex h-8 items-center gap-1 rounded-lg border border-emerald-500 px-2.5 text-xs font-medium text-emerald-600 disabled:opacity-50" @click="handleExport">
                 {{ exporting ? 'Đang xuất...' : 'Xuất' }}
               </button>
-              <details v-if="auth.hasPermission('feature.companies.import')" class="relative">
+              <details v-if="canImportCooperatives" class="relative">
                 <summary class="inline-flex h-8 list-none cursor-pointer items-center gap-1 rounded-lg border border-amber-500 px-2.5 text-xs font-medium text-amber-600">Nhập</summary>
                 <div class="absolute right-0 z-50 mt-1 min-w-[220px] rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
                   <button type="button" class="flex w-full rounded-md px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800" @click="openImportModal">Import danh sách</button>
@@ -404,6 +414,36 @@
         </div>
       </template>
     </Modal>
+
+    <Modal v-if="isClearByUnitOpen" @close="closeClearByUnitModal">
+      <template #body>
+        <div class="mx-auto w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Xóa toàn bộ HTX theo đơn vị</h3>
+          <p v-if="clearByUnitPreview" class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            Đơn vị: <strong>{{ clearByUnitPreview.donViMa }} — {{ clearByUnitPreview.donViTen }}</strong>
+            <span v-if="clearByUnitPreview.scopeDonViCount > 1" class="mt-1 block text-xs text-gray-500">
+              Bao gồm {{ clearByUnitPreview.scopeDonViCount }} đơn vị (đơn vị chọn + đơn vị con).
+            </span>
+          </p>
+          <p v-if="clearByUnitPreview" class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            Sẽ xóa <strong class="text-red-600">{{ clearByUnitPreview.count.toLocaleString('vi-VN') }}</strong> hợp tác xã.
+          </p>
+          <p v-if="clearByUnitError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ clearByUnitError }}</p>
+          <p class="mt-2 text-sm text-red-600 dark:text-red-400">Hành động này không thể hoàn tác.</p>
+          <div class="mt-4 flex justify-end gap-2">
+            <button type="button" class="rounded-lg border px-4 py-2 text-sm" :disabled="clearingByUnit" @click="closeClearByUnitModal">Hủy</button>
+            <button
+              type="button"
+              class="rounded-lg bg-red-600 px-4 py-2 text-sm text-white disabled:opacity-50"
+              :disabled="clearingByUnit || !clearByUnitPreview || clearByUnitPreview.count === 0"
+              @click="confirmClearByUnit"
+            >
+              {{ clearingByUnit ? 'Đang xóa...' : 'Xóa toàn bộ' }}
+            </button>
+          </div>
+        </div>
+      </template>
+    </Modal>
   </AdminLayout>
 </template>
 
@@ -432,6 +472,13 @@ import { HTX_STC_EXAMPLE_CONFIG_CODE, HTX_STC_EXAMPLE_CONFIG_NAME } from '@/conf
 
 const store = useCooperativesStore()
 const auth = useAuthStore()
+const canExportCooperatives = computed(
+  () => auth.hasPermission('feature.cooperatives.export') || auth.hasPermission('feature.companies.export'),
+)
+const canImportCooperatives = computed(
+  () => auth.hasPermission('feature.cooperatives.import') || auth.hasPermission('feature.companies.import'),
+)
+const hasUnrestrictedOrgScopeFlag = computed(() => hasUnrestrictedOrgScope(auth.user))
 const { onImportCompleted, onImportFailed, trackImportJob, clearImportJob } = useImportNotifications()
 
 const pageSizeOptions = [15, 25, 50, 100, 200, 300, 400, 500]
@@ -471,6 +518,16 @@ const importScopeOrgUnits = ref<ImportScopeOrgUnit[]>([])
 const queuedImportJobId = ref<number | null>(null)
 
 const deleteTarget = ref<Cooperative | null>(null)
+const isClearByUnitOpen = ref(false)
+const clearingByUnit = ref(false)
+const clearByUnitPreview = ref<{
+  donViId: number
+  donViMa?: string
+  donViTen?: string
+  scopeDonViCount: number
+  count: number
+} | null>(null)
+const clearByUnitError = ref<string | null>(null)
 
 const importScopePrimaryUnit = computed(() => importScopeOrgUnits.value.find((unit) => unit.isPrimary) ?? null)
 const importScopeChildUnits = computed(() => importScopeOrgUnits.value.filter((unit) => !unit.isPrimary))
@@ -489,7 +546,6 @@ const importSubmitLabel = computed(() => {
 })
 
 const orgUnitOptions = computed(() => buildScopedOrgUnitOptions(orgUnits.value, auth.user))
-const hasUnrestrictedOrgScopeFlag = computed(() => hasUnrestrictedOrgScope(auth.user))
 
 const applyDefaultOrgUnitFilter = () => {
   filter.donViId = defaultOrgUnitFilterValue(orgUnitOptions.value, auth.user)
@@ -587,6 +643,48 @@ async function handleDelete() {
   if (!deleteTarget.value) return
   await store.deleteCooperative(deleteTarget.value.id)
   deleteTarget.value = null
+}
+
+async function openClearByUnitModal() {
+  const donViId = Number(filter.donViId)
+  if (!donViId) return
+
+  clearByUnitError.value = null
+  clearByUnitPreview.value = null
+  isClearByUnitOpen.value = true
+
+  try {
+    clearByUnitPreview.value = await cooperativeService.previewClearByDonVi(donViId)
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    clearByUnitError.value = axiosErr.response?.data?.message ?? 'Không tải được thông tin xóa theo đơn vị.'
+  }
+}
+
+function closeClearByUnitModal() {
+  if (clearingByUnit.value) return
+  isClearByUnitOpen.value = false
+  clearByUnitPreview.value = null
+  clearByUnitError.value = null
+}
+
+async function confirmClearByUnit() {
+  const donViId = Number(filter.donViId)
+  if (!donViId || !clearByUnitPreview.value) return
+
+  clearingByUnit.value = true
+  clearByUnitError.value = null
+  try {
+    await cooperativeService.clearByDonVi(donViId)
+    store.setPage(1)
+    await store.fetchCooperatives(currentFilters())
+    closeClearByUnitModal()
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    clearByUnitError.value = axiosErr.response?.data?.message ?? 'Xóa theo đơn vị thất bại.'
+  } finally {
+    clearingByUnit.value = false
+  }
 }
 
 function applyImportColumnMap(columnMap: CooperativeImportColumnMap, labels?: Record<string, string>) {

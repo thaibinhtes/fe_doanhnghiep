@@ -12,7 +12,10 @@ import {
 export interface MenuSubItem {
   name: string
   path?: string
+  /** Primary permission key (used in admin UI). */
   permission: string
+  /** When set, user needs any of these keys to see the item. */
+  permissions?: string[]
   subItems?: MenuSubItem[]
 }
 
@@ -51,7 +54,12 @@ export const menuConfig: MenuGroup[] = [
         name: 'Quản lý hợp tác xã',
         icon: BoxCubeIcon,
         subItems: [
-          { name: 'Hợp tác xã', path: '/cooperatives', permission: 'menu.companies.list' },
+          {
+            name: 'Hợp tác xã',
+            path: '/cooperatives',
+            permission: 'menu.cooperatives.list',
+            permissions: ['menu.cooperatives.list', 'menu.companies.list'],
+          },
           { name: 'Thành viên', path: '/cooperatives/members', permission: 'menu.members.list' },
         ],
       },
@@ -132,7 +140,9 @@ export const menuConfig: MenuGroup[] = [
   },
 ]
 
-export const routePermissions: Record<string, string> = {
+export type RoutePermission = string | string[]
+
+export const routePermissions: Record<string, RoutePermission> = {
   '/': 'menu.dashboard',
   '/dashboard': 'menu.dashboard',
   '/companies': 'menu.companies.list',
@@ -140,7 +150,7 @@ export const routePermissions: Record<string, string> = {
   '/companies/identity': 'menu.companies.identity',
   '/companies/create': 'menu.companies.create',
   '/companies/statuses': 'menu.companies.statuses',
-  '/cooperatives': 'menu.companies.list',
+  '/cooperatives': ['menu.cooperatives.list', 'menu.companies.list'],
   '/cooperatives/members': 'menu.members.list',
   '/members': 'menu.members.list',
   '/members/create': 'menu.members.create',
@@ -155,7 +165,16 @@ export const routePermissions: Record<string, string> = {
   '/admin/users': 'menu.admin.users',
 }
 
-export function getRoutePermission(path: string): string | undefined {
+export function canAccessPermission(
+  permission: string,
+  hasPermission: (key: string) => boolean,
+  alternatives?: string[],
+): boolean {
+  const keys = alternatives?.length ? alternatives : [permission]
+  return keys.some((key) => hasPermission(key))
+}
+
+export function getRoutePermission(path: string): RoutePermission | undefined {
   const pathname = path.split('?')[0]
   if (routePermissions[pathname]) {
     return routePermissions[pathname]
@@ -168,6 +187,17 @@ export function getRoutePermission(path: string): string | undefined {
   return undefined
 }
 
+export function hasRouteAccess(
+  required: RoutePermission | undefined,
+  hasPermission: (key: string) => boolean,
+): boolean {
+  if (!required) return true
+  if (Array.isArray(required)) {
+    return required.some((key) => hasPermission(key))
+  }
+  return hasPermission(required)
+}
+
 /** First menu route the user may open (stable order from routePermissions). */
 export function getFirstAccessibleRoute(hasPermission: (key: string) => boolean): string {
   const paths = Object.keys(routePermissions)
@@ -176,7 +206,7 @@ export function getFirstAccessibleRoute(hasPermission: (key: string) => boolean)
 
   for (const path of paths) {
     const permission = routePermissions[path]
-    if (permission && hasPermission(permission)) {
+    if (hasRouteAccess(permission, hasPermission)) {
       return path
     }
   }
@@ -193,11 +223,11 @@ export function filterMenuSubItems(
       if (sub.subItems?.length) {
         const nested = filterMenuSubItems(sub.subItems, hasPermission)
         if (nested.length === 0) return null
-        if (!hasPermission(sub.permission)) return null
+        if (!canAccessPermission(sub.permission, hasPermission, sub.permissions)) return null
         return { ...sub, subItems: nested }
       }
 
-      if (!hasPermission(sub.permission)) return null
+      if (!canAccessPermission(sub.permission, hasPermission, sub.permissions)) return null
       return sub
     })
     .filter((sub): sub is MenuSubItem => sub !== null)

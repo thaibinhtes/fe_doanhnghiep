@@ -154,6 +154,34 @@ export const companyService = {
     return data.data
   },
 
+  async previewClearByDonVi(donViId: number): Promise<{
+    donViId: number
+    donViMa?: string
+    donViTen?: string
+    scopeDonViCount: number
+    count: number
+  }> {
+    const { data } = await api.get<{ data: { donViId: number; donViMa?: string; donViTen?: string; scopeDonViCount: number; count: number } }>(
+      `${BASE_PATH}/clear-by-don-vi/preview`,
+      { params: { donViId } },
+    )
+    return data.data
+  },
+
+  async clearByDonVi(donViId: number): Promise<{
+    deleted: number
+    donViId: number
+    donViMa?: string
+    donViTen?: string
+    scopeDonViCount: number
+  }> {
+    const { data } = await api.delete<{
+      data: { deleted: number; donViId: number; donViMa?: string; donViTen?: string; scopeDonViCount: number }
+      message: string
+    }>(`${BASE_PATH}/clear-by-don-vi`, { data: { donViId } })
+    return data.data
+  },
+
   async exportExcel(filters?: CompanyFilters): Promise<Blob> {
     const { data } = await api.get<Blob>(`${BASE_PATH}/export`, {
       params: {

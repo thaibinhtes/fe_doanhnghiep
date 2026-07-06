@@ -16,7 +16,10 @@ export interface ImportRowSocketPayload {
   status: 'success' | 'duplicate' | 'failed'
   maSoDoanhNghiep?: string | null
   tenDoanhNghiep?: string | null
+  maSoThue?: string | null
+  tenHtx?: string | null
   doanhNghiepId?: number | null
+  hopTacXaId?: number | null
   message?: string | null
 }
 
@@ -39,7 +42,10 @@ export interface ImportSocketPayload {
   row?: number
   maSoDoanhNghiep?: string | null
   tenDoanhNghiep?: string | null
+  maSoThue?: string | null
+  tenHtx?: string | null
   doanhNghiepId?: number | null
+  hopTacXaId?: number | null
 }
 
 type TopicHandler = (payload: ImportSocketPayload) => void
