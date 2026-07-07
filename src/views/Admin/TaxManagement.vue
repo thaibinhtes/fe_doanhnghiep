@@ -8,70 +8,134 @@
           title="Đang import doanh nghiệp đóng thuế..."
           subtitle="Job đang chạy nền, bạn có thể tiếp tục thao tác và chờ thông báo hoàn tất."
         />
-        <div class="mb-4 flex justify-end gap-2">
-          <button
-            type="button"
-            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium dark:border-gray-700"
-            @click="openTaxPaymentHistoryModal"
-          >
-            Xem lịch sử đóng thuế
-          </button>
-          <div class="relative" ref="importDropdownRef">
-            <button type="button" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium dark:border-gray-700" @click="showImportMenu = !showImportMenu">
-              Nhập
+
+        <div class="mb-3 rounded-lg border border-gray-200 p-2 dark:border-gray-700">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <input
+              v-model="companySearch"
+              type="search"
+              placeholder="Tìm mã số thuế / tên doanh nghiệp..."
+              class="h-9 w-[220px] shrink-0 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+              @keyup.enter="loadCompanies(1)"
+            />
+            <button
+              type="button"
+              class="inline-flex h-8 shrink-0 items-center justify-center rounded-lg bg-brand-500 px-3 text-xs font-medium text-white transition hover:bg-brand-600"
+              @click="loadCompanies(1)"
+            >
+              Tìm
             </button>
-            <div v-if="showImportMenu" class="absolute right-0 z-20 mt-2 w-44 rounded-lg border border-gray-200 bg-white p-1 shadow dark:border-gray-700 dark:bg-gray-900">
-              <button type="button" class="block w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800" @click="openImportModal">
-                Import Excel
-              </button>
-              <button type="button" class="block w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800" @click="openTaxPaymentHistoryModal">
+            <button
+              type="button"
+              class="inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              @click="resetCompanyFilters"
+            >
+              Đặt lại
+            </button>
+            <div class="ml-auto flex shrink-0 items-center gap-1.5">
+              <button
+                type="button"
+                class="inline-flex h-8 items-center justify-center rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                @click="openTaxPaymentHistoryModal"
+              >
                 Lịch sử đóng thuế
               </button>
-              <button type="button" class="block w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800" @click="openHistoryModal">
-                Lịch sử import
-              </button>
+              <div class="relative" ref="importDropdownRef">
+                <button
+                  type="button"
+                  class="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-amber-500 bg-white px-2.5 text-xs font-medium text-amber-600 transition hover:bg-amber-50 dark:border-amber-400 dark:bg-gray-900 dark:text-amber-400 dark:hover:bg-amber-500/10"
+                  @click="showImportMenu = !showImportMenu"
+                >
+                  Nhập
+                </button>
+                <div v-if="showImportMenu" class="absolute right-0 z-20 mt-2 w-44 rounded-lg border border-gray-200 bg-white p-1 shadow dark:border-gray-700 dark:bg-gray-900">
+                  <button type="button" class="block w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800" @click="openImportModal">
+                    Import Excel
+                  </button>
+                  <button type="button" class="block w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800" @click="openHistoryModal">
+                    Lịch sử import
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="mb-4 flex max-w-2xl gap-2">
-          <input
-            v-model="companySearch"
-            type="search"
-            placeholder="Tìm mã số thuế / tên doanh nghiệp..."
-            class="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
-            @keyup.enter="loadCompanies(1)"
-          />
-          <button type="button" class="h-10 rounded-lg bg-brand-500 px-4 text-sm text-white" @click="loadCompanies(1)">Tìm</button>
+        <div v-if="companyLoading" class="flex min-h-[240px] items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700">
+          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
+        </div>
+        <div
+          v-else-if="companyRows.length === 0"
+          class="flex min-h-[240px] items-center justify-center rounded-xl border border-gray-200 text-sm text-gray-400 dark:border-gray-700"
+        >
+          Không có dữ liệu.
+        </div>
+        <div v-else class="overflow-auto rounded-xl border border-gray-200 dark:border-gray-700">
+          <div class="min-w-max w-full">
+            <div class="sticky top-0 z-10 flex border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
+              <div class="flex-none w-[50px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">TT</div>
+              <div class="flex-none w-[160px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Mã số thuế</div>
+              <div class="flex-none w-[min(420px,40vw)] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tên doanh nghiệp</div>
+              <div class="flex-none w-[220px] p-[5px]"></div>
+            </div>
+            <div class="divide-y divide-gray-200 dark:divide-gray-700">
+              <div
+                v-for="(item, index) in companyRows"
+                :key="item.id"
+                class="flex items-center hover:bg-gray-50 dark:hover:bg-gray-800/50"
+              >
+                <div class="flex-none w-[50px] p-[5px] text-sm text-gray-700 dark:text-gray-300">
+                  {{ (companyMeta.currentPage - 1) * companyMeta.perPage + index + 1 }}
+                </div>
+                <div class="flex-none w-[160px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words">
+                  {{ item.taxCode || '-' }}
+                </div>
+                <div class="flex-none w-[min(420px,40vw)] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words">
+                  {{ item.companyName }}
+                </div>
+                <div class="flex-none w-[220px] p-[5px]">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      class="inline-flex h-8 items-center justify-center rounded-lg bg-brand-500 px-2.5 text-xs font-medium text-white transition hover:bg-brand-600"
+                      @click="openTaxPaymentAssignModal(item)"
+                    >
+                      Đóng thuế
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex h-8 items-center justify-center rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                      @click="openCompanyPaymentHistory(item)"
+                    >
+                      Lịch sử
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-          <table class="min-w-[760px] w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-800/60">
-              <tr>
-                <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">MST</th>
-                <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Tên doanh nghiệp</th>
-                <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in companyRows" :key="item.id">
-                <td class="border border-gray-200 px-3 py-2 dark:border-gray-700">{{ item.taxCode || '-' }}</td>
-                <td class="border border-gray-200 px-3 py-2 dark:border-gray-700">{{ item.companyName }}</td>
-                <td class="border border-gray-200 px-3 py-2 dark:border-gray-700">
-                  <div class="flex items-center gap-3">
-                    <button type="button" class="text-brand-600 hover:underline" @click="openTaxPaymentAssignModal(item)">Đóng thuế</button>
-                    <button type="button" class="text-brand-600 hover:underline" @click="openCompanyPaymentHistory(item)">Xem lịch sử</button>
-                  </div>
-                </td>
-              </tr>
-              <tr v-if="companyRows.length === 0">
-                <td colspan="3" class="border border-gray-200 px-3 py-6 text-center text-gray-500 dark:border-gray-700">
-                  Không có dữ liệu.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-if="companyMeta.lastPage > 1" class="mt-3 flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
+          <span>Trang {{ companyMeta.currentPage }} / {{ companyMeta.lastPage }} · {{ companyMeta.total }} doanh nghiệp</span>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700"
+              :disabled="companyMeta.currentPage <= 1"
+              @click="loadCompanies(companyMeta.currentPage - 1)"
+            >
+              Trước
+            </button>
+            <button
+              type="button"
+              class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700"
+              :disabled="companyMeta.currentPage >= companyMeta.lastPage"
+              @click="loadCompanies(companyMeta.currentPage + 1)"
+            >
+              Sau
+            </button>
+          </div>
         </div>
       </ComponentCard>
 
@@ -290,7 +354,7 @@
                 type="button"
                 class="flex w-full flex-col gap-1 border-b border-gray-100 px-4 py-3 text-left transition last:border-b-0 dark:border-gray-800"
                 :class="selectedImportHistoryId === item.id ? 'bg-brand-50 dark:bg-brand-500/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/60'"
-                @click="selectedImportHistoryId = item.id"
+                @click="selectImportHistory(item.id)"
               >
                 <div class="flex items-center justify-between gap-2">
                   <span class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ item.originalFilename || `Import #${item.id}` }}</span>
@@ -300,7 +364,7 @@
                 </div>
                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatHistoryDate(item.createdAt) }}</span>
                 <span class="text-xs text-gray-600 dark:text-gray-300">
-                  0 mới · 0 trùng · {{ item.summary.failed }} lỗi
+                  {{ item.summary.imported }} mới · {{ item.summary.duplicates }} trùng · {{ item.summary.failed }} lỗi
                 </span>
               </button>
             </div>
@@ -313,13 +377,71 @@
                   type="button"
                   class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
                   :class="activeImportHistoryTab === tab.key ? tab.activeClass : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'"
-                  @click="activeImportHistoryTab = tab.key"
+                  @click="changeImportHistoryTab(tab.key)"
                 >
                   {{ tab.label }} ({{ tab.count }})
                 </button>
               </div>
-              <div class="flex min-h-[320px] items-center justify-center px-6 py-10 text-sm text-gray-500 dark:text-gray-400">
+              <div v-if="importHistoryRowsLoading" class="flex min-h-[320px] items-center justify-center px-6 py-10 text-sm text-gray-500 dark:text-gray-400">
+                Đang tải chi tiết...
+              </div>
+              <div v-else-if="importHistoryRowsError" class="flex min-h-[320px] items-center justify-center px-6 py-10 text-sm text-red-500">
+                {{ importHistoryRowsError }}
+              </div>
+              <div v-else-if="importHistoryRows.length === 0" class="flex min-h-[320px] items-center justify-center px-6 py-10 text-sm text-gray-500 dark:text-gray-400">
                 {{ importHistoryEmptyLabel }}
+              </div>
+              <div v-else class="max-h-[58vh] overflow-y-auto">
+                <table class="min-w-full text-sm">
+                  <thead class="sticky top-0 bg-gray-50 text-left text-xs uppercase text-gray-500 dark:bg-gray-900 dark:text-gray-400">
+                    <tr>
+                      <th class="px-4 py-3">Dòng</th>
+                      <th class="px-4 py-3">Mã DN</th>
+                      <th class="px-4 py-3">Tên doanh nghiệp</th>
+                      <th v-if="importHistoryType === 'company_tax'" class="px-4 py-3">ID đơn vị thuế</th>
+                      <th class="px-4 py-3">Ghi chú</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="row in importHistoryRows"
+                      :key="row.id"
+                      class="border-t border-gray-100 dark:border-gray-800"
+                    >
+                      <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ row.rowNumber }}</td>
+                      <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ row.maSoDoanhNghiep || '—' }}</td>
+                      <td class="px-4 py-3 text-gray-900 dark:text-white">{{ row.tenDoanhNghiep || '—' }}</td>
+                      <td v-if="importHistoryType === 'company_tax'" class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ row.taxUnitCode || '—' }}</td>
+                      <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ row.message || '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div
+                v-if="importHistoryRowsMeta && importHistoryRowsMeta.last_page > 1"
+                class="flex items-center justify-between border-t border-gray-200 px-4 py-3 text-sm dark:border-gray-700"
+              >
+                <span class="text-gray-500 dark:text-gray-400">
+                  Trang {{ importHistoryRowsMeta.current_page }} / {{ importHistoryRowsMeta.last_page }}
+                </span>
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-700"
+                    :disabled="importHistoryRowsMeta.current_page <= 1"
+                    @click="loadImportHistoryRows(importHistoryRowsMeta.current_page - 1)"
+                  >
+                    Trước
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-700"
+                    :disabled="importHistoryRowsMeta.current_page >= importHistoryRowsMeta.last_page"
+                    @click="loadImportHistoryRows(importHistoryRowsMeta.current_page + 1)"
+                  >
+                    Sau
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -490,6 +612,7 @@ import type {
   TaxCompanyPaymentHistoryItem,
   TaxImportColumnMap,
   TaxImportJobHistoryItem,
+  TaxImportJobRow,
   TaxImportResult,
   TaxUnit,
 } from '@/types/taxManagement'
@@ -506,6 +629,13 @@ const resolveTabFromQuery = (value: unknown): TabKey => {
 const activeTab = ref<TabKey>(resolveTabFromQuery(route.query.tab))
 const companyRows = ref<TaxCompanyItem[]>([])
 const companySearch = ref('')
+const companyLoading = ref(false)
+const companyMeta = reactive({
+  currentPage: 1,
+  lastPage: 1,
+  total: 0,
+  perPage: 50,
+})
 const taxUnits = ref<TaxUnit[]>([])
 const taxUnitMeta = reactive({
   currentPage: 1,
@@ -544,6 +674,10 @@ const importHistoryType = ref<'tax_units' | 'company_tax'>('tax_units')
 const importHistoryLoading = ref(false)
 const selectedImportHistoryId = ref<number | null>(null)
 const activeImportHistoryTab = ref<'success' | 'duplicate' | 'failed'>('success')
+const importHistoryRows = ref<TaxImportJobRow[]>([])
+const importHistoryRowsMeta = ref<{ current_page: number; last_page: number } | null>(null)
+const importHistoryRowsLoading = ref(false)
+const importHistoryRowsError = ref<string | null>(null)
 const taxPaymentHistoryRows = ref<TaxCompanyItem[]>([])
 const taxPaidDateEdits = reactive<Record<number, string>>({})
 const taxUnitImportDispatching = ref(false)
@@ -642,12 +776,26 @@ const activeImportFile = computed(() =>
 )
 
 const loadCompanies = async (page = 1) => {
-  const response = await taxManagementService.getCompanyTaxList({
-    page,
-    perPage: 100,
-    search: companySearch.value.trim() || undefined,
-  })
-  companyRows.value = response.data
+  companyLoading.value = true
+  try {
+    const response = await taxManagementService.getCompanyTaxList({
+      page,
+      perPage: companyMeta.perPage,
+      search: companySearch.value.trim() || undefined,
+    })
+    companyRows.value = response.data
+    companyMeta.currentPage = response.meta?.current_page ?? page
+    companyMeta.lastPage = response.meta?.last_page ?? 1
+    companyMeta.total = response.meta?.total ?? response.data.length
+    companyMeta.perPage = response.meta?.per_page ?? companyMeta.perPage
+  } finally {
+    companyLoading.value = false
+  }
+}
+
+const resetCompanyFilters = () => {
+  companySearch.value = ''
+  void loadCompanies(1)
 }
 
 const loadTaxPaymentHistory = async () => {
@@ -884,11 +1032,54 @@ const loadImportHistory = async () => {
       perPage: 50,
     })
     importHistory.value = response.data
-    selectedImportHistoryId.value = importHistory.value[0]?.id ?? null
-    activeImportHistoryTab.value = 'success'
+    if (importHistory.value.length > 0) {
+      await selectImportHistory(importHistory.value[0].id)
+    } else {
+      selectedImportHistoryId.value = null
+      importHistoryRows.value = []
+      importHistoryRowsMeta.value = null
+    }
   } finally {
     importHistoryLoading.value = false
   }
+}
+
+const selectImportHistory = async (jobId: number) => {
+  selectedImportHistoryId.value = jobId
+  activeImportHistoryTab.value = 'success'
+  await loadImportHistoryRows(1)
+}
+
+const loadImportHistoryRows = async (page = 1) => {
+  if (!selectedImportHistoryId.value) return
+
+  importHistoryRowsLoading.value = true
+  importHistoryRowsError.value = null
+  try {
+    const response = await taxManagementService.getImportJobRows(selectedImportHistoryId.value, {
+      page,
+      perPage: 50,
+      status: activeImportHistoryTab.value,
+    })
+    importHistoryRows.value = response.data
+    importHistoryRowsMeta.value = response.meta
+      ? {
+          current_page: response.meta.current_page ?? page,
+          last_page: response.meta.last_page ?? 1,
+        }
+      : null
+  } catch {
+    importHistoryRows.value = []
+    importHistoryRowsMeta.value = null
+    importHistoryRowsError.value = 'Không tải được chi tiết import.'
+  } finally {
+    importHistoryRowsLoading.value = false
+  }
+}
+
+const changeImportHistoryTab = (tab: 'success' | 'duplicate' | 'failed') => {
+  activeImportHistoryTab.value = tab
+  void loadImportHistoryRows(1)
 }
 
 const submitImport = async () => {

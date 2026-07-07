@@ -89,3 +89,18 @@ export interface TaxImportJobHistoryItem {
   startedAt?: string | null
   finishedAt?: string | null
 }
+
+export type TaxImportRowStatus = 'success' | 'duplicate' | 'failed'
+
+export interface TaxImportJobRow {
+  id: number
+  rowNumber: number
+  status: TaxImportRowStatus
+  maSoDoanhNghiep?: string | null
+  tenDoanhNghiep?: string | null
+  taxUnitCode?: string | null
+  doanhNghiepId?: number | null
+  taxUnitId?: number | null
+  message?: string | null
+  createdAt?: string | null
+}
