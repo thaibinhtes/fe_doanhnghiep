@@ -166,6 +166,7 @@ export interface SyncResult {
   matched: number
   updated: number
   skipped: number
+  alreadyLinked?: number
   unmapped: Array<{
     id: number
     maSoDoanhNghiep?: string
@@ -174,6 +175,22 @@ export interface SyncResult {
     xaPhuongCuCode?: string
     reason: string
   }>
+}
+
+export interface CompanyFieldSyncSourceOption {
+  key: 'hanh_chinh_cu' | 'hanh_chinh_moi'
+  label: string
+}
+
+export interface CompanyFieldSyncOption {
+  key: 'quanHuyen'
+  label: string
+  sources: CompanyFieldSyncSourceOption[]
+}
+
+export interface CompanyFieldSyncResult extends SyncResult {
+  field: string
+  sourceTable: string
 }
 
 export interface NewDataClearPreview {

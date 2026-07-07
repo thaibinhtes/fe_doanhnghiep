@@ -19,6 +19,8 @@ import type {
   NewWardItem,
   PaginatedResponse,
   SyncResult,
+  CompanyFieldSyncOption,
+  CompanyFieldSyncResult,
 } from '@/types/hanhChinh'
 
 function unwrap<T>(payload: unknown): T {
@@ -229,6 +231,20 @@ export const hanhChinhService = {
   async syncCompanies(dryRun = false): Promise<SyncResult> {
     const { data } = await api.post<{ data: SyncResult }>('/hanh-chinh/sync-doanh-nghiep', { dryRun })
     return unwrap<SyncResult>(data)
+  },
+
+  async getCompanyFieldSyncOptions(): Promise<CompanyFieldSyncOption[]> {
+    const { data } = await api.get<{ data: CompanyFieldSyncOption[] }>('/hanh-chinh/sync-doanh-nghiep/fields')
+    return unwrap<CompanyFieldSyncOption[]>(data)
+  },
+
+  async syncCompanyField(payload: {
+    field: 'quanHuyen'
+    sourceTable: 'hanh_chinh_cu' | 'hanh_chinh_moi'
+    dryRun?: boolean
+  }): Promise<CompanyFieldSyncResult> {
+    const { data } = await api.post<{ data: CompanyFieldSyncResult }>('/hanh-chinh/sync-doanh-nghiep-field', payload)
+    return unwrap<CompanyFieldSyncResult>(data)
   },
 
   async getUnmappedCompanies(): Promise<{ count: number; items: SyncResult['unmapped'] }> {

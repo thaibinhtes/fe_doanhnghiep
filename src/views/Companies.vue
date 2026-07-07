@@ -108,6 +108,18 @@
               </svg>
               <span class="hidden sm:inline">{{ exporting ? 'Đang xuất...' : 'Xuất' }}</span>
             </button>
+            <button
+              v-if="auth.hasPermission('feature.cadastral.manage')"
+              type="button"
+              title="Đồng bộ field hành chính"
+              class="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg border border-violet-500 bg-white px-2.5 text-xs font-medium text-violet-600 transition hover:bg-violet-50 dark:border-violet-400 dark:bg-gray-900 dark:text-violet-400 dark:hover:bg-violet-500/10"
+              @click="openFieldSyncModal"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M4 4v5h5M20 20v-5h-5M20 8a8 8 0 00-14.9-3M4 16a8 8 0 0014.9 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="hidden sm:inline">Sync</span>
+            </button>
             <details
               v-if="auth.hasPermission('feature.companies.import')"
               class="relative shrink-0"
@@ -279,6 +291,12 @@
               <div class="flex-none w-[180px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Đơn vị trực thuộc</div>
               <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Địa chỉ trụ sở chính</div>
               <div class="flex-none w-[120px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Quận / Huyện</div>
+              <div
+                v-if="showQuanHuyenCuMoiColumn"
+                class="flex-none w-[180px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400"
+              >
+                Quận / Huyện cũ / mới
+              </div>
               <div class="flex-none w-[120px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Phường/xã</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Vốn điều lệ</div>
               <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Trạng thái</div>
@@ -319,6 +337,12 @@
                 <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ formatDonVi(company) }}</div>
                 <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.diaChi }}</div>
                 <div class="flex-none w-[120px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.quanHuyen }}</div>
+                <div
+                  v-if="showQuanHuyenCuMoiColumn"
+                  class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed"
+                >
+                  {{ company.quanHuyenCuMoiLabel || '-' }}
+                </div>
                 <div class="flex-none w-[120px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.phuongXa }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ formatVND(company.vonDieuLe) }}</div>
                 <div class="flex-none w-[130px] p-[5px]">
@@ -1558,6 +1582,103 @@
     </Modal>
 
     <ImportHistoryModal :open="isImportHistoryOpen" @close="isImportHistoryOpen = false" />
+
+    <!-- Field sync modal -->
+    <Modal v-if="isFieldSyncModalOpen" @close="closeFieldSyncModal">
+      <template v-slot:body>
+        <div class="no-scrollbar relative w-full max-w-lg max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6">
+          <div class="mb-5 flex items-center justify-between">
+            <div>
+              <h5 class="text-lg font-semibold text-gray-900 dark:text-white">Đồng bộ field doanh nghiệp</h5>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Liên kết dữ liệu text import với bảng hành chính.
+              </p>
+            </div>
+            <button
+              type="button"
+              class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              @click="closeFieldSyncModal"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+
+          <div v-if="fieldSyncOptionsLoading" class="py-8 text-center text-sm text-gray-500">
+            Đang tải danh sách field...
+          </div>
+
+          <div v-else class="space-y-4">
+            <div>
+              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Chọn field</label>
+              <select
+                v-model="fieldSyncField"
+                class="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+              >
+                <option v-for="option in fieldSyncOptions" :key="option.key" :value="option.key">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Chọn bảng đồng bộ</label>
+              <select
+                v-model="fieldSyncSourceTable"
+                class="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+              >
+                <option v-for="source in activeFieldSyncSources" :key="source.key" :value="source.key">
+                  {{ source.label }}
+                </option>
+              </select>
+            </div>
+            <p class="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:bg-gray-800/60 dark:text-gray-300">
+              Khớp giá trị text cột <strong>{{ activeFieldSyncLabel }}</strong> với dữ liệu trong bảng đã chọn, sau đó lưu mã liên kết.
+            </p>
+
+            <div v-if="fieldSyncError" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
+              {{ fieldSyncError }}
+            </div>
+
+            <div v-if="fieldSyncResult" class="rounded-lg bg-gray-50 px-4 py-3 text-sm dark:bg-gray-800/60">
+              <p>
+                Khớp: {{ fieldSyncResult.matched }} · Cập nhật: {{ fieldSyncResult.updated }} · Đã liên kết: {{ fieldSyncResult.alreadyLinked ?? 0 }} · Bỏ qua: {{ fieldSyncResult.skipped }}
+              </p>
+              <p v-if="fieldSyncResult.unmapped.length" class="mt-1 text-amber-700 dark:text-amber-300">
+                Chưa map được: {{ fieldSyncResult.unmapped.length }} doanh nghiệp
+              </p>
+            </div>
+
+            <div class="flex flex-wrap justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+              <button
+                type="button"
+                class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                :disabled="fieldSyncing"
+                @click="closeFieldSyncModal"
+              >
+                Đóng
+              </button>
+              <button
+                type="button"
+                class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                :disabled="fieldSyncing"
+                @click="runFieldSync(true)"
+              >
+                Dry-run
+              </button>
+              <button
+                type="button"
+                class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+                :disabled="fieldSyncing"
+                @click="runFieldSync(false)"
+              >
+                {{ fieldSyncing ? 'Đang đồng bộ...' : 'Đồng bộ' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </Modal>
   </AdminLayout>
 </template>
 
@@ -1577,10 +1698,12 @@ import WardSelect from '@/components/forms/FormElements/WardSelect.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
 import type { Company, CapitalMemberInput, CompanyImportResult, CompanyIdentityBulkItem, CompanyImportColumnMap, CompanyImportValueExtensionField, CompanyImportFormat, CompanyImportExampleConfig } from '@/types/company'
+import type { CompanyFieldSyncOption, CompanyFieldSyncResult } from '@/types/hanhChinh'
 import { COMPANY_IMPORT_COLUMN_LABELS } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 import { columnsToDisplay, parseColumnInput } from '@/utils/excelColumns'
 import { companyService } from '@/services/companyService'
+import { hanhChinhService } from '@/services/hanhChinhService'
 import { settingService, type CompanyImportDocs } from '@/services/settingService'
 import { orgUnitService } from '@/services/orgUnitService'
 import { buildScopedOrgUnitOptions, defaultOrgUnitFilterValue, hasUnrestrictedOrgScope, resolveImportScopeOrgUnits } from '@/types/orgUnit'
@@ -1592,6 +1715,9 @@ import { useCompanyBusinessTypes } from '@/composables/useCompanyBusinessTypes'
 import { useImportNotifications } from '@/composables/useImportNotifications'
 
 const store = useCompaniesStore()
+const showQuanHuyenCuMoiColumn = computed(() =>
+  store.companies.some((company) => company.quanHuyenHanhChinhLinked),
+)
 const auth = useAuthStore()
 const router = useRouter()
 const { identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()
@@ -1616,6 +1742,14 @@ const isEditModalOpen = ref(false)
 const isStatusModalOpen = ref(false)
 const isImportModalOpen = ref(false)
 const isImportHistoryOpen = ref(false)
+const isFieldSyncModalOpen = ref(false)
+const fieldSyncOptions = ref<CompanyFieldSyncOption[]>([])
+const fieldSyncOptionsLoading = ref(false)
+const fieldSyncField = ref<'quanHuyen'>('quanHuyen')
+const fieldSyncSourceTable = ref<'hanh_chinh_cu' | 'hanh_chinh_moi'>('hanh_chinh_cu')
+const fieldSyncing = ref(false)
+const fieldSyncResult = ref<CompanyFieldSyncResult | null>(null)
+const fieldSyncError = ref('')
 const selectedCompanyId = ref<number | null>(null)
 const statusCompanyId = ref<number | null>(null)
 const exporting = ref(false)
@@ -1742,6 +1876,16 @@ const importModalDescription = computed(() =>
     : 'File gồm cột mã số doanh nghiệp. Trạng thái lấy theo option đã chọn.',
 )
 
+const activeFieldSyncSources = computed(() => {
+  const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value)
+  return field?.sources ?? []
+})
+
+const activeFieldSyncLabel = computed(() => {
+  const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value)
+  return field?.label ?? 'Quận / Huyện'
+})
+
 const importSubmitLabel = computed(() => {
   if (!importing.value) {
     return 'Nhập dữ liệu'
@@ -1763,6 +1907,62 @@ const importScopeChildUnits = computed(() => importScopeOrgUnits.value.filter((u
 function openImportHistory() {
   isImportHistoryOpen.value = true
 }
+
+async function loadFieldSyncOptions() {
+  fieldSyncOptionsLoading.value = true
+  fieldSyncError.value = ''
+  try {
+    fieldSyncOptions.value = await hanhChinhService.getCompanyFieldSyncOptions()
+    const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value) ?? fieldSyncOptions.value[0]
+    if (field) {
+      fieldSyncField.value = field.key
+      fieldSyncSourceTable.value = field.sources[0]?.key ?? 'hanh_chinh_cu'
+    }
+  } catch (err: unknown) {
+    fieldSyncError.value = err instanceof Error ? err.message : 'Không tải được danh sách field sync.'
+  } finally {
+    fieldSyncOptionsLoading.value = false
+  }
+}
+
+async function openFieldSyncModal() {
+  fieldSyncResult.value = null
+  fieldSyncError.value = ''
+  isFieldSyncModalOpen.value = true
+  if (fieldSyncOptions.value.length === 0) {
+    await loadFieldSyncOptions()
+  }
+}
+
+function closeFieldSyncModal() {
+  isFieldSyncModalOpen.value = false
+}
+
+async function runFieldSync(dryRun: boolean) {
+  fieldSyncing.value = true
+  fieldSyncError.value = ''
+  try {
+    fieldSyncResult.value = await hanhChinhService.syncCompanyField({
+      field: fieldSyncField.value,
+      sourceTable: fieldSyncSourceTable.value,
+      dryRun,
+    })
+    if (!dryRun) {
+      await store.fetchCompanies(currentCompanyFilters())
+    }
+  } catch (err: unknown) {
+    fieldSyncError.value = err instanceof Error ? err.message : 'Đồng bộ field thất bại.'
+  } finally {
+    fieldSyncing.value = false
+  }
+}
+
+watch(fieldSyncField, (field) => {
+  const option = fieldSyncOptions.value.find((item) => item.key === field)
+  if (option?.sources[0]) {
+    fieldSyncSourceTable.value = option.sources[0].key
+  }
+})
 
 async function loadImportScopeOrgUnits() {
   loadingImportScope.value = true

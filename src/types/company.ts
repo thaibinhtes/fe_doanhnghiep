@@ -46,6 +46,18 @@ export interface Company {
   lat?: number | null
   quanHuyen: string | null
   phuongXa: string | null
+  quanHuyenCuCode?: string | null
+  quanHuyenCu?: {
+    code: string
+    fullName: string
+  } | null
+  tinhThanhCode?: string | null
+  tinhThanh?: {
+    code: string
+    fullName: string
+  } | null
+  quanHuyenHanhChinhLinked?: boolean
+  quanHuyenCuMoiLabel?: string | null
   vonDieuLe: string | null
   trangThai: string | null
   dnTrangThaiId?: number | null

@@ -369,7 +369,64 @@
           </section>
 
           <section class="space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">3. Đồng bộ doanh nghiệp</h3>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">3. Đồng bộ theo field</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Liên kết dữ liệu text import thủ công với bảng hành chính. Hiện hỗ trợ field Quận / Huyện.
+            </p>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div>
+                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Chọn field</label>
+                <select
+                  v-model="fieldSyncField"
+                  class="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+                >
+                  <option v-for="option in fieldSyncOptions" :key="option.key" :value="option.key">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Chọn bảng đồng bộ</label>
+                <select
+                  v-model="fieldSyncSourceTable"
+                  class="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+                >
+                  <option v-for="source in activeFieldSyncSources" :key="source.key" :value="source.key">
+                    {{ source.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                :disabled="fieldSyncing"
+                @click="runFieldSync(true)"
+              >
+                Dry-run field
+              </button>
+              <button
+                type="button"
+                class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+                :disabled="fieldSyncing"
+                @click="runFieldSync(false)"
+              >
+                Đồng bộ field
+              </button>
+            </div>
+            <div v-if="fieldSyncResult" class="rounded-lg bg-gray-50 px-4 py-3 text-sm dark:bg-gray-800/60">
+              <p>
+                Khớp: {{ fieldSyncResult.matched }} · Cập nhật: {{ fieldSyncResult.updated }} · Đã liên kết: {{ fieldSyncResult.alreadyLinked ?? 0 }} · Bỏ qua: {{ fieldSyncResult.skipped }}
+              </p>
+              <p v-if="fieldSyncResult.unmapped.length" class="mt-1 text-amber-700 dark:text-amber-300">
+                Chưa map được: {{ fieldSyncResult.unmapped.length }} doanh nghiệp
+              </p>
+            </div>
+          </section>
+
+          <section class="space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">4. Đồng bộ doanh nghiệp (đầy đủ)</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
               Khớp doanh nghiệp theo quận/huyện + phường/xã cũ, cập nhật sang đơn vị hành chính mới.
             </p>
@@ -691,6 +748,8 @@ import type {
   NewWardItem,
   NewDataClearResult,
   SyncResult,
+  CompanyFieldSyncOption,
+  CompanyFieldSyncResult,
 } from '@/types/hanhChinh'
 
 const getWardMappings = (ward: LegacyWardItem): HanhChinhMappingItem[] => {
@@ -729,6 +788,11 @@ const activeTab = ref<TabKey>(resolveTabFromQuery(route.query.tab))
 
 const importing = ref(false)
 const syncing = ref(false)
+const fieldSyncing = ref(false)
+const fieldSyncOptions = ref<CompanyFieldSyncOption[]>([])
+const fieldSyncField = ref<'quanHuyen'>('quanHuyen')
+const fieldSyncSourceTable = ref<'hanh_chinh_cu' | 'hanh_chinh_moi'>('hanh_chinh_cu')
+const fieldSyncResult = ref<CompanyFieldSyncResult | null>(null)
 const actionError = ref('')
 
 const newLoading = ref(false)
@@ -766,6 +830,11 @@ const legacyImportFormatName = ref('')
 const newImportResult = ref<ImportCounts | null>(null)
 const legacyImportResult = ref<ImportCounts | null>(null)
 const syncResult = ref<SyncResult | null>(null)
+
+const activeFieldSyncSources = computed(() => {
+  const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value)
+  return field?.sources ?? []
+})
 
 const mappingLoading = ref(false)
 const mappings = ref<HanhChinhMappingItem[]>([])
@@ -1149,6 +1218,38 @@ const runSync = async (dryRun: boolean) => {
   }
 }
 
+const loadFieldSyncOptions = async () => {
+  fieldSyncOptions.value = await hanhChinhService.getCompanyFieldSyncOptions()
+  const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value) ?? fieldSyncOptions.value[0]
+  if (field) {
+    fieldSyncField.value = field.key
+    fieldSyncSourceTable.value = field.sources[0]?.key ?? 'hanh_chinh_cu'
+  }
+}
+
+const runFieldSync = async (dryRun: boolean) => {
+  fieldSyncing.value = true
+  actionError.value = ''
+  try {
+    fieldSyncResult.value = await hanhChinhService.syncCompanyField({
+      field: fieldSyncField.value,
+      sourceTable: fieldSyncSourceTable.value,
+      dryRun,
+    })
+  } catch (err: unknown) {
+    actionError.value = err instanceof Error ? err.message : 'Đồng bộ field thất bại'
+  } finally {
+    fieldSyncing.value = false
+  }
+}
+
+watch(fieldSyncField, (field) => {
+  const option = fieldSyncOptions.value.find((item) => item.key === field)
+  if (option?.sources[0]) {
+    fieldSyncSourceTable.value = option.sources[0].key
+  }
+})
+
 const legacyLocationLabel = (item: HanhChinhMappingItem) => {
   return item.xaPhuongCu?.quanHuyen?.fullName
     ?? item.xaPhuongCu?.quanHuyenCu?.fullName
@@ -1375,7 +1476,7 @@ watch(activeTab, (tab) => {
 })
 
 onMounted(async () => {
-  await Promise.all([loadLegacyImportConfig(), loadNewImportConfig()])
+  await Promise.all([loadLegacyImportConfig(), loadNewImportConfig(), loadFieldSyncOptions()])
   mappingImportStartRow.value = legacyImportStartRow.value
   if (activeTab.value === 'legacy') {
     await loadLegacyUnits(1)
