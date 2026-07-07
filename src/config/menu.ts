@@ -145,6 +145,11 @@ export const menuConfig: MenuGroup[] = [
             permission: 'menu.admin.users',
           },
           {
+            name: 'Danh mục lịch sử import',
+            path: '/admin/import-history',
+            permission: 'menu.import-history',
+          },
+          {
             name: 'Phân quyền',
             path: '/admin/roles',
             permission: 'menu.admin.roles',
@@ -179,6 +184,7 @@ export const routePermissions: Record<string, RoutePermission> = {
   '/admin/org-units': 'menu.admin.org-units',
   '/admin/tax-management': 'menu.admin.org-units',
   '/admin/users': 'menu.admin.users',
+  '/admin/import-history': 'menu.import-history',
 }
 
 export function canAccessPermission(

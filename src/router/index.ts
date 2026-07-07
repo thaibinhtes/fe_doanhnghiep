@@ -115,6 +115,12 @@ const router = createRouter({
       meta: { title: 'Quản lý thuế', requiresAuth: true },
     },
     {
+      path: '/admin/import-history',
+      name: 'Import History',
+      component: () => import('../views/Admin/ImportHistory.vue'),
+      meta: { title: 'Danh mục lịch sử import', requiresAuth: true },
+    },
+    {
       path: '/admin/users',
       name: 'User Management',
       component: () => import('../views/Admin/UserManagement.vue'),

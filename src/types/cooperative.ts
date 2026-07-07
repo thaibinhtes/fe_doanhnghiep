@@ -101,6 +101,15 @@ export interface CooperativeImportJobStatus {
   result?: CooperativeImportResult | null
   summary?: { imported: number; duplicates: number; failed: number }
   errorMessage?: string | null
+  importedBy?: {
+    id: number
+    name: string
+  } | null
+  donVi?: {
+    id: number
+    ten: string
+    ma: string
+  } | null
   startedAt?: string | null
   finishedAt?: string | null
   createdAt?: string | null

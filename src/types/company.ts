@@ -295,6 +295,15 @@ export interface CompanyImportJobListItem {
   result?: CompanyImportResult | null
   summary: CompanyImportJobSummary
   errorMessage?: string | null
+  importedBy?: {
+    id: number
+    name: string
+  } | null
+  donVi?: {
+    id: number
+    ten: string
+    ma: string
+  } | null
   startedAt?: string | null
   finishedAt?: string | null
   createdAt?: string | null
@@ -316,6 +325,15 @@ export interface CompanyImportJobStatus extends CompanyImportJobQueued {
   type: string
   result?: CompanyImportResult | null
   summary?: CompanyImportJobSummary
+  importedBy?: {
+    id: number
+    name: string
+  } | null
+  donVi?: {
+    id: number
+    ten: string
+    ma: string
+  } | null
   rowCounts?: {
     success: number
     duplicate: number
