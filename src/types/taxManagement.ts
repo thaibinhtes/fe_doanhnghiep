@@ -72,3 +72,20 @@ export interface TaxImportDispatchResult {
   originalFilename?: string
   entity?: string
 }
+
+export interface TaxImportJobHistoryItem {
+  id: number
+  type: 'tax_units' | 'company_tax' | string
+  status: 'pending' | 'processing' | 'completed' | 'failed' | string
+  originalFilename?: string | null
+  result?: Record<string, unknown> | null
+  summary: {
+    imported: number
+    duplicates: number
+    failed: number
+  }
+  errorMessage?: string | null
+  createdAt?: string | null
+  startedAt?: string | null
+  finishedAt?: string | null
+}

@@ -5,6 +5,7 @@ import type {
   TaxImportColumnMap,
   TaxImportConfig,
   TaxImportDispatchResult,
+  TaxImportJobHistoryItem,
   TaxImportResult,
   TaxCooperativeItem,
   TaxPaginatedResponse,
@@ -119,6 +120,11 @@ export const taxManagementService = {
     const { data } = await api.post<{ data: TaxImportDispatchResult }>('/tax-management/companies/import-excel', formData, {
       timeout: 600_000,
     })
+    return data.data
+  },
+
+  async getImportJobs(params: { type?: 'tax_units' | 'company_tax'; page?: number; perPage?: number } = {}) {
+    const { data } = await api.get<{ data: TaxPaginatedResponse<TaxImportJobHistoryItem> }>('/tax-management/import-jobs', { params })
     return data.data
   },
 }

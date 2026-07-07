@@ -261,19 +261,66 @@
     </Modal>
 
     <Modal v-if="showHistoryModal" @close="showHistoryModal = false">
-      <div class="no-scrollbar relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 dark:bg-gray-900">
-          <h3 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">Lịch sử import</h3>
-          <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">Các lần import gần đây của module Thuế.</p>
-          <div v-if="importHistory.length === 0" class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700">
+      <div class="no-scrollbar relative z-1 mx-auto w-full max-w-5xl max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6 lg:p-8">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Lịch sử import thuế</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Theo dõi các lần import đơn vị thuế và doanh nghiệp đóng thuế.</p>
+          <div class="mb-4 mt-3">
+            <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Lọc lịch sử import</label>
+            <select
+              v-model="importHistoryType"
+              class="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
+              @change="loadImportHistory()"
+            >
+              <option value="tax_units">Import đơn vị thuế</option>
+              <option value="company_tax">Import doanh nghiệp đóng thuế</option>
+            </select>
+          </div>
+
+          <div v-if="importHistoryLoading" class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700">
+            Đang tải lịch sử import...
+          </div>
+          <div v-else-if="importHistory.length === 0" class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700">
             Chưa có lịch sử import.
           </div>
-          <div v-else class="space-y-2">
-            <div v-for="item in importHistory" :key="item.id" class="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700">
-              <p class="font-medium text-gray-900 dark:text-white">{{ item.label }}</p>
-              <p class="mt-1 text-gray-600 dark:text-gray-300">
-                Tạo mới: {{ item.result.created }}, cập nhật: {{ item.result.updated }}, bỏ qua: {{ item.result.skipped ?? 0 }}, dòng đọc: {{ item.result.rows }}.
-              </p>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ item.createdAt }}</p>
+          <div v-else class="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+            <div class="max-h-[70vh] overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700">
+              <button
+                v-for="item in importHistory"
+                :key="item.id"
+                type="button"
+                class="flex w-full flex-col gap-1 border-b border-gray-100 px-4 py-3 text-left transition last:border-b-0 dark:border-gray-800"
+                :class="selectedImportHistoryId === item.id ? 'bg-brand-50 dark:bg-brand-500/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800/60'"
+                @click="selectedImportHistoryId = item.id"
+              >
+                <div class="flex items-center justify-between gap-2">
+                  <span class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ item.originalFilename || `Import #${item.id}` }}</span>
+                  <span class="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium" :class="statusBadgeClass(item.status)">
+                    {{ statusLabel(item.status) }}
+                  </span>
+                </div>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatHistoryDate(item.createdAt) }}</span>
+                <span class="text-xs text-gray-600 dark:text-gray-300">
+                  0 mới · 0 trùng · {{ item.summary.failed }} lỗi
+                </span>
+              </button>
+            </div>
+
+            <div class="rounded-xl border border-gray-200 dark:border-gray-700">
+              <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+                <button
+                  v-for="tab in importHistoryTabs"
+                  :key="tab.key"
+                  type="button"
+                  class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
+                  :class="activeImportHistoryTab === tab.key ? tab.activeClass : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'"
+                  @click="activeImportHistoryTab = tab.key"
+                >
+                  {{ tab.label }} ({{ tab.count }})
+                </button>
+              </div>
+              <div class="flex min-h-[320px] items-center justify-center px-6 py-10 text-sm text-gray-500 dark:text-gray-400">
+                {{ importHistoryEmptyLabel }}
+              </div>
             </div>
           </div>
       </div>
@@ -438,7 +485,14 @@ import Modal from '@/components/profile/Modal.vue'
 import { taxManagementService } from '@/services/taxManagementService'
 import { useImportNotifications } from '@/composables/useImportNotifications'
 import { columnsToDisplay, parseColumnInput } from '@/utils/excelColumns'
-import type { TaxCompanyItem, TaxCompanyPaymentHistoryItem, TaxImportColumnMap, TaxImportResult, TaxUnit } from '@/types/taxManagement'
+import type {
+  TaxCompanyItem,
+  TaxCompanyPaymentHistoryItem,
+  TaxImportColumnMap,
+  TaxImportJobHistoryItem,
+  TaxImportResult,
+  TaxUnit,
+} from '@/types/taxManagement'
 
 type TabKey = 'companies' | 'tax-units'
 
@@ -485,7 +539,11 @@ const showCompanyPaymentHistoryModal = ref(false)
 const showTaxUnitCompanyRangeModal = ref(false)
 const showTaxPaymentAssignModal = ref(false)
 const importDropdownRef = ref<HTMLElement | null>(null)
-const importHistory = ref<Array<{ id: string; label: string; result: TaxImportResult; createdAt: string }>>([])
+const importHistory = ref<TaxImportJobHistoryItem[]>([])
+const importHistoryType = ref<'tax_units' | 'company_tax'>('tax_units')
+const importHistoryLoading = ref(false)
+const selectedImportHistoryId = ref<number | null>(null)
+const activeImportHistoryTab = ref<'success' | 'duplicate' | 'failed'>('success')
 const taxPaymentHistoryRows = ref<TaxCompanyItem[]>([])
 const taxPaidDateEdits = reactive<Record<number, string>>({})
 const taxUnitImportDispatching = ref(false)
@@ -767,13 +825,70 @@ const importCompanyTaxExcel = async () => {
   }
 }
 
-const pushImportHistory = (label: string, result: TaxImportResult) => {
-  importHistory.value.unshift({
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    label,
-    result,
-    createdAt: new Date().toLocaleString('vi-VN'),
-  })
+const formatHistoryDate = (value?: string | null) => (value ? new Date(value).toLocaleString('vi-VN') : '-')
+
+const selectedImportHistory = computed(() =>
+  importHistory.value.find((item) => item.id === selectedImportHistoryId.value) ?? importHistory.value[0] ?? null,
+)
+
+const importHistoryTabs = computed(() => {
+  const summary = selectedImportHistory.value?.summary ?? { imported: 0, duplicates: 0, failed: 0 }
+  return [
+    {
+      key: 'success' as const,
+      label: 'Thành công',
+      count: summary.imported,
+      activeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+    },
+    {
+      key: 'duplicate' as const,
+      label: 'Trùng',
+      count: summary.duplicates,
+      activeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+    },
+    {
+      key: 'failed' as const,
+      label: 'Thất bại',
+      count: summary.failed,
+      activeClass: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
+    },
+  ]
+})
+
+const importHistoryEmptyLabel = computed(() => {
+  if (activeImportHistoryTab.value === 'success') return 'Không có bản ghi thành công.'
+  if (activeImportHistoryTab.value === 'duplicate') return 'Không có bản ghi trùng/cập nhật.'
+  return 'Không có bản ghi thất bại.'
+})
+
+const statusLabel = (status: TaxImportJobHistoryItem['status']) => {
+  if (status === 'completed') return 'Hoàn tất'
+  if (status === 'processing') return 'Đang xử lý'
+  if (status === 'failed') return 'Thất bại'
+  return 'Chờ xử lý'
+}
+
+const statusBadgeClass = (status: TaxImportJobHistoryItem['status']) => {
+  if (status === 'completed') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200'
+  if (status === 'processing') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200'
+  if (status === 'failed') return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200'
+  return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+}
+
+const loadImportHistory = async () => {
+  importHistoryLoading.value = true
+  try {
+    const response = await taxManagementService.getImportJobs({
+      type: importHistoryType.value,
+      page: 1,
+      perPage: 50,
+    })
+    importHistory.value = response.data
+    selectedImportHistoryId.value = importHistory.value[0]?.id ?? null
+    activeImportHistoryTab.value = 'success'
+  } finally {
+    importHistoryLoading.value = false
+  }
 }
 
 const submitImport = async () => {
@@ -795,6 +910,8 @@ const closeImportModal = () => {
 
 const openHistoryModal = () => {
   showImportMenu.value = false
+  importHistoryType.value = activeTab.value === 'companies' ? 'company_tax' : 'tax_units'
+  void loadImportHistory()
   showHistoryModal.value = true
 }
 
@@ -821,11 +938,13 @@ onMounted(async () => {
           skipped: (result as { skipped?: number }).skipped ?? ((result.duplicates ?? 0) + (result.failed ?? 0)),
           rows: (result as { rows?: number }).rows ?? 0,
         }
-        pushImportHistory('Import đơn vị thuế', taxUnitImportResult.value)
         selectedTaxUnitImportFile.value = null
         activeBackgroundImportEntity.value = null
 
         await Promise.all([loadTaxUnits(), loadTaxUnitOptions()])
+        if (showHistoryModal.value && importHistoryType.value === 'tax_units') {
+          await loadImportHistory()
+        }
         return
       }
 
@@ -836,11 +955,13 @@ onMounted(async () => {
           skipped: (result as { skipped?: number }).skipped ?? (result.failed ?? 0),
           rows: (result as { rows?: number }).rows ?? 0,
         }
-        pushImportHistory('Import doanh nghiệp đóng thuế', companyImportResult.value)
         selectedCompanyImportFile.value = null
         activeBackgroundImportEntity.value = null
 
         await loadCompanies()
+        if (showHistoryModal.value && importHistoryType.value === 'company_tax') {
+          await loadImportHistory()
+        }
       }
     }),
   )
