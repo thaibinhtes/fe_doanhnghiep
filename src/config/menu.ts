@@ -7,6 +7,7 @@ import {
   LayoutDashboardIcon,
   BoxCubeIcon,
   GridIcon,
+  ArchiveIcon,
 } from '@/icons'
 
 export interface MenuSubItem {
@@ -41,6 +42,12 @@ export const menuConfig: MenuGroup[] = [
         icon: LayoutDashboardIcon,
         path: '/dashboard',
         permission: 'menu.dashboard',
+      },
+      {
+        name: 'Lịch sử import',
+        icon: ArchiveIcon,
+        path: '/admin/import-history',
+        permission: 'menu.import-history',
       },
       {
         name: 'Quản lý doanh nghiệp',
@@ -143,11 +150,6 @@ export const menuConfig: MenuGroup[] = [
             name: 'Danh mục người dùng',
             path: '/admin/users',
             permission: 'menu.admin.users',
-          },
-          {
-            name: 'Danh mục lịch sử import',
-            path: '/admin/import-history',
-            permission: 'menu.import-history',
           },
           {
             name: 'Phân quyền',
