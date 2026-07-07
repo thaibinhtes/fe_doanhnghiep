@@ -27,18 +27,32 @@
           {{ loadError }}
         </div>
 
+        <div class="mb-4">
+          <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Lọc lịch sử import
+          </label>
+          <select
+            v-model="historyTypeFilter"
+            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+          >
+            <option value="all">Tất cả</option>
+            <option value="companies">Import doanh nghiệp</option>
+            <option value="identities">Import định danh</option>
+          </select>
+        </div>
+
         <div v-if="loadingJobs" class="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
           Đang tải lịch sử...
         </div>
 
-        <div v-else-if="jobs.length === 0" class="rounded-xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
+        <div v-else-if="filteredJobs.length === 0" class="rounded-xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
           <p class="text-sm text-gray-500 dark:text-gray-400">Chưa có lịch sử import.</p>
         </div>
 
         <div v-else class="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
           <div class="max-h-[70vh] overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700">
             <button
-              v-for="job in jobs"
+              v-for="job in filteredJobs"
               :key="job.id"
               type="button"
               class="flex w-full flex-col gap-1 border-b border-gray-100 px-4 py-3 text-left transition last:border-b-0 dark:border-gray-800"
@@ -188,6 +202,7 @@ const loadingRows = ref(false)
 const loadError = ref<string | null>(null)
 const rowsError = ref<string | null>(null)
 const jobs = ref<CompanyImportJobListItem[]>([])
+const historyTypeFilter = ref<'all' | 'companies' | 'identities'>('all')
 const selectedJobId = ref<number | null>(null)
 const selectedJob = ref<CompanyImportJobListItem | null>(null)
 const rows = ref<CompanyImportJobRow[]>([])
@@ -216,6 +231,13 @@ const rowTabs = computed(() => {
       activeClass: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
     },
   ]
+})
+
+const filteredJobs = computed(() => {
+  if (historyTypeFilter.value === 'all') {
+    return jobs.value
+  }
+  return jobs.value.filter((job) => job.type === historyTypeFilter.value)
 })
 
 const activeStatusLabel = computed(
@@ -269,8 +291,8 @@ async function loadJobs() {
   try {
     const response = await companyService.getImportJobs(1, 30)
     jobs.value = response.data
-    if (jobs.value.length > 0 && !selectedJobId.value) {
-      await selectJob(jobs.value[0].id)
+    if (filteredJobs.value.length > 0 && !selectedJobId.value) {
+      await selectJob(filteredJobs.value[0].id)
     }
   } catch (err: unknown) {
     jobs.value = []
@@ -347,10 +369,21 @@ watch(
   () => props.open,
   (isOpen) => {
     if (isOpen) {
+      historyTypeFilter.value = 'all'
       selectedJobId.value = null
       selectedJob.value = null
       void loadJobs()
     }
   },
 )
+
+watch(historyTypeFilter, async () => {
+  selectedJobId.value = null
+  selectedJob.value = null
+  rows.value = []
+  rowsMeta.value = null
+  if (filteredJobs.value.length > 0) {
+    await selectJob(filteredJobs.value[0].id)
+  }
+})
 </script>

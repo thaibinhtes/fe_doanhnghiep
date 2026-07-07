@@ -5,7 +5,9 @@
       aria-hidden="true"
       @click="$emit('close')"
     ></div>
-    <slot name="body"></slot>
+    <slot name="body">
+      <slot></slot>
+    </slot>
   </div>
 </template>
 

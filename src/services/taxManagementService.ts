@@ -1,6 +1,7 @@
 import api from './api'
 import type {
   TaxCompanyItem,
+  TaxCompanyPaymentHistoryItem,
   TaxImportColumnMap,
   TaxImportConfig,
   TaxImportDispatchResult,
@@ -53,6 +54,25 @@ export const taxManagementService = {
     return data.data
   },
 
+  async getCompanyTaxPaymentHistory(doanhNghiepId: number, params: { page?: number; perPage?: number } = {}) {
+    const { data } = await api.get<{ data: TaxPaginatedResponse<TaxCompanyPaymentHistoryItem> }>(
+      `/tax-management/companies/${doanhNghiepId}/payment-history`,
+      { params },
+    )
+    return data.data
+  },
+
+  async getCompaniesByTaxUnit(
+    taxUnitId: number,
+    params: { page?: number; perPage?: number; paidFrom?: string; paidTo?: string } = {},
+  ) {
+    const { data } = await api.get<{ data: TaxPaginatedResponse<TaxCompanyItem> }>(
+      `/tax-management/tax-units/${taxUnitId}/companies`,
+      { params },
+    )
+    return data.data
+  },
+
   async updateCompanyTaxUnit(payload: { doanhNghiepId: number; taxUnitId?: number | null; taxPaidAt?: string | null }) {
     await api.post('/tax-management/companies', payload)
   },
@@ -88,12 +108,13 @@ export const taxManagementService = {
 
   async importCompanyTaxFromExcel(
     file: File,
-    config?: { startRow?: number; columnMap?: TaxImportColumnMap },
+    config?: { startRow?: number; columnMap?: TaxImportColumnMap; taxPaidAt?: string },
   ): Promise<TaxImportDispatchResult> {
     const formData = new FormData()
     formData.append('file', file)
     if (config?.startRow !== undefined) formData.append('startRow', String(config.startRow))
     if (config?.columnMap) formData.append('columnMap', JSON.stringify(config.columnMap))
+    if (config?.taxPaidAt) formData.append('taxPaidAt', config.taxPaidAt)
 
     const { data } = await api.post<{ data: TaxImportDispatchResult }>('/tax-management/companies/import-excel', formData, {
       timeout: 600_000,

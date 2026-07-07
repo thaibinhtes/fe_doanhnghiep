@@ -19,6 +19,19 @@ export interface TaxCompanyItem {
   } | null
 }
 
+export interface TaxCompanyPaymentHistoryItem {
+  id: number
+  taxCode: string | null
+  taxPaidAt?: string | null
+  source?: string
+  taxUnit?: TaxUnit | null
+  importedBy?: {
+    id: number
+    name: string
+  } | null
+  createdAt?: string
+}
+
 export interface TaxCooperativeItem {
   id: number
   taxCode: string | null

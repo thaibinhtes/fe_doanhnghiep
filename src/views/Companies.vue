@@ -1193,6 +1193,18 @@
               </svg>
               {{ downloadingTemplate ? 'Đang tải mẫu...' : 'Tải file mẫu Excel (hệ thống)' }}
             </button>
+            <button
+              v-else
+              type="button"
+              @click="handleDownloadIdentityTemplate"
+              :disabled="downloadingTemplate"
+              class="inline-flex items-center gap-2 text-sm font-medium text-brand-600 hover:text-brand-700 disabled:opacity-50 dark:text-brand-400"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ downloadingTemplate ? 'Đang tải mẫu...' : 'Tải file mẫu định danh' }}
+            </button>
 
             <div
               v-if="importMode === 'companies'"
@@ -1341,9 +1353,130 @@
               </div>
             </div>
 
-            <p v-else class="text-sm text-gray-600 dark:text-gray-300">
-              Cột yêu cầu: <strong>mã số doanh nghiệp</strong> | <strong>tên doanh nghiệp</strong> | <strong>định danh (1/0)</strong>.
-            </p>
+            <div
+              v-else
+              class="rounded-xl border border-gray-200 p-4 dark:border-gray-700 space-y-3"
+            >
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Ngày định danh
+                  </label>
+                  <input
+                    v-model="identityImportDate"
+                    type="date"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Hàng bắt đầu đọc dữ liệu
+                  </label>
+                  <input
+                    v-model.number="importStartRow"
+                    type="number"
+                    min="1"
+                    max="1000"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Trạng thái định danh áp dụng cho danh sách import
+                </label>
+                <select
+                  v-model="identityImportStatus"
+                  class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                >
+                  <option value="dinh_danh">Định danh</option>
+                  <option value="chua_dinh_danh">Chưa định danh</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                  Cấu hình đã lưu (định danh)
+                </label>
+                <div class="flex flex-col gap-2 sm:flex-row">
+                  <select
+                    v-model="selectedIdentityImportConfigId"
+                    class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  >
+                    <option :value="''">— Chọn cấu hình —</option>
+                    <option v-for="config in identityImportConfigs" :key="config.id" :value="config.id">
+                      {{ config.name }}
+                    </option>
+                  </select>
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                    :disabled="!selectedIdentityImportConfigId"
+                    @click="applySelectedIdentityImportConfig"
+                  >
+                    Áp dụng
+                  </button>
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center rounded-lg border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                    :disabled="!selectedIdentityImportConfigId"
+                    @click="deleteSelectedIdentityImportConfig"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div class="flex-1">
+                  <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Tên cấu hình mới
+                  </label>
+                  <input
+                    v-model="identityImportConfigName"
+                    type="text"
+                    placeholder="VD: Định danh chuẩn A/B/C"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  />
+                </div>
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+                  :disabled="!identityImportConfigName.trim()"
+                  @click="saveIdentityImportConfig"
+                >
+                  Lưu cấu hình
+                </button>
+              </div>
+
+              <button
+                type="button"
+                class="mt-2 text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
+                @click="showImportColumnConfig = !showImportColumnConfig"
+              >
+                {{ showImportColumnConfig ? 'Ẩn' : 'Cấu hình' }} ánh xạ cột
+              </button>
+
+              <div v-if="showImportColumnConfig" class="mt-2 space-y-2">
+                <div
+                  v-for="(label, key) in importColumnLabels"
+                  :key="key"
+                  class="grid grid-cols-[1fr_120px] gap-2 items-center"
+                >
+                  <span class="text-xs text-gray-600 dark:text-gray-400">{{ label }}</span>
+                  <input
+                    v-model="importColumnInputs[key]"
+                    type="text"
+                    placeholder="A hoặc A-B"
+                    class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  />
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 pt-1">
+                  Cột yêu cầu: mã số doanh nghiệp. Trạng thái định danh lấy từ option đã chọn.
+                </p>
+              </div>
+            </div>
 
             <div
               class="rounded-xl border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-700"
@@ -1497,6 +1630,8 @@ const importFileInput = ref<HTMLInputElement | null>(null)
 const importResult = ref<CompanyImportResult | null>(null)
 const importError = ref<string | null>(null)
 const importMode = ref<'companies' | 'identity'>('companies')
+const identityImportDate = ref(new Date().toISOString().slice(0, 10))
+const identityImportStatus = ref<'dinh_danh' | 'chua_dinh_danh'>('dinh_danh')
 const importStartRow = ref(13)
 const importColumnInputs = reactive<Record<string, string>>({})
 const importColumnLabels = reactive<Record<string, string>>({})
@@ -1511,6 +1646,15 @@ const selectedImportFormatId = ref<number | ''>('')
 const importFormatName = ref('')
 const savingImportFormat = ref(false)
 const deletingImportFormat = ref(false)
+const identityImportConfigs = ref<Array<{
+  id: string
+  name: string
+  startRow: number
+  columnMap: CompanyImportColumnMap
+  identityDate: string
+}>>([])
+const selectedIdentityImportConfigId = ref<string>('')
+const identityImportConfigName = ref('')
 const selectedCompanyIds = ref<number[]>([])
 const isDeleteConfirmOpen = ref(false)
 const pendingDeleteIds = ref<number[]>([])
@@ -1595,7 +1739,7 @@ const importModalTitle = computed(() =>
 const importModalDescription = computed(() =>
   importMode.value === 'companies'
     ? 'Upload file Excel từ đơn vị. Import chạy nền — bạn sẽ nhận thông báo khi hoàn tất.'
-    : 'File gồm 3 cột: mã số doanh nghiệp | tên doanh nghiệp | định danh (1/0)',
+    : 'File gồm cột mã số doanh nghiệp. Trạng thái lấy theo option đã chọn.',
 )
 
 const importSubmitLabel = computed(() => {
@@ -1697,6 +1841,8 @@ const selectedImportConfigDescription = computed(() => {
   const config = importExampleConfigs.value.find((item) => item.id === selectedImportConfigId.value)
   return config?.description ?? ''
 })
+
+const IDENTITY_IMPORT_CONFIGS_STORAGE_KEY = 'companies_identity_import_configs_v1'
 
 function applyImportMapping(options: {
   startRow: number
@@ -1888,6 +2034,77 @@ async function loadImportColumnMapDefaults() {
   }
 }
 
+function loadIdentityImportConfigs() {
+  try {
+    const raw = localStorage.getItem(IDENTITY_IMPORT_CONFIGS_STORAGE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    identityImportConfigs.value = Array.isArray(parsed) ? parsed : []
+  } catch {
+    identityImportConfigs.value = []
+  }
+}
+
+function persistIdentityImportConfigs() {
+  localStorage.setItem(
+    IDENTITY_IMPORT_CONFIGS_STORAGE_KEY,
+    JSON.stringify(identityImportConfigs.value),
+  )
+}
+
+async function loadIdentityImportColumnMapDefaults() {
+  try {
+    const config = await companyService.getIdentityImportColumnMap()
+    importStartRow.value = config.startRow
+    applyImportColumnMap(config.columnMap, config.columnLabels)
+  } catch {
+    importStartRow.value = 2
+    applyImportColumnMap(
+      {
+        maSoDoanhNghiep: ['A'],
+      },
+      {
+        maSoDoanhNghiep: 'Mã số doanh nghiệp',
+      },
+    )
+  }
+}
+
+function applySelectedIdentityImportConfig() {
+  if (!selectedIdentityImportConfigId.value) return
+  const config = identityImportConfigs.value.find((item) => item.id === selectedIdentityImportConfigId.value)
+  if (!config) return
+  importStartRow.value = config.startRow
+  identityImportDate.value = config.identityDate || new Date().toISOString().slice(0, 10)
+  applyImportColumnMap(config.columnMap, {
+    maSoDoanhNghiep: 'Mã số doanh nghiệp',
+  })
+}
+
+function saveIdentityImportConfig() {
+  const name = identityImportConfigName.value.trim()
+  if (!name) return
+  const config = {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    name,
+    startRow: importStartRow.value,
+    columnMap: buildImportColumnMap(),
+    identityDate: identityImportDate.value,
+  }
+  identityImportConfigs.value.unshift(config)
+  persistIdentityImportConfigs()
+  selectedIdentityImportConfigId.value = config.id
+  identityImportConfigName.value = ''
+}
+
+function deleteSelectedIdentityImportConfig() {
+  if (!selectedIdentityImportConfigId.value) return
+  identityImportConfigs.value = identityImportConfigs.value.filter(
+    (item) => item.id !== selectedIdentityImportConfigId.value,
+  )
+  selectedIdentityImportConfigId.value = ''
+  persistIdentityImportConfigs()
+}
+
 const pageSizeOptions = [15, 25, 50, 100, 200, 300, 400, 500] as const
 
 const visiblePages = computed(() => {
@@ -2060,6 +2277,13 @@ const openImportModal = async (mode: 'companies' | 'identity') => {
   if (mode === 'companies') {
     await loadImportColumnMapDefaults()
     await Promise.all([loadImportExampleConfigs(), loadImportFormats(), loadImportScopeOrgUnits()])
+  } else {
+    identityImportDate.value = new Date().toISOString().slice(0, 10)
+    identityImportStatus.value = 'dinh_danh'
+    identityImportConfigName.value = ''
+    selectedIdentityImportConfigId.value = ''
+    loadIdentityImportConfigs()
+    await loadIdentityImportColumnMapDefaults()
   }
   isImportModalOpen.value = true
 }
@@ -2079,6 +2303,18 @@ const handleDownloadTemplate = async () => {
     downloadBlob(blob, 'mau-import-doanh-nghiep.xlsx')
   } catch {
     alert('Tải file mẫu thất bại.')
+  } finally {
+    downloadingTemplate.value = false
+  }
+}
+
+const handleDownloadIdentityTemplate = async () => {
+  downloadingTemplate.value = true
+  try {
+    const blob = await companyService.exportIdentityTemplate()
+    downloadBlob(blob, 'mau-import-dinh-danh-doanh-nghiep.xlsx')
+  } catch {
+    alert('Tải file mẫu định danh thất bại.')
   } finally {
     downloadingTemplate.value = false
   }
@@ -2114,9 +2350,17 @@ const handleImport = async () => {
       return
     }
 
-    const result = await companyService.importIdentityExcel(selectedImportFile.value)
-    importResult.value = result
-    await store.fetchCompanies(currentCompanyFilters())
+    const queued = await companyService.importIdentityExcel(selectedImportFile.value, {
+      startRow: importStartRow.value,
+      columnMap: buildImportColumnMap(),
+      identityDate: identityImportDate.value,
+      daCapNhatDinhDanh: identityImportStatus.value === 'dinh_danh',
+    })
+    activeImportJobId.value = queued.importJobId
+    trackImportJob(queued.importJobId)
+    importQueuedMessage.value = `File "${queued.originalFilename ?? selectedImportFile.value.name}" đã được đưa vào hàng đợi.`
+    startImportPolling(queued.importJobId)
+    return
   } catch (err: unknown) {
     importError.value = formatImportUploadError(err, 'Nhập Excel thất bại.')
     importing.value = false
@@ -2125,7 +2369,7 @@ const handleImport = async () => {
     clearImportJob()
     stopImportPolling()
   } finally {
-    if (importMode.value === 'identity') {
+    if (importMode.value === 'identity' && !activeImportJobId.value) {
       importing.value = false
     }
   }

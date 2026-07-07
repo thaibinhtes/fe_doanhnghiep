@@ -11,6 +11,7 @@ import type {
   CompanyImportJobRow,
   CompanyImportRowStatus,
   CompanyImportConfig,
+  CompanyIdentityImportConfig,
   CompanyImportFormat,
   CompanyImportExampleConfig,
   CompanyIdentityBulkItem,
@@ -211,6 +212,13 @@ export const companyService = {
     return data
   },
 
+  async exportIdentityTemplate(): Promise<Blob> {
+    const { data } = await api.get<Blob>(`${BASE_PATH}/export-template-dinh-danh`, {
+      responseType: 'blob',
+    })
+    return data
+  },
+
   async importExcel(
     file: File,
     config?: {
@@ -313,16 +321,43 @@ export const companyService = {
     await api.delete(`${BASE_PATH}/import-formats/${id}`)
   },
 
-  async importIdentityExcel(file: File): Promise<CompanyImportResult> {
+  async importIdentityExcel(
+    file: File,
+    config?: {
+      startRow?: number
+      columnMap?: Record<string, string[]>
+      identityDate?: string
+      daCapNhatDinhDanh?: boolean
+    },
+  ): Promise<CompanyImportJobQueued> {
     const formData = new FormData()
     formData.append('file', file)
+    if (config?.startRow !== undefined) {
+      formData.append('startRow', String(config.startRow))
+    }
+    if (config?.columnMap) {
+      formData.append('columnMap', JSON.stringify(config.columnMap))
+    }
+    if (config?.identityDate) {
+      formData.append('identityDate', config.identityDate)
+    }
+    if (config?.daCapNhatDinhDanh !== undefined) {
+      formData.append('daCapNhatDinhDanh', config.daCapNhatDinhDanh ? '1' : '0')
+    }
 
-    const { data } = await api.post<{ data: CompanyImportResult; message: string }>(
+    const { data } = await api.post<{ data: CompanyImportJobQueued; message: string }>(
       `${BASE_PATH}/import-dinh-danh`,
       formData,
       {
         timeout: 600_000,
       },
+    )
+    return data.data
+  },
+
+  async getIdentityImportColumnMap(): Promise<CompanyIdentityImportConfig> {
+    const { data } = await api.get<{ data: CompanyIdentityImportConfig }>(
+      `${BASE_PATH}/import-dinh-danh-column-map`,
     )
     return data.data
   },

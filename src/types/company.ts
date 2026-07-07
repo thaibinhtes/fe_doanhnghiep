@@ -188,6 +188,27 @@ export interface CompanyImportConfig {
   valueExtensions?: Record<string, string>
 }
 
+export interface CompanyIdentityImportConfig {
+  startRow: number
+  columnMap: CompanyImportColumnMap
+  columnLabels?: Record<string, string>
+}
+
+export interface CompanyIdentityImportSavedConfig extends CompanyIdentityImportConfig {
+  id: string
+  name: string
+  identityDate: string
+  createdAt: string
+}
+
+export interface CompanyIdentityImportHistoryItem {
+  id: string
+  fileName: string
+  identityDate: string
+  importedAt: string
+  result: CompanyImportResult
+}
+
 export interface CompanyImportValueExtensionOption {
   key: string
   label: string
