@@ -92,7 +92,7 @@ export const menuConfig: MenuGroup[] = [
               },
               {
                 name: 'Đơn vị hành chính mới',
-                path: '/admin/cadastral?tab=lookup',
+                path: '/admin/cadastral?tab=new',
                 permission: 'menu.admin.cadastral',
               },
               {

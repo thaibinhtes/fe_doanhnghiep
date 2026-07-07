@@ -270,7 +270,7 @@ const isActive = (path) => {
 
   if (!queryString) {
     if (pathname === "/admin/cadastral") {
-      return !route.query.tab || route.query.tab === "lookup";
+      return !route.query.tab || route.query.tab === "new" || route.query.tab === "lookup";
     }
     return true;
   }

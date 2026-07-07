@@ -6,7 +6,7 @@ export interface LegacyProvinceItem {
 export interface LegacyDistrictItem {
   code: string
   fullName: string
-  tinhThanhCuCode: string
+  tinhThanhCuCode?: string | null
 }
 
 export interface LegacyWardItem {
@@ -14,6 +14,7 @@ export interface LegacyWardItem {
   fullName: string
   unitType?: string | null
   quanHuyenCuCode: string
+  quanHuyenCu?: LegacyDistrictItem
   mapping?: HanhChinhMappingItem | null
 }
 
@@ -25,33 +26,136 @@ export interface HanhChinhMappingItem {
   newUnitType?: string | null
   notes?: string | null
   xaPhuongCu?: LegacyWardItem & {
-    quanHuyen?: LegacyDistrictItem & { tinhThanh?: LegacyProvinceItem }
+    quanHuyen?: LegacyDistrictItem
   }
   xaPhuongMoi?: {
     code: string
     fullName: string
+    unitType?: string | null
     tinhThanhCode: string
     tinhThanh?: LegacyProvinceItem
   }
 }
 
+export interface HanhChinhMappingGroupLegacyUnit {
+  mappingId: number
+  code: string
+  fullName?: string
+  unitType?: string | null
+  quanHuyen?: {
+    code: string
+    fullName: string
+  } | null
+}
+
+export interface HanhChinhMappingGroup {
+  groupNo?: number | null
+  xaPhuongMoiCode: string
+  newUnitType?: string | null
+  xaPhuongMoi?: {
+    code: string
+    fullName: string
+    unitType?: string | null
+    tinhThanhCode?: string
+    tinhThanh?: LegacyProvinceItem | null
+  } | null
+  legacyUnits: HanhChinhMappingGroupLegacyUnit[]
+}
+
+export interface LinkMappingPayload {
+  groupNo?: number
+  xaPhuongMoiCode: string
+  newUnitType?: string
+  notes?: string
+  xaPhuongCuCodes: string[]
+}
+
+export interface LinkMappingResult {
+  created: number
+  updated: number
+}
+
+export interface NewWardItem {
+  code: string
+  fullName: string
+  unitType?: string | null
+  tinhThanhCode?: string
+}
+
+export interface NewImportRow {
+  xaPhuongMoi: string
+  loaiMoi?: string
+}
+
+export interface HanhChinhNewImportConfig {
+  startRow: number
+  columnMap: HanhChinhImportColumnMap
+  columnLabels: Record<string, string>
+  standaloneColumnMap?: HanhChinhImportColumnMap
+  mappingColumnMap?: HanhChinhImportColumnMap
+  standaloneStartRow?: number
+  mappingStartRow?: number
+  valueExtensions?: Record<string, string>
+  defaultConfigCode?: string
+  standaloneConfigCode?: string
+}
+
 export interface LegacyImportRow {
   groupNo?: number
-  tinhThanhCu: string
   quanHuyenCu: string
   xaPhuongCu: string
   loaiCu?: string
-  xaPhuongMoi: string
+  xaPhuongMoi?: string
   loaiMoi?: string
   tinhThanhMoiCode?: string
   notes?: string
 }
 
+export type HanhChinhImportColumnMap = Record<string, string[]>
+
+export interface HanhChinhImportConfig {
+  startRow: number
+  columnMap: HanhChinhImportColumnMap
+  columnLabels: Record<string, string>
+  legacyOnlyColumnMap?: HanhChinhImportColumnMap
+  legacyOnlyColumnLabels?: Record<string, string>
+  legacyOnlyStartRow?: number
+  valueExtensions?: Record<string, string>
+  defaultConfigCode?: string
+  legacyOnlyConfigCode?: string
+}
+
+export interface HanhChinhImportExampleConfig {
+  id: number
+  name: string
+  code: string
+  description?: string | null
+  startRow: number
+  columnMap: HanhChinhImportColumnMap
+  valueExtensions?: Record<string, string>
+  sortOrder?: number
+}
+
+export interface HanhChinhImportFormat {
+  id: number
+  name: string
+  startRow: number
+  columnMap: HanhChinhImportColumnMap
+  valueExtensions?: Record<string, string>
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface ImportCounts {
   provinces?: number
   districts?: number
+  districtsUpdated?: number
   wards?: number
+  wardsUpdated?: number
   mappings?: number
+  mappingsUpdated?: number
+  skipped?: number
+  rows?: number
 }
 
 export interface SyncResult {
@@ -66,6 +170,18 @@ export interface SyncResult {
     xaPhuongCuCode?: string
     reason: string
   }>
+}
+
+export interface NewDataClearPreview {
+  wards: number
+  mappings: number
+  companiesLinked: number
+}
+
+export interface NewDataClearResult {
+  wards: number
+  mappings: number
+  companiesReset: number
 }
 
 export interface PaginatedResponse<T> {
