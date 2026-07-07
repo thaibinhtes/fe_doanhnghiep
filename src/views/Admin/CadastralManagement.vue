@@ -414,45 +414,41 @@
           <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
               <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Huyện/Thị xã (cũ)</label>
-              <select
+              <SearchableSelect
                 v-model="linkDistrictCode"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
-                @change="onLinkDistrictChange"
-              >
-                <option value="">Chọn huyện</option>
-                <option v-for="district in linkDistricts" :key="district.code" :value="district.code">
-                  {{ district.fullName }}
-                </option>
-              </select>
+                :options="linkDistrictOptions"
+                placeholder="Chọn huyện"
+                search-placeholder="Tìm huyện..."
+                empty-label="Chọn huyện"
+                dense
+              />
             </div>
             <div>
               <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Đơn vị hành chính mới</label>
-              <input
-                v-model="linkNewSearch"
-                type="search"
-                placeholder="Tìm đơn vị mới..."
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
-                @input="searchNewUnitsForLink"
-              />
-              <select
+              <SearchableSelect
                 v-model="linkNewCode"
-                class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
-                @change="onLinkNewChange"
-              >
-                <option value="">Chọn đơn vị mới</option>
-                <option v-for="unit in linkNewOptions" :key="unit.code" :value="unit.code">
-                  {{ unit.fullName }}<span v-if="unit.unitType"> ({{ unit.unitType }})</span>
-                </option>
-              </select>
+                :options="linkNewUnitOptions"
+                placeholder="Chọn đơn vị mới"
+                search-placeholder="Tìm đơn vị mới..."
+                empty-label="Chọn đơn vị mới"
+                :loading="linkNewLoading"
+                dense
+              />
             </div>
           </div>
 
           <div v-if="linkDistrictCode" class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
             <p class="mb-2 text-xs font-medium text-gray-700 dark:text-gray-200">Chọn đơn vị cũ (có thể chọn nhiều)</p>
+            <input
+              v-model="linkLegacySearch"
+              type="search"
+              placeholder="Tìm đơn vị cũ..."
+              class="mb-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900"
+            />
             <div v-if="linkLegacyLoading" class="py-4 text-center text-sm text-gray-500">Đang tải...</div>
             <div v-else class="max-h-48 space-y-1 overflow-y-auto">
               <label
-                v-for="ward in linkLegacyWards"
+                v-for="ward in filteredLinkLegacyWards"
                 :key="ward.code"
                 class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-800/60"
               >
@@ -472,7 +468,9 @@
                   <span v-else-if="ward.mapping" class="text-amber-600 dark:text-amber-400"> · đã liên kết</span>
                 </span>
               </label>
-              <p v-if="linkLegacyWards.length === 0" class="text-sm text-gray-500">Không có đơn vị trong huyện này.</p>
+              <p v-if="filteredLinkLegacyWards.length === 0" class="text-sm text-gray-500">
+                {{ linkLegacyWards.length === 0 ? 'Không có đơn vị trong huyện này.' : 'Không tìm thấy đơn vị phù hợp.' }}
+              </p>
             </div>
           </div>
 
@@ -672,6 +670,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import SearchableSelect, { type SearchableSelectOption } from '@/components/forms/FormElements/SearchableSelect.vue'
 import { hanhChinhService } from '@/services/hanhChinhService'
 import { useAuthStore } from '@/stores/auth'
 import { columnsToDisplay, parseColumnInput } from '@/utils/excelColumns'
@@ -766,11 +765,39 @@ const linkDistrictCode = ref('')
 const linkLegacyWards = ref<LegacyWardItem[]>([])
 const linkLegacyLoading = ref(false)
 const linkSelectedLegacyCodes = ref<string[]>([])
-const linkNewSearch = ref('')
+const linkLegacySearch = ref('')
 const linkNewCode = ref('')
 const linkNewOptions = ref<NewWardItem[]>([])
+const linkNewLoading = ref(false)
 const linkGroupNo = ref<number | null>(null)
 const linkResult = ref<LinkMappingResult | null>(null)
+
+const linkDistrictOptions = computed<SearchableSelectOption[]>(() =>
+  linkDistricts.value.map((district) => ({
+    value: district.code,
+    label: district.fullName,
+    searchText: district.fullName,
+  })),
+)
+
+const linkNewUnitOptions = computed<SearchableSelectOption[]>(() =>
+  linkNewOptions.value.map((unit) => ({
+    value: unit.code,
+    label: unit.unitType ? `${unit.fullName} (${unit.unitType})` : unit.fullName,
+    searchText: `${unit.fullName} ${unit.unitType ?? ''} ${unit.code}`,
+  })),
+)
+
+const filteredLinkLegacyWards = computed(() => {
+  const query = linkLegacySearch.value.trim().toLowerCase()
+  if (!query) return linkLegacyWards.value
+
+  return linkLegacyWards.value.filter((ward) => {
+    const linkedName = ward.mapping?.xaPhuongMoi?.fullName ?? ''
+    const haystack = `${ward.fullName} ${ward.unitType ?? ''} ${linkedName}`.toLowerCase()
+    return haystack.includes(query)
+  })
+})
 
 const selectedMappingImportFile = ref<File | null>(null)
 const mappingImportStartRow = ref(2)
@@ -1186,6 +1213,7 @@ const syncExistingLinkSelection = () => {
 
 const onLinkDistrictChange = async () => {
   linkLegacyWards.value = []
+  linkLegacySearch.value = ''
   linkSelectedLegacyCodes.value = []
   if (!linkDistrictCode.value) return
 
@@ -1202,19 +1230,41 @@ const onLinkNewChange = () => {
   syncExistingLinkSelection()
 }
 
-let linkNewSearchTimer: ReturnType<typeof setTimeout> | null = null
+const loadAllNewUnitsForLink = async () => {
+  linkNewLoading.value = true
+  try {
+    const firstPage = await hanhChinhService.getNewUnits({ page: 1, perPage: 200 })
+    const allUnits = [...firstPage.data]
+    const lastPage = firstPage.meta?.last_page ?? 1
 
-const searchNewUnitsForLink = () => {
-  if (linkNewSearchTimer) clearTimeout(linkNewSearchTimer)
-  linkNewSearchTimer = setTimeout(async () => {
-    const response = await hanhChinhService.getNewUnits({
-      page: 1,
-      perPage: 30,
-      search: linkNewSearch.value.trim() || undefined,
-    })
-    linkNewOptions.value = response.data
-  }, 300)
+    if (lastPage > 1) {
+      const rest = await Promise.all(
+        Array.from({ length: lastPage - 1 }, (_, index) =>
+          hanhChinhService.getNewUnits({ page: index + 2, perPage: 200 }),
+        ),
+      )
+      for (const page of rest) {
+        allUnits.push(...page.data)
+      }
+    }
+
+    linkNewOptions.value = allUnits
+  } finally {
+    linkNewLoading.value = false
+  }
 }
+
+watch(linkDistrictCode, (value, oldValue) => {
+  if (value !== oldValue) {
+    void onLinkDistrictChange()
+  }
+})
+
+watch(linkNewCode, (value, oldValue) => {
+  if (value !== oldValue) {
+    onLinkNewChange()
+  }
+})
 
 const submitLink = async () => {
   if (!linkNewCode.value || linkSelectedLegacyCodes.value.length === 0) return
@@ -1293,8 +1343,8 @@ watch(activeTab, (tab) => {
   if (tab === 'mapping') {
     reloadMappingViews()
     if (canManage.value && linkDistricts.value.length === 0) {
-      loadLinkDistricts()
-      searchNewUnitsForLink()
+      void loadLinkDistricts()
+      void loadAllNewUnitsForLink()
     }
   }
   if (tab === 'legacy') {
@@ -1318,7 +1368,7 @@ onMounted(async () => {
     await reloadMappingViews()
     if (canManage.value) {
       await loadLinkDistricts()
-      searchNewUnitsForLink()
+      await loadAllNewUnitsForLink()
     }
   }
 })
