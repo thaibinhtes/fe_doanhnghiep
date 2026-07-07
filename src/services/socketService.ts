@@ -46,6 +46,8 @@ export interface ImportSocketPayload {
   tenHtx?: string | null
   doanhNghiepId?: number | null
   hopTacXaId?: number | null
+  unitCode?: string | null
+  unitName?: string | null
 }
 
 type TopicHandler = (payload: ImportSocketPayload) => void

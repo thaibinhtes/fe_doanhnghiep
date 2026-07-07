@@ -67,6 +67,13 @@ function showToast(type: ToastType, title: string, message?: string, duration = 
 }
 
 function formatImportLabel(payload: ImportSocketPayload): string {
+  if (payload.entity === 'tax-unit') {
+    const unitCode = payload.unitCode?.trim()
+    const unitName = payload.unitName?.trim()
+    if (unitCode && unitName) return `${unitCode} - ${unitName}`
+    return unitCode || unitName || `Dòng ${payload.row ?? ''}`
+  }
+
   if (payload.entity === 'hop-tac-xa') {
     const name = payload.tenHtx?.trim()
     const mst = payload.maSoThue?.trim()
@@ -83,7 +90,7 @@ function formatImportLabel(payload: ImportSocketPayload): string {
 }
 
 function isCompanyImportPayload(payload: ImportSocketPayload): boolean {
-  return payload.entity !== 'hop-tac-xa'
+  return payload.entity !== 'hop-tac-xa' && payload.entity !== 'tax-unit'
 }
 
 const {
@@ -95,6 +102,11 @@ const {
 
 onMounted(() => {
   onImportRowSuccess((payload) => {
+    if (payload.entity === 'tax-unit') {
+      showToast('success', 'Import đơn vị thuế thành công', formatImportLabel(payload))
+      return
+    }
+
     if (!isCompanyImportPayload(payload)) {
       showToast('success', 'Import HTX thành công', formatImportLabel(payload))
       return
@@ -103,6 +115,11 @@ onMounted(() => {
   })
 
   onImportRowDuplicate((payload) => {
+    if (payload.entity === 'tax-unit') {
+      showToast('warning', 'Đơn vị thuế đã tồn tại', formatImportLabel(payload))
+      return
+    }
+
     if (!isCompanyImportPayload(payload)) {
       showToast('warning', 'HTX trùng', formatImportLabel(payload))
       return
@@ -112,7 +129,12 @@ onMounted(() => {
 
   onImportCompleted((payload) => {
     const duplicates = payload.result?.duplicates ?? payload.result?.updated ?? 0
-    const title = payload.entity === 'hop-tac-xa' ? 'Import HTX hoàn tất' : 'Import Excel hoàn tất'
+    const title =
+      payload.entity === 'hop-tac-xa'
+        ? 'Import HTX hoàn tất'
+        : payload.entity === 'tax-unit'
+          ? 'Import đơn vị thuế hoàn tất'
+          : 'Import Excel hoàn tất'
     showToast(
       'success',
       title,

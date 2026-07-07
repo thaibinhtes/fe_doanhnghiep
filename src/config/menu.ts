@@ -78,6 +78,23 @@ export const menuConfig: MenuGroup[] = [
         ],
       },
       {
+        name: 'Thuế',
+        icon: SettingsIcon,
+        permission: 'menu.admin.org-units',
+        subItems: [
+          {
+            name: 'Danh sách đơn vị thuế',
+            path: '/admin/tax-management?tab=tax-units',
+            permission: 'menu.admin.org-units',
+          },
+          {
+            name: 'Doanh nghiệp đóng thuế',
+            path: '/admin/tax-management?tab=companies',
+            permission: 'menu.admin.org-units',
+          },
+        ],
+      },
+      {
         name: 'Hệ thống và danh mục',
         icon: SettingsIcon,
         subItems: [
@@ -160,6 +177,7 @@ export const routePermissions: Record<string, RoutePermission> = {
   '/admin/cooperative-business-types': 'menu.admin.business-types',
   '/admin/industry-categories': 'menu.admin.industry-categories',
   '/admin/org-units': 'menu.admin.org-units',
+  '/admin/tax-management': 'menu.admin.org-units',
   '/admin/users': 'menu.admin.users',
 }
 

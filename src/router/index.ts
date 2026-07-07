@@ -109,6 +109,12 @@ const router = createRouter({
       meta: { title: 'Quản lý đơn vị', requiresAuth: true },
     },
     {
+      path: '/admin/tax-management',
+      name: 'Tax Management',
+      component: () => import('../views/Admin/TaxManagement.vue'),
+      meta: { title: 'Quản lý thuế', requiresAuth: true },
+    },
+    {
       path: '/admin/users',
       name: 'User Management',
       component: () => import('../views/Admin/UserManagement.vue'),
