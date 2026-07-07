@@ -406,7 +406,8 @@
       <!-- Liên kết cũ → mới -->
       <ComponentCard v-else title="Liên kết đơn vị hành chính cũ → mới">
         <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-          Nhiều đơn vị cũ có thể liên kết với một đơn vị mới (ví dụ: An Phú, Phú Hội (một phần), Phước Hưng (một phần), Vĩnh Hội Đông → An Phú).
+          Nhiều đơn vị cũ có thể liên kết với một đơn vị mới, và một đơn vị cũ cũng có thể liên kết nhiều đơn vị mới
+          (ví dụ: Phước Hưng (một phần) → An Phú và Khánh Bình).
         </p>
 
         <div v-if="canManage" class="mb-6 space-y-4 rounded-xl border border-gray-200 p-4 dark:border-gray-700">
@@ -457,15 +458,18 @@
                   {{ ward.fullName }}
                   <span v-if="ward.unitType" class="text-gray-500">({{ ward.unitType }})</span>
                   <span
-                    v-if="linkNewCode && ward.mapping?.xaPhuongMoiCode === linkNewCode"
+                    v-if="linkNewCode && isWardLinkedToNew(ward, linkNewCode)"
                     class="text-green-600 dark:text-green-400"
                   >
                     · đang liên kết
                   </span>
-                  <span v-else-if="ward.mapping?.xaPhuongMoi" class="text-amber-600 dark:text-amber-400">
-                    · → {{ ward.mapping.xaPhuongMoi.fullName }}
+                  <span
+                    v-for="other in getWardOtherMappings(ward, linkNewCode || undefined)"
+                    :key="other.id"
+                    class="text-amber-600 dark:text-amber-400"
+                  >
+                    · → {{ other.xaPhuongMoi?.fullName ?? other.xaPhuongMoiCode }}
                   </span>
-                  <span v-else-if="ward.mapping" class="text-amber-600 dark:text-amber-400"> · đã liên kết</span>
                 </span>
               </label>
               <p v-if="filteredLinkLegacyWards.length === 0" class="text-sm text-gray-500">
@@ -489,7 +493,7 @@
               <button
                 type="button"
                 class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
-                :disabled="linking || !linkNewCode || linkSelectedLegacyCodes.length === 0"
+                :disabled="linking || !linkNewCode"
                 @click="submitLink"
               >
                 {{ linking ? 'Đang lưu...' : 'Lưu liên kết' }}
@@ -497,7 +501,7 @@
             </div>
           </div>
           <p v-if="linkResult" class="text-sm text-green-600 dark:text-green-400">
-            Đã tạo {{ linkResult.created }} liên kết, cập nhật {{ linkResult.updated }}.
+            Đã tạo {{ linkResult.created }} liên kết, cập nhật {{ linkResult.updated }}<span v-if="linkResult.deleted">, xóa {{ linkResult.deleted }}</span>.
           </p>
         </div>
 
@@ -689,6 +693,18 @@ import type {
   SyncResult,
 } from '@/types/hanhChinh'
 
+const getWardMappings = (ward: LegacyWardItem): HanhChinhMappingItem[] => {
+  if (ward.mappings?.length) return ward.mappings
+  if (ward.mapping) return [ward.mapping]
+  return []
+}
+
+const isWardLinkedToNew = (ward: LegacyWardItem, newCode: string) =>
+  getWardMappings(ward).some((item) => item.xaPhuongMoiCode === newCode)
+
+const getWardOtherMappings = (ward: LegacyWardItem, excludeNewCode?: string) =>
+  getWardMappings(ward).filter((item) => item.xaPhuongMoiCode !== excludeNewCode)
+
 const auth = useAuthStore()
 const route = useRoute()
 const canManage = computed(() => auth.hasPermission('feature.cadastral.manage'))
@@ -793,8 +809,10 @@ const filteredLinkLegacyWards = computed(() => {
   if (!query) return linkLegacyWards.value
 
   return linkLegacyWards.value.filter((ward) => {
-    const linkedName = ward.mapping?.xaPhuongMoi?.fullName ?? ''
-    const haystack = `${ward.fullName} ${ward.unitType ?? ''} ${linkedName}`.toLowerCase()
+    const linkedNames = getWardMappings(ward)
+      .map((item) => item.xaPhuongMoi?.fullName ?? '')
+      .join(' ')
+    const haystack = `${ward.fullName} ${ward.unitType ?? ''} ${linkedNames}`.toLowerCase()
     return haystack.includes(query)
   })
 })
@@ -1201,13 +1219,13 @@ const syncExistingLinkSelection = () => {
     return
   }
 
-  const linkedWards = linkLegacyWards.value.filter(
-    (ward) => ward.mapping?.xaPhuongMoiCode === linkNewCode.value,
-  )
+  const linkedWards = linkLegacyWards.value.filter((ward) => isWardLinkedToNew(ward, linkNewCode.value))
 
   linkSelectedLegacyCodes.value = linkedWards.map((ward) => ward.code)
 
-  const groupNo = linkedWards.find((ward) => ward.mapping?.groupNo != null)?.mapping?.groupNo
+  const groupNo = linkedWards
+    .flatMap((ward) => getWardMappings(ward))
+    .find((item) => item.xaPhuongMoiCode === linkNewCode.value && item.groupNo != null)?.groupNo
   linkGroupNo.value = groupNo ?? null
 }
 
@@ -1267,7 +1285,7 @@ watch(linkNewCode, (value, oldValue) => {
 })
 
 const submitLink = async () => {
-  if (!linkNewCode.value || linkSelectedLegacyCodes.value.length === 0) return
+  if (!linkNewCode.value) return
 
   linking.value = true
   actionError.value = ''
@@ -1281,6 +1299,7 @@ const submitLink = async () => {
       xaPhuongMoiCode: linkNewCode.value,
       newUnitType: selectedNew?.unitType ?? undefined,
       xaPhuongCuCodes: [...linkSelectedLegacyCodes.value],
+      syncScopeCuCodes: linkLegacyWards.value.map((ward) => ward.code),
     })
     await reloadMappingViews()
     if (linkDistrictCode.value) {

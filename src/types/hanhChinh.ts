@@ -15,6 +15,8 @@ export interface LegacyWardItem {
   unitType?: string | null
   quanHuyenCuCode: string
   quanHuyenCu?: LegacyDistrictItem
+  mappings?: HanhChinhMappingItem[]
+  /** @deprecated Dùng mappings — giữ tương thích API cũ */
   mapping?: HanhChinhMappingItem | null
 }
 
@@ -68,11 +70,13 @@ export interface LinkMappingPayload {
   newUnitType?: string
   notes?: string
   xaPhuongCuCodes: string[]
+  syncScopeCuCodes?: string[]
 }
 
 export interface LinkMappingResult {
   created: number
   updated: number
+  deleted?: number
 }
 
 export interface NewWardItem {
