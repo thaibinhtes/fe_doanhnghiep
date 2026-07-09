@@ -43,6 +43,12 @@ const router = createRouter({
       meta: { title: 'Import hợp tác xã', requiresAuth: true },
     },
     {
+      path: '/cooperatives/import-history',
+      name: 'Cooperative Import History',
+      component: () => import('../views/Cooperatives/CooperativeImportHistory.vue'),
+      meta: { title: 'Lịch sử import hợp tác xã', requiresAuth: true },
+    },
+    {
       path: '/cooperatives/import-tax',
       name: 'Import Cooperative Tax',
       component: () => import('../views/Cooperatives/ImportCooperativeTax.vue'),
