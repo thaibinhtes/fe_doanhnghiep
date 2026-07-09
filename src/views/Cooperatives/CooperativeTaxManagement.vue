@@ -80,6 +80,7 @@
               <div class="flex-none w-[50px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">TT</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">ID đơn vị thuế</div>
               <div class="flex-none w-[min(280px,28vw)] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Đơn vị thuế</div>
+              <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">MST</div>
               <div class="flex-none w-[min(360px,34vw)] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tên hợp tác xã</div>
               <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Trạng thái</div>
               <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Ngày tạo</div>
@@ -98,6 +99,9 @@
                 </div>
                 <div class="flex-none w-[min(280px,28vw)] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words">
                   {{ item.taxUnit?.unitName || '-' }}
+                </div>
+                <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words">
+                  {{ item.taxCode || '-' }}
                 </div>
                 <div class="flex-none w-[min(360px,34vw)] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words">
                   {{ item.cooperativeName }}
