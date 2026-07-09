@@ -19,15 +19,15 @@
               placeholder="Tìm kiếm tên, mã số..."
               class="h-9 w-[180px] shrink-0 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
             />
-            <div class="relative w-[120px] shrink-0 bg-transparent">
+            <div class="relative w-[min(220px,40vw)] shrink-0 bg-transparent">
               <select
-                v-model="filter.trangThai"
+                v-model="filter.dnTrangThaiId"
                 class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
               >
                 <option value="">Trạng thái</option>
-                <option value="Đang hoạt động">Đang hoạt động</option>
-                <option value="Tạm ngừng">Tạm ngừng</option>
-                <option value="Giải thể">Giải thể</option>
+                <option v-for="status in statuses" :key="status.id" :value="status.id">
+                  {{ status.ten }}
+                </option>
               </select>
               <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                 <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -133,13 +133,12 @@
                 Nhập
               </summary>
               <div class="absolute right-0 z-50 mt-1 min-w-[240px] rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-                <button
-                  type="button"
-                  @click="openImportModal('companies')"
+                <router-link
+                  to="/companies/import"
                   class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
                 >
                   Import danh sách mới
-                </button>
+                </router-link>
                 <button
                   type="button"
                   @click="openImportModal('identity')"
@@ -244,7 +243,8 @@
             :key="company.id"
             :company="company"
             :index="index"
-            :status-class="statusClass"
+            :status-class="companyStatusClass"
+            :tax-status-class="taxStatusClass"
             @edit="openEditModal"
             @update-map="goToMapUpdate"
             @toggle-dinh-danh="toggleDinhDanh"
@@ -300,6 +300,7 @@
               <div class="flex-none w-[120px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Phường/xã</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Vốn điều lệ</div>
               <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Trạng thái</div>
+              <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tình trạng thuế</div>
               <div class="flex-none w-[110px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Điện thoại</div>
               <div class="flex-none w-[180px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Ngườ i đại diện theo pháp luật</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Ngày sinh ngườ i đại diện</div>
@@ -349,10 +350,10 @@
                   <span
                     :class="[
                       'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                      statusClass(company.trangThai),
+                      companyStatusClass(company),
                     ]"
                   >
-                    {{ company.dnTrangThai?.ten ?? company.trangThai }}
+                    {{ company.dnTrangThai?.ten ?? '—' }}
                   </span>
                   <button
                     @click="openStatusModal(company)"
@@ -360,6 +361,18 @@
                   >
                     Sửa
                   </button>
+                </div>
+                <div class="flex-none w-[130px] p-[5px]">
+                  <span
+                    v-if="company.tinhTrangThue"
+                    :class="[
+                      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                      taxStatusClass(company.tinhTrangThue),
+                    ]"
+                  >
+                    {{ company.tinhTrangThue }}
+                  </span>
+                  <span v-else class="text-sm text-gray-400">—</span>
                 </div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.dienThoai }}</div>
                 <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nguoiDaiDienTen || company.nguoiDaiDien?.fullName || '-' }}</div>
@@ -1720,12 +1733,12 @@ const showQuanHuyenCuMoiColumn = computed(() =>
 )
 const auth = useAuthStore()
 const router = useRouter()
-const { identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()
+const { statuses, identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()
 const { businessTypes, loadBusinessTypes } = useCompanyBusinessTypes()
 
 const filter = reactive({
   search: '',
-  trangThai: '',
+  dnTrangThaiId: '' as string | number,
   loaiHinhId: '' as string | number,
   donViId: '' as string | number,
   quanHuyen: '',
@@ -2345,7 +2358,7 @@ const applyDefaultOrgUnitFilter = () => {
 
 const resetFilters = () => {
   filter.search = ''
-  filter.trangThai = ''
+  filter.dnTrangThaiId = ''
   filter.loaiHinhId = ''
   applyDefaultOrgUnitFilter()
   filter.phuongXa = ''
@@ -2425,7 +2438,7 @@ const handleBulkDinhDanh = async (daCapNhatDinhDanh: boolean) => {
 
 const currentCompanyFilters = () => ({
   search: filter.search,
-  trangThai: filter.trangThai,
+  dnTrangThaiId: filter.dnTrangThaiId || undefined,
   loaiHinhId: filter.loaiHinhId || undefined,
   donViId: filter.donViId || undefined,
   quanHuyen: filter.quanHuyen || undefined,
@@ -2450,7 +2463,7 @@ const handleExport = async () => {
   try {
     const blob = await companyService.exportExcel({
       search: filter.search,
-      trangThai: filter.trangThai,
+      dnTrangThaiId: filter.dnTrangThaiId || undefined,
       loaiHinhId: filter.loaiHinhId || undefined,
       donViId: filter.donViId || undefined,
       quanHuyen: filter.quanHuyen || undefined,
@@ -2817,17 +2830,37 @@ const formatDonVi = (company: Company) => {
   return ma && ma !== 'ROOT' ? `${ma} — ${ten}` : ten
 }
 
-const statusClass = (status: string | null) => {
-  switch (status) {
-    case 'Đang hoạt động':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-    case 'Tạm ngừng':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-    case 'Giải thể':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+const companyStatusClass = (company: Company) => {
+  const loai = company.dnTrangThai?.loai
+  const ma = company.dnTrangThai?.ma
+
+  if (loai === 'hoat_dong' || ma === 'dang_hoat_dong') {
+    return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
   }
+  if (loai === 'dinh_danh') {
+    return ma === 'da_dinh_danh'
+      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'
+      : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+  }
+  if (ma === 'tam_ngung') {
+    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+  }
+  if (ma === 'giai_the_pha_san' || ma === 'giai_the_hop_nhat') {
+    return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+  }
+
+  return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+}
+
+const taxStatusClass = (status?: string | null) => {
+  if (status === 'Đang hoạt động') {
+    return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+  }
+  if (status === 'Không hoạt động') {
+    return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+  }
+
+  return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
 }
 
 const dinhDanhClass = (isUpdated?: boolean) =>
@@ -2837,7 +2870,7 @@ const dinhDanhClass = (isUpdated?: boolean) =>
 
 // Fetch when filters or page changes
 watch(
-  () => [filter.search, filter.trangThai, filter.loaiHinhId, filter.donViId, filter.quanHuyen, filter.phuongXa, store.page, store.perPage],
+  () => [filter.search, filter.dnTrangThaiId, filter.loaiHinhId, filter.donViId, filter.quanHuyen, filter.phuongXa, store.page, store.perPage],
   () => {
     selectedCompanyIds.value = []
     store.fetchCompanies(currentCompanyFilters())

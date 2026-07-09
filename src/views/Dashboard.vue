@@ -18,7 +18,7 @@
           </button>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <div
             v-for="card in statCards"
             :key="card.label"
@@ -31,6 +31,9 @@
 
         <div class="grid gap-5 xl:grid-cols-2">
           <ComponentCard title="Tỷ lệ định danh doanh nghiệp">
+            <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+              Chưa định danh gồm: <strong>Cần rà soát</strong> (có liên kết thuế) và <strong>Chưa định danh</strong> (không có liên kết thuế).
+            </p>
             <VueApexCharts type="donut" height="320" :options="identityChartOptions" :series="identitySeries" />
           </ComponentCard>
 
@@ -104,23 +107,29 @@ const chartColors = ['#465fff', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06
 const statCards = computed(() => {
   if (!dashboard.value) return []
   const o = dashboard.value.overview
+  const i = dashboard.value.identity
   return [
     { label: 'Tổng doanh nghiệp', value: o.totalCompanies },
     { label: 'Đã định danh', value: o.identified },
-    { label: 'Chưa định danh', value: o.notIdentified },
+    { label: 'Cần rà soát', value: i.canRaSoat },
+    { label: 'Chưa định danh', value: i.chuaDinhDanh },
     { label: 'Có tọa độ bản đồ', value: o.withCoordinates },
   ]
 })
 
 const identitySeries = computed(() => {
   if (!dashboard.value) return []
-  return [dashboard.value.identity.daDinhDanh, dashboard.value.identity.chuaDinhDanh]
+  return [
+    dashboard.value.identity.daDinhDanh,
+    dashboard.value.identity.canRaSoat,
+    dashboard.value.identity.chuaDinhDanh,
+  ]
 })
 
 const identityChartOptions = computed(() => ({
   chart: { fontFamily: chartFont, type: 'donut' },
-  colors: ['#10b981', '#f59e0b'],
-  labels: ['Đã định danh', 'Chưa định danh'],
+  colors: ['#10b981', '#f59e0b', '#94a3b8'],
+  labels: ['Đã định danh', 'Cần rà soát', 'Chưa định danh'],
   legend: { position: 'bottom' },
   dataLabels: { enabled: true },
   plotOptions: {

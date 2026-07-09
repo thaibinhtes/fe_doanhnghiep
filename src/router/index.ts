@@ -31,16 +31,46 @@ const router = createRouter({
       meta: { title: 'Hợp tác xã', requiresAuth: true, fillViewport: true },
     },
     {
+      path: '/cooperatives/create',
+      name: 'Create Cooperative',
+      component: () => import('../views/Cooperatives/CreateCooperative.vue'),
+      meta: { title: 'Tạo hợp tác xã', requiresAuth: true },
+    },
+    {
+      path: '/cooperatives/import',
+      name: 'Import Cooperatives',
+      component: () => import('../views/Cooperatives/ImportCooperatives.vue'),
+      meta: { title: 'Import hợp tác xã', requiresAuth: true },
+    },
+    {
       path: '/cooperatives/members',
       name: 'Cooperative Members',
       component: () => import('../views/Members.vue'),
       meta: { title: 'Thành viên hợp tác xã', requiresAuth: true },
     },
     {
+      path: '/companies/import',
+      name: 'Import Companies',
+      component: () => import('../views/Companies/ImportCompanies.vue'),
+      meta: { title: 'Import doanh nghiệp', requiresAuth: true },
+    },
+    {
       path: '/companies/create',
       name: 'Create Company',
       component: () => import('../views/Companies/CreateCompany.vue'),
       meta: { title: 'Tạo doanh nghiệp', requiresAuth: true },
+    },
+    {
+      path: '/companies/import-history',
+      name: 'Company Import History',
+      component: () => import('../views/Companies/CompanyImportHistory.vue'),
+      meta: { title: 'Lịch sử import', requiresAuth: true },
+    },
+    {
+      path: '/companies/import-tax',
+      name: 'Import Company Tax',
+      component: () => import('../views/Companies/ImportCompanyTax.vue'),
+      meta: { title: 'Import thuế doanh nghiệp', requiresAuth: true },
     },
     {
       path: '/companies/identity',

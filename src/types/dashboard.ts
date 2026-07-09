@@ -5,11 +5,13 @@ export interface DashboardOverview {
   totalCompanies: number
   identified: number
   notIdentified: number
+  canRaSoat: number
   withCoordinates: number
 }
 
 export interface DashboardIdentity {
   daDinhDanh: number
+  canRaSoat: number
   chuaDinhDanh: number
 }
 

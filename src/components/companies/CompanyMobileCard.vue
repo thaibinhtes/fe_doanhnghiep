@@ -12,14 +12,25 @@
           MST: {{ company.maSoDoanhNghiep }}
         </p>
       </div>
-      <span
-        :class="[
-          'shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-          statusClass(company.trangThai),
-        ]"
-      >
-        {{ company.trangThai || '—' }}
-      </span>
+      <div class="flex shrink-0 flex-col items-end gap-1">
+        <span
+          :class="[
+            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+            statusClass(company),
+          ]"
+        >
+          {{ company.dnTrangThai?.ten ?? '—' }}
+        </span>
+        <span
+          v-if="company.tinhTrangThue"
+          :class="[
+            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+            taxStatusClass(company.tinhTrangThue),
+          ]"
+        >
+          {{ company.tinhTrangThue }}
+        </span>
+      </div>
     </div>
 
     <dl class="mt-4 space-y-2 text-sm">
@@ -143,7 +154,8 @@ import { formatVND } from '@/utils/formatters'
 const props = defineProps<{
   company: Company
   index: number
-  statusClass: (status: string | null) => string
+  statusClass: (company: Company) => string
+  taxStatusClass: (status?: string | null) => string
 }>()
 
 defineEmits<{

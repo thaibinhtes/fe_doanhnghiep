@@ -102,6 +102,7 @@ export const companyService = {
         per_page: filters?.per_page ?? 50,
         ...(filters?.search ? { search: filters.search } : {}),
         ...(filters?.trangThai ? { trangThai: filters.trangThai } : {}),
+        ...(filters?.dnTrangThaiId ? { dnTrangThaiId: filters.dnTrangThaiId } : {}),
         ...(filters?.loaiHinhDN ? { loaiHinhDN: filters.loaiHinhDN } : {}),
         ...(filters?.loaiHinhId ? { loaiHinhId: filters.loaiHinhId } : {}),
         ...(filters?.quanHuyen ? { quanHuyen: filters.quanHuyen } : {}),
@@ -188,6 +189,7 @@ export const companyService = {
       params: {
         ...(filters?.search ? { search: filters.search } : {}),
         ...(filters?.trangThai ? { trangThai: filters.trangThai } : {}),
+        ...(filters?.dnTrangThaiId ? { dnTrangThaiId: filters.dnTrangThaiId } : {}),
         ...(filters?.loaiHinhDN ? { loaiHinhDN: filters.loaiHinhDN } : {}),
         ...(filters?.loaiHinhId ? { loaiHinhId: filters.loaiHinhId } : {}),
         ...(filters?.quanHuyen ? { quanHuyen: filters.quanHuyen } : {}),

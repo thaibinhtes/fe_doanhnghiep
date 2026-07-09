@@ -74,9 +74,11 @@
           <div class="min-w-max w-full">
             <div class="sticky top-0 z-10 flex border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
               <div class="flex-none w-[50px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">TT</div>
-              <div class="flex-none w-[160px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Mã số thuế</div>
-              <div class="flex-none w-[min(420px,40vw)] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tên doanh nghiệp</div>
-              <div class="flex-none w-[220px] p-[5px]"></div>
+              <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">ID đơn vị thuế</div>
+              <div class="flex-none w-[min(280px,28vw)] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Đơn vị thuế</div>
+              <div class="flex-none w-[min(360px,34vw)] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tên doanh nghiệp</div>
+              <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Trạng thái</div>
+              <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Ngày tạo</div>
             </div>
             <div class="divide-y divide-gray-200 dark:divide-gray-700">
               <div
@@ -87,29 +89,27 @@
                 <div class="flex-none w-[50px] p-[5px] text-sm text-gray-700 dark:text-gray-300">
                   {{ (companyMeta.currentPage - 1) * companyMeta.perPage + index + 1 }}
                 </div>
-                <div class="flex-none w-[160px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words">
-                  {{ item.taxCode || '-' }}
+                <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words">
+                  {{ item.taxUnit?.unitCode || '-' }}
                 </div>
-                <div class="flex-none w-[min(420px,40vw)] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words">
+                <div class="flex-none w-[min(280px,28vw)] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words">
+                  {{ item.taxUnit?.unitName || '-' }}
+                </div>
+                <div class="flex-none w-[min(360px,34vw)] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words">
                   {{ item.companyName }}
                 </div>
-                <div class="flex-none w-[220px] p-[5px]">
-                  <div class="flex flex-wrap items-center gap-1.5">
-                    <button
-                      type="button"
-                      class="inline-flex h-8 items-center justify-center rounded-lg bg-brand-500 px-2.5 text-xs font-medium text-white transition hover:bg-brand-600"
-                      @click="openTaxPaymentAssignModal(item)"
-                    >
-                      Đóng thuế
-                    </button>
-                    <button
-                      type="button"
-                      class="inline-flex h-8 items-center justify-center rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                      @click="openCompanyPaymentHistory(item)"
-                    >
-                      Lịch sử
-                    </button>
-                  </div>
+                <div class="flex-none w-[130px] p-[5px]">
+                  <span
+                    class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium"
+                    :class="item.isActive
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'"
+                  >
+                    {{ item.isActive ? 'Hoạt động' : 'Ngừng hoạt động' }}
+                  </span>
+                </div>
+                <div class="flex-none w-[130px] p-[5px] text-sm text-gray-700 dark:text-gray-300">
+                  {{ formatTaxDate(item.createdAt) }}
                 </div>
               </div>
             </div>
@@ -412,7 +412,12 @@
                       <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ row.maSoDoanhNghiep || '—' }}</td>
                       <td class="px-4 py-3 text-gray-900 dark:text-white">{{ row.tenDoanhNghiep || '—' }}</td>
                       <td v-if="importHistoryType === 'company_tax'" class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ row.taxUnitCode || '—' }}</td>
-                      <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ row.message || '—' }}</td>
+                      <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
+                        <div>{{ row.message || '—' }}</div>
+                        <div v-if="formatImportMappedValues(row)" class="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                          {{ formatImportMappedValues(row) }}
+                        </div>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -497,37 +502,6 @@
           </div>
       </div>
     </Modal>
-    <Modal v-if="showCompanyPaymentHistoryModal" @close="showCompanyPaymentHistoryModal = false">
-      <div class="no-scrollbar relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 dark:bg-gray-900">
-          <h3 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">Lịch sử đóng thuế theo doanh nghiệp</h3>
-          <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{{ selectedCompanyForHistory?.companyName || '' }}</p>
-          <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-            <table class="min-w-[720px] w-full text-sm">
-              <thead class="bg-gray-50 dark:bg-gray-800/60">
-                <tr>
-                  <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Ngày đóng thuế</th>
-                  <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Đơn vị thuế</th>
-                  <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Nguồn</th>
-                  <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Người thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in selectedCompanyPaymentHistoryRows" :key="row.id">
-                  <td class="border border-gray-200 px-3 py-2 dark:border-gray-700">{{ row.taxPaidAt || '-' }}</td>
-                  <td class="border border-gray-200 px-3 py-2 dark:border-gray-700">
-                    {{ row.taxUnit ? `${row.taxUnit.unitCode} - ${row.taxUnit.unitName}` : '-' }}
-                  </td>
-                  <td class="border border-gray-200 px-3 py-2 dark:border-gray-700">{{ row.source || '-' }}</td>
-                  <td class="border border-gray-200 px-3 py-2 dark:border-gray-700">{{ row.importedBy?.name || '-' }}</td>
-                </tr>
-                <tr v-if="selectedCompanyPaymentHistoryRows.length === 0">
-                  <td colspan="4" class="border border-gray-200 px-3 py-6 text-center text-gray-500 dark:border-gray-700">Chưa có lịch sử.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-      </div>
-    </Modal>
     <Modal v-if="showTaxUnitCompanyRangeModal" @close="showTaxUnitCompanyRangeModal = false">
       <div class="no-scrollbar relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 dark:bg-gray-900">
           <h3 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">Doanh nghiệp đóng thuế theo đơn vị và khoảng ngày</h3>
@@ -562,37 +536,6 @@
           </div>
       </div>
     </Modal>
-    <Modal v-if="showTaxPaymentAssignModal" @close="showTaxPaymentAssignModal = false">
-      <div class="relative w-full max-w-xl rounded-2xl bg-white p-6 dark:bg-gray-900">
-        <h3 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">Đóng thuế doanh nghiệp</h3>
-        <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{{ selectedCompanyForAssign?.companyName || '' }}</p>
-        <div class="space-y-3">
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Ngày đóng thuế</label>
-            <input
-              v-model="assignTaxPaidAt"
-              type="date"
-              class="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
-            />
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Đơn vị thuế</label>
-            <SearchableSelect
-              v-model="assignTaxUnitId"
-              :options="taxUnitSelectOptions"
-              placeholder="Chọn đơn vị thuế"
-              search-placeholder="Tìm theo mã hoặc tên đơn vị..."
-              :allow-empty="false"
-              dense
-            />
-          </div>
-        </div>
-        <div class="mt-5 flex justify-end gap-2">
-          <button type="button" class="rounded-lg border border-gray-300 px-4 py-2 text-sm dark:border-gray-700" @click="showTaxPaymentAssignModal = false">Hủy</button>
-          <button type="button" class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white" @click="submitTaxPaymentAssign">Lưu</button>
-        </div>
-      </div>
-    </Modal>
   </AdminLayout>
 </template>
 
@@ -602,14 +545,12 @@ import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import ImportLoadingSkeleton from '@/components/companies/ImportLoadingSkeleton.vue'
-import SearchableSelect, { type SearchableSelectOption } from '@/components/forms/FormElements/SearchableSelect.vue'
 import Modal from '@/components/profile/Modal.vue'
 import { taxManagementService } from '@/services/taxManagementService'
 import { useImportNotifications } from '@/composables/useImportNotifications'
 import { columnsToDisplay, parseColumnInput } from '@/utils/excelColumns'
 import type {
   TaxCompanyItem,
-  TaxCompanyPaymentHistoryItem,
   TaxImportColumnMap,
   TaxImportJobHistoryItem,
   TaxImportJobRow,
@@ -618,6 +559,20 @@ import type {
 } from '@/types/taxManagement'
 
 type TabKey = 'companies' | 'tax-units'
+
+const formatTaxDate = (value?: string | null) => {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleDateString('vi-VN')
+}
+
+const formatImportMappedValues = (row: TaxImportJobRow) => {
+  if (!row.mappedValues || Object.keys(row.mappedValues).length === 0) return ''
+  return Object.entries(row.mappedValues)
+    .map(([key, value]) => `${key}: ${String(value ?? '')}`)
+    .join(' · ')
+}
 
 const route = useRoute()
 
@@ -665,9 +620,7 @@ const showImportMenu = ref(false)
 const showImportModal = ref(false)
 const showHistoryModal = ref(false)
 const showTaxPaymentHistoryModal = ref(false)
-const showCompanyPaymentHistoryModal = ref(false)
 const showTaxUnitCompanyRangeModal = ref(false)
-const showTaxPaymentAssignModal = ref(false)
 const importDropdownRef = ref<HTMLElement | null>(null)
 const importHistory = ref<TaxImportJobHistoryItem[]>([])
 const importHistoryType = ref<'tax_units' | 'company_tax'>('tax_units')
@@ -685,11 +638,6 @@ const companyImportDispatching = ref(false)
 const activeBackgroundImportEntity = ref<'tax-unit' | 'company-tax' | null>(null)
 const { trackImportJob, onImportCompleted, onImportFailed } = useImportNotifications()
 const importUnsubscribers: Array<() => void> = []
-const selectedCompanyForHistory = ref<TaxCompanyItem | null>(null)
-const selectedCompanyPaymentHistoryRows = ref<TaxCompanyPaymentHistoryItem[]>([])
-const selectedCompanyForAssign = ref<TaxCompanyItem | null>(null)
-const assignTaxPaidAt = ref(new Date().toISOString().slice(0, 10))
-const assignTaxUnitId = ref('')
 const selectedTaxUnitForRange = ref<TaxUnit | null>(null)
 const taxUnitRangeFilter = reactive({ from: '', to: '' })
 const taxUnitCompanyRangeRows = ref<TaxCompanyItem[]>([])
@@ -699,13 +647,6 @@ const showTaxUnitBackgroundSkeleton = computed(
 )
 const showCompanyBackgroundSkeleton = computed(
   () => activeTab.value === 'companies' && activeBackgroundImportEntity.value === 'company-tax',
-)
-const taxUnitSelectOptions = computed<SearchableSelectOption[]>(() =>
-  taxUnitOptions.value.map((unit) => ({
-    value: String(unit.id),
-    label: `${unit.unitCode} - ${unit.unitName}`,
-    searchText: `${unit.unitCode} ${unit.unitName}`,
-  })),
 )
 
 const applyImportColumnMap = (
@@ -809,13 +750,6 @@ const loadTaxPaymentHistory = async () => {
   }
 }
 
-const openCompanyPaymentHistory = async (item: TaxCompanyItem) => {
-  selectedCompanyForHistory.value = item
-  const response = await taxManagementService.getCompanyTaxPaymentHistory(item.id, { page: 1, perPage: 100 })
-  selectedCompanyPaymentHistoryRows.value = response.data
-  showCompanyPaymentHistoryModal.value = true
-}
-
 const openTaxUnitCompanyRangeModal = async (unit: TaxUnit) => {
   selectedTaxUnitForRange.value = unit
   taxUnitRangeFilter.from = ''
@@ -862,26 +796,6 @@ const saveTaxPaidDate = async (item: TaxCompanyItem) => {
     taxPaidAt: taxPaidDateEdits[item.id] || null,
   })
 
-  await Promise.all([loadCompanies(), loadTaxPaymentHistory()])
-}
-
-const openTaxPaymentAssignModal = (item: TaxCompanyItem) => {
-  selectedCompanyForAssign.value = item
-  assignTaxPaidAt.value = item.taxPaidAt || new Date().toISOString().slice(0, 10)
-  assignTaxUnitId.value = item.taxUnitId ? String(item.taxUnitId) : ''
-  showTaxPaymentAssignModal.value = true
-}
-
-const submitTaxPaymentAssign = async () => {
-  if (!selectedCompanyForAssign.value || !assignTaxUnitId.value) return
-
-  await taxManagementService.updateCompanyTaxUnit({
-    doanhNghiepId: selectedCompanyForAssign.value.id,
-    taxUnitId: Number(assignTaxUnitId.value),
-    taxPaidAt: assignTaxPaidAt.value || null,
-  })
-
-  showTaxPaymentAssignModal.value = false
   await Promise.all([loadCompanies(), loadTaxPaymentHistory()])
 }
 

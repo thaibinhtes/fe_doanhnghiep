@@ -13,6 +13,8 @@ export interface TaxCompanyItem {
   taxUnitId?: number | null
   taxUnit?: TaxUnit | null
   taxPaidAt?: string | null
+  isActive?: boolean
+  createdAt?: string | null
   importedBy?: {
     id: number
     name: string
@@ -111,5 +113,6 @@ export interface TaxImportJobRow {
   doanhNghiepId?: number | null
   taxUnitId?: number | null
   message?: string | null
+  mappedValues?: Record<string, unknown> | null
   createdAt?: string | null
 }

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="mb-4">
+    <div v-if="!hideTypeFilter" class="mb-4">
       <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
         Lọc lịch sử import
       </label>
@@ -94,7 +94,12 @@
                   <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ row.maSoDoanhNghiep || '—' }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white">{{ row.tenDoanhNghiep || '—' }}</td>
                   <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ row.taxUnitCode || '—' }}</td>
-                  <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ row.message || '—' }}</td>
+                  <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
+                    <div>{{ row.message || '—' }}</div>
+                    <div v-if="formatMappedValues(row)" class="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                      {{ formatMappedValues(row) }}
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -137,8 +142,25 @@ import { computed, onMounted, ref } from 'vue'
 import { taxManagementService } from '@/services/taxManagementService'
 import type { TaxImportJobHistoryItem, TaxImportJobRow } from '@/types/taxManagement'
 
+const props = withDefaults(
+  defineProps<{
+    fixedType?: 'tax_units' | 'company_tax'
+    hideTypeFilter?: boolean
+  }>(),
+  {
+    hideTypeFilter: false,
+  },
+)
+
+const formatMappedValues = (row: TaxImportJobRow) => {
+  if (!row.mappedValues || Object.keys(row.mappedValues).length === 0) return ''
+  return Object.entries(row.mappedValues)
+    .map(([key, value]) => `${key}: ${String(value ?? '')}`)
+    .join(' · ')
+}
+
 const importHistory = ref<TaxImportJobHistoryItem[]>([])
-const importHistoryType = ref<'tax_units' | 'company_tax'>('tax_units')
+const importHistoryType = ref<'tax_units' | 'company_tax'>(props.fixedType ?? 'tax_units')
 const importHistoryLoading = ref(false)
 const selectedImportHistoryId = ref<number | null>(null)
 const activeImportHistoryTab = ref<'success' | 'duplicate' | 'failed'>('success')
@@ -201,7 +223,7 @@ const loadImportHistory = async () => {
   importHistoryLoading.value = true
   try {
     const response = await taxManagementService.getImportJobs({
-      type: importHistoryType.value,
+      type: props.fixedType ?? importHistoryType.value,
       page: 1,
       perPage: 50,
     })

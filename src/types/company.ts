@@ -69,6 +69,8 @@ export interface Company {
     loai: string
     yeuCauLyDo: boolean
   } | null
+  tinhTrangThue?: string | null
+  hasTaxLink?: boolean
   daCapNhatDinhDanh?: boolean
   trangThaiDinhDanh?: string
   dienThoai: string | null
@@ -149,6 +151,7 @@ export interface CompanyListResponse {
 export interface CompanyFilters {
   search?: string
   trangThai?: string
+  dnTrangThaiId?: number | string
   loaiHinhDN?: string
   loaiHinhId?: number | string
   dnLoaiHinhId?: number | null
