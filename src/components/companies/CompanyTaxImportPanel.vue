@@ -168,9 +168,9 @@ async function loadColumnMapDefaults() {
     startRow.value = config.startRow
     applyColumnMap(config.columnMap, config.columnLabels)
   } catch {
-    applyColumnMap({ taxCode: ['A'], taxUnitCode: ['B'] }, {
-      taxCode: 'Mã số doanh nghiệp',
+    applyColumnMap({ taxUnitCode: ['B'], taxCode: ['D'] }, {
       taxUnitCode: 'ID đơn vị thuế',
+      taxCode: 'Mã số thuế (MST)',
     })
     startRow.value = 4
   }

@@ -396,7 +396,7 @@
                   <thead class="sticky top-0 bg-gray-50 text-left text-xs uppercase text-gray-500 dark:bg-gray-900 dark:text-gray-400">
                     <tr>
                       <th class="px-4 py-3">Dòng</th>
-                      <th class="px-4 py-3">Mã DN</th>
+                      <th class="px-4 py-3">MST</th>
                       <th class="px-4 py-3">Tên doanh nghiệp</th>
                       <th v-if="importHistoryType === 'company_tax'" class="px-4 py-3">ID đơn vị thuế</th>
                       <th class="px-4 py-3">Ghi chú</th>
