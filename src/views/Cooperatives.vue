@@ -66,6 +66,7 @@
                   <th class="px-3 py-2">STT</th>
                   <th class="px-3 py-2">Tên HTX</th>
                   <th class="px-3 py-2">Mã số thuế</th>
+                  <th class="px-3 py-2">Tình trạng thuế</th>
                   <th class="px-3 py-2">Năm TL</th>
                   <th class="px-3 py-2">CT HĐQT</th>
                   <th class="px-3 py-2">Điện thoại</th>
@@ -86,6 +87,16 @@
                   <td class="px-3 py-2">{{ item.tt ?? '—' }}</td>
                   <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">{{ item.tenHtx }}</td>
                   <td class="px-3 py-2">{{ item.maSoThue || '—' }}</td>
+                  <td class="px-3 py-2">
+                    <span
+                      v-if="item.tinhTrangThue"
+                      class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                      :class="taxStatusClass(item.tinhTrangThue)"
+                    >
+                      {{ item.tinhTrangThue }}
+                    </span>
+                    <span v-else>—</span>
+                  </td>
                   <td class="px-3 py-2">{{ item.namThanhLap || '—' }}</td>
                   <td class="px-3 py-2">{{ item.chuTichHdqtTen || '—' }}</td>
                   <td class="px-3 py-2">{{ item.dienThoai || '—' }}</td>
@@ -240,6 +251,17 @@ const clearByUnitPreview = ref<{
 const clearByUnitError = ref<string | null>(null)
 
 const orgUnitOptions = computed(() => buildScopedOrgUnitOptions(orgUnits.value, auth.user))
+
+const taxStatusClass = (status?: string | null) => {
+  if (status === 'Đang hoạt động') {
+    return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+  }
+  if (status === 'Ngừng hoạt động' || status === 'Không hoạt động') {
+    return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+  }
+
+  return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+}
 
 const applyDefaultOrgUnitFilter = () => {
   filter.donViId = defaultOrgUnitFilterValue(orgUnitOptions.value, auth.user)

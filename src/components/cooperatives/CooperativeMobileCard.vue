@@ -39,6 +39,17 @@
         <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">Lĩnh vực</dt>
         <dd class="text-gray-800 dark:text-gray-200">{{ cooperative.linhVuc }}</dd>
       </div>
+      <div v-if="cooperative.tinhTrangThue" class="flex gap-2">
+        <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">Thuế</dt>
+        <dd>
+          <span
+            class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+            :class="taxStatusClass(cooperative.tinhTrangThue)"
+          >
+            {{ cooperative.tinhTrangThue }}
+          </span>
+        </dd>
+      </div>
       <div v-if="cooperative.donViTen && cooperative.donViTen !== '-'" class="flex gap-2">
         <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">Đơn vị</dt>
         <dd class="text-gray-800 dark:text-gray-200">{{ cooperative.donViTen }}</dd>
@@ -69,4 +80,15 @@ defineProps<{
 const emit = defineEmits<{
   delete: [cooperative: Cooperative]
 }>()
+
+const taxStatusClass = (status?: string | null) => {
+  if (status === 'Đang hoạt động') {
+    return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+  }
+  if (status === 'Ngừng hoạt động' || status === 'Không hoạt động') {
+    return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+  }
+
+  return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+}
 </script>

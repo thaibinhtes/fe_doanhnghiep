@@ -20,6 +20,8 @@ export interface Cooperative {
   donViId?: number | null
   donViTen?: string | null
   donVi?: { id: number; ten: string } | null
+  tinhTrangThue?: string | null
+  hasTaxLink?: boolean
   createdByUserId?: number | null
   createdAt?: string | null
   updatedAt?: string | null
