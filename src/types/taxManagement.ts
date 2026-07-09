@@ -40,6 +40,13 @@ export interface TaxCooperativeItem {
   cooperativeName: string
   taxUnitId?: number | null
   taxUnit?: TaxUnit | null
+  taxPaidAt?: string | null
+  isActive?: boolean
+  createdAt?: string | null
+  importedBy?: {
+    id: number
+    name: string
+  } | null
 }
 
 export interface TaxPaginatedResponse<T> {
@@ -77,7 +84,7 @@ export interface TaxImportDispatchResult {
 
 export interface TaxImportJobHistoryItem {
   id: number
-  type: 'tax_units' | 'company_tax' | string
+  type: 'tax_units' | 'company_tax' | 'cooperative_tax' | string
   status: 'pending' | 'processing' | 'completed' | 'failed' | string
   originalFilename?: string | null
   result?: Record<string, unknown> | null

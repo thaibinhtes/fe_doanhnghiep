@@ -124,7 +124,28 @@ export const taxManagementService = {
     return data.data
   },
 
-  async getImportJobs(params: { type?: 'tax_units' | 'company_tax'; page?: number; perPage?: number } = {}) {
+  async getCooperativeTaxImportColumnMap(): Promise<TaxImportConfig> {
+    const { data } = await api.get<{ data: TaxImportConfig }>('/tax-management/cooperatives/import-column-map')
+    return data.data
+  },
+
+  async importCooperativeTaxFromExcel(
+    file: File,
+    config?: { startRow?: number; columnMap?: TaxImportColumnMap; taxPaidAt?: string },
+  ): Promise<TaxImportDispatchResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (config?.startRow !== undefined) formData.append('startRow', String(config.startRow))
+    if (config?.columnMap) formData.append('columnMap', JSON.stringify(config.columnMap))
+    if (config?.taxPaidAt) formData.append('taxPaidAt', config.taxPaidAt)
+
+    const { data } = await api.post<{ data: TaxImportDispatchResult }>('/tax-management/cooperatives/import-excel', formData, {
+      timeout: 600_000,
+    })
+    return data.data
+  },
+
+  async getImportJobs(params: { type?: 'tax_units' | 'company_tax' | 'cooperative_tax'; page?: number; perPage?: number } = {}) {
     const { data } = await api.get<{ data: TaxPaginatedResponse<TaxImportJobHistoryItem> }>('/tax-management/import-jobs', { params })
     return data.data
   },

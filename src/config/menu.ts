@@ -105,6 +105,16 @@ export const menuConfig: MenuGroup[] = [
             permission: 'feature.cooperatives.import',
             permissions: ['feature.cooperatives.import', 'menu.cooperatives.list', 'menu.companies.list'],
           },
+          {
+            name: 'Import thuế hợp tác xã',
+            path: '/cooperatives/import-tax',
+            permission: 'menu.admin.org-units',
+          },
+          {
+            name: 'Thuế hợp tác xã',
+            path: '/cooperatives/tax',
+            permission: 'menu.admin.org-units',
+          },
         ],
       },
       {
@@ -212,6 +222,8 @@ export const routePermissions: Record<string, RoutePermission> = {
   '/cooperatives': ['menu.cooperatives.list', 'menu.companies.list'],
   '/cooperatives/create': ['menu.cooperatives.list', 'menu.companies.list'],
   '/cooperatives/import': ['feature.cooperatives.import', 'menu.cooperatives.list', 'menu.companies.list'],
+  '/cooperatives/import-tax': 'menu.admin.org-units',
+  '/cooperatives/tax': 'menu.admin.org-units',
   '/cooperatives/members': 'menu.members.list',
   '/members': 'menu.members.list',
   '/members/create': 'menu.members.create',

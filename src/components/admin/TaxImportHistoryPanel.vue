@@ -11,6 +11,7 @@
       >
         <option value="tax_units">Import đơn vị thuế</option>
         <option value="company_tax">Import doanh nghiệp đóng thuế</option>
+        <option value="cooperative_tax">Import hợp tác xã đóng thuế</option>
       </select>
     </div>
 
@@ -82,8 +83,8 @@
               <thead class="sticky top-0 bg-gray-50 text-left text-xs uppercase text-gray-500 dark:bg-gray-900 dark:text-gray-400">
                 <tr>
                   <th class="px-4 py-3">Dòng</th>
-                  <th class="px-4 py-3">MST</th>
-                  <th class="px-4 py-3">Tên doanh nghiệp</th>
+                  <th class="px-4 py-3">{{ entityCodeLabel }}</th>
+                  <th class="px-4 py-3">{{ entityNameLabel }}</th>
                   <th class="px-4 py-3">ID đơn vị thuế</th>
                   <th class="px-4 py-3">Ghi chú</th>
                 </tr>
@@ -144,11 +145,13 @@ import type { TaxImportJobHistoryItem, TaxImportJobRow } from '@/types/taxManage
 
 const props = withDefaults(
   defineProps<{
-    fixedType?: 'tax_units' | 'company_tax'
+    fixedType?: 'tax_units' | 'company_tax' | 'cooperative_tax'
     hideTypeFilter?: boolean
+    entityLabel?: 'company' | 'htx'
   }>(),
   {
     hideTypeFilter: false,
+    entityLabel: 'company',
   },
 )
 
@@ -160,7 +163,15 @@ const formatMappedValues = (row: TaxImportJobRow) => {
 }
 
 const importHistory = ref<TaxImportJobHistoryItem[]>([])
-const importHistoryType = ref<'tax_units' | 'company_tax'>(props.fixedType ?? 'tax_units')
+const importHistoryType = ref<'tax_units' | 'company_tax' | 'cooperative_tax'>(props.fixedType ?? 'tax_units')
+
+const resolvedEntityLabel = computed<'company' | 'htx'>(() => {
+  if (props.entityLabel) return props.entityLabel
+  return props.fixedType === 'cooperative_tax' ? 'htx' : 'company'
+})
+
+const entityCodeLabel = computed(() => 'MST')
+const entityNameLabel = computed(() => (resolvedEntityLabel.value === 'htx' ? 'Tên hợp tác xã' : 'Tên doanh nghiệp'))
 const importHistoryLoading = ref(false)
 const selectedImportHistoryId = ref<number | null>(null)
 const activeImportHistoryTab = ref<'success' | 'duplicate' | 'failed'>('success')
