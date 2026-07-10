@@ -16,4 +16,8 @@ export const navMenuService = {
     const { data } = await api.put<{ data: NavMenuNode[] }>('/nav-menu/reorder', { items })
     return data.data ?? []
   },
+
+  async syncDefaults(): Promise<void> {
+    await api.post('/nav-menu/sync')
+  },
 }

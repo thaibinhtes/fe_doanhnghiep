@@ -2,8 +2,7 @@
   <FullScreenLayout>
     <div class="signin-page relative flex h-full w-full items-center justify-center overflow-hidden px-4 py-6">
       <div
-        class="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat"
-        :style="{ backgroundImage: `url('${backgroundUrl}')` }"
+        class="signin-bg pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat"
         aria-hidden="true"
       />
       <div class="pointer-events-none absolute inset-0 bg-brand-950/35" aria-hidden="true" />
@@ -100,8 +99,6 @@ import FullScreenLayout from '@/components/layout/FullScreenLayout.vue'
 import { useAuthStore } from '@/stores/auth'
 import { APP_NAME } from '@/config/app'
 
-const backgroundUrl = '/images/background.png'
-
 const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
@@ -131,3 +128,15 @@ const handleSubmit = async () => {
   }
 }
 </script>
+
+<style scoped>
+.signin-bg {
+  background-image: url('/images/bg-mobile.png');
+}
+
+@media (min-width: 768px) {
+  .signin-bg {
+    background-image: url('/images/background.png');
+  }
+}
+</style>

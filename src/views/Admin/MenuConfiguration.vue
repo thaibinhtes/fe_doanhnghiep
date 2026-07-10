@@ -3,7 +3,8 @@
     <div class="space-y-5">
       <ComponentCard title="Cấu hình menu (ROOT)">
         <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
-          Sửa tên hiển thị và kéo thả để sắp xếp danh mục menu. Dashboard luôn cố định ở vị trí đầu tiên.
+          Chỉ được sửa <strong>tên hiển thị</strong> và <strong>thứ tự</strong> menu. Danh sách mục và phân quyền là cố định — không xóa được.
+          Dashboard luôn đứng đầu.
         </p>
 
         <div v-if="error" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
@@ -119,11 +120,19 @@
             </template>
           </draggable>
 
-          <div class="flex justify-end gap-2 pt-2">
+          <div class="flex flex-wrap justify-end gap-2 pt-2">
+            <button
+              type="button"
+              class="inline-flex h-10 items-center rounded-lg border border-amber-400 px-4 text-sm font-medium text-amber-700 dark:border-amber-600 dark:text-amber-400"
+              :disabled="saving || syncing"
+              @click="syncDefaults"
+            >
+              {{ syncing ? 'Đang đồng bộ...' : 'Đồng bộ menu mặc định' }}
+            </button>
             <button
               type="button"
               class="inline-flex h-10 items-center rounded-lg border border-gray-300 px-4 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300"
-              :disabled="saving"
+              :disabled="saving || syncing"
               @click="loadMenu"
             >
               Tải lại
@@ -131,7 +140,7 @@
             <button
               type="button"
               class="inline-flex h-10 items-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
-              :disabled="saving"
+              :disabled="saving || syncing"
               @click="saveOrder"
             >
               {{ saving ? 'Đang lưu...' : 'Lưu cấu hình menu' }}
@@ -160,6 +169,7 @@ const menuStore = useMenuStore()
 
 const loading = ref(true)
 const saving = ref(false)
+const syncing = ref(false)
 const error = ref('')
 const success = ref('')
 const tree = ref<NavMenuNode[]>([])
@@ -203,6 +213,23 @@ async function loadMenu() {
     error.value = 'Không tải được cấu hình menu.'
   } finally {
     loading.value = false
+  }
+}
+
+async function syncDefaults() {
+  syncing.value = true
+  error.value = ''
+  success.value = ''
+  try {
+    await navMenuService.syncDefaults()
+    tree.value = await navMenuService.getAdminMenu()
+    await menuStore.fetchMenu()
+    success.value = 'Đã đồng bộ menu mặc định (giữ tên và thứ tự đã cấu hình).'
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    error.value = axiosErr.response?.data?.message ?? 'Không đồng bộ được menu mặc định.'
+  } finally {
+    syncing.value = false
   }
 }
 
