@@ -38,7 +38,10 @@
       class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar"
     >
       <nav class="mb-6">
-        <div class="flex flex-col gap-4">
+        <div v-if="menuStore.loading && !menuStore.loaded" class="px-2 py-4 text-center text-sm text-gray-400">
+          Đang tải menu...
+        </div>
+        <div v-else class="flex flex-col gap-4">
           <div v-for="(menuGroup, groupIndex) in menuGroups" :key="groupIndex">
             <h2
               v-if="menuGroup.title"
@@ -55,15 +58,15 @@
               <HorizontalDots v-else />
             </h2>
             <ul class="flex flex-col gap-4" :class="{ 'mt-0': !menuGroup.title }">
-              <li v-for="(item, index) in menuGroup.items" :key="item.name">
+              <li v-for="(item, index) in menuGroup.items" :key="item.id">
                 <button
-                  v-if="item.subItems"
+                  v-if="item.children?.length"
                   @click="toggleSubmenu(groupIndex, index)"
                   :class="[
                     'menu-item group w-full',
                     {
-                      'menu-item-active': isSubmenuOpen(groupIndex, index),
-                      'menu-item-inactive': !isSubmenuOpen(groupIndex, index),
+                      'menu-item-active': isSubmenuOpen(groupIndex, index, item),
+                      'menu-item-inactive': !isSubmenuOpen(groupIndex, index, item),
                     },
                     !isExpanded && !isHovered
                       ? 'lg:justify-center'
@@ -72,17 +75,17 @@
                 >
                   <span
                     :class="[
-                      isSubmenuOpen(groupIndex, index)
+                      isSubmenuOpen(groupIndex, index, item)
                         ? 'menu-item-icon-active'
                         : 'menu-item-icon-inactive',
                     ]"
                   >
-                    <component :is="item.icon" />
+                    <component :is="resolveMenuIcon(item.icon)" />
                   </span>
                   <span
                     v-if="isExpanded || isHovered || isMobileOpen"
                     class="menu-item-text"
-                    >{{ item.name }}</span
+                    >{{ item.label }}</span
                   >
                   <ChevronDownIcon
                     v-if="isExpanded || isHovered || isMobileOpen"
@@ -91,7 +94,8 @@
                       {
                         'rotate-180 text-brand-500': isSubmenuOpen(
                           groupIndex,
-                          index
+                          index,
+                          item,
                         ),
                       },
                     ]"
@@ -115,12 +119,12 @@
                         : 'menu-item-icon-inactive',
                     ]"
                   >
-                    <component :is="item.icon" />
+                    <component :is="resolveMenuIcon(item.icon)" />
                   </span>
                   <span
                     v-if="isExpanded || isHovered || isMobileOpen"
                     class="menu-item-text"
-                    >{{ item.name }}</span
+                    >{{ item.label }}</span
                   >
                 </router-link>
                 <transition
@@ -131,16 +135,17 @@
                 >
                   <div
                     v-show="
-                      isSubmenuOpen(groupIndex, index) &&
+                      item.children?.length &&
+                      isSubmenuOpen(groupIndex, index, item) &&
                       (isExpanded || isHovered || isMobileOpen)
                     "
                   >
                     <ul class="mt-2 space-y-1 ml-5">
                       <li
-                        v-for="(subItem, subIndex) in item.subItems"
-                        :key="subItem.name"
+                        v-for="(subItem, subIndex) in item.children"
+                        :key="subItem.id"
                       >
-                        <template v-if="subItem.subItems?.length">
+                        <template v-if="subItem.children?.length">
                           <button
                             type="button"
                             class="menu-dropdown-item menu-dropdown-item-inactive w-full text-left"
@@ -154,7 +159,7 @@
                             }"
                             @click="toggleNestedSubmenu(groupIndex, index, subIndex)"
                           >
-                            <span class="min-w-0 flex-1">{{ subItem.name }}</span>
+                            <span class="min-w-0 flex-1">{{ subItem.label }}</span>
                             <ChevronDownIcon
                               :class="[
                                 'ml-auto h-4 w-4 shrink-0 transition-transform duration-200',
@@ -174,8 +179,8 @@
                             class="mt-1 space-y-1 border-l border-gray-200 pl-2 dark:border-gray-700"
                           >
                             <li
-                              v-for="nestedItem in subItem.subItems"
-                              :key="nestedItem.name"
+                              v-for="nestedItem in subItem.children"
+                              :key="nestedItem.id"
                             >
                               <router-link
                                 v-if="nestedItem.path"
@@ -188,7 +193,7 @@
                                   },
                                 ]"
                               >
-                                {{ nestedItem.name }}
+                                {{ nestedItem.label }}
                               </router-link>
                             </li>
                           </ul>
@@ -204,7 +209,7 @@
                             },
                           ]"
                         >
-                          {{ subItem.name }}
+                          {{ subItem.label }}
                         </router-link>
                       </li>
                     </ul>
@@ -220,48 +225,32 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import {
   ChevronDownIcon,
   HorizontalDots,
 } from "../../icons";
 import { useSidebar } from "@/composables/useSidebar";
-import {
-  menuConfig,
-  filterMenuSubItems,
-  collectSubItemPaths,
-} from "@/config/menu";
+import { collectNavPaths } from "@/config/menu";
+import { resolveMenuIcon } from "@/config/menuIcons";
 import { useAuthStore } from "@/stores/auth";
+import { useMenuStore } from "@/stores/menu";
 import { APP_NAME, APP_SHORT_NAME } from "@/config/app";
 
 const route = useRoute();
 const auth = useAuthStore();
+const menuStore = useMenuStore();
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
 const openNestedSubmenu = ref(null);
 
-const menuGroups = computed(() =>
-  menuConfig
-    .map((group) => ({
-      ...group,
-      items: group.items
-        .map((item) => {
-          if (item.subItems) {
-            const subItems = filterMenuSubItems(item.subItems, auth.hasPermission);
-            if (subItems.length === 0) return null;
-            return { ...item, subItems };
-          }
+const menuGroups = computed(() => menuStore.menuGroups);
 
-          if (item.permission && !auth.hasPermission(item.permission)) {
-            return null;
-          }
-
-          return item;
-        })
-        .filter(Boolean),
-    }))
-    .filter((group) => group.items.length > 0),
-);
+onMounted(async () => {
+  if (auth.isAuthenticated && !menuStore.loaded) {
+    await menuStore.fetchMenu();
+  }
+});
 
 const isActive = (path) => {
   if (!path) return false;
@@ -305,7 +294,7 @@ const isNestedSubmenuOpen = (groupIndex, itemIndex, subIndex, subItem) => {
   const key = nestedSubmenuKey(groupIndex, itemIndex, subIndex);
   return (
     openNestedSubmenu.value === key ||
-    collectSubItemPaths(subItem.subItems ?? []).some((path) => isActive(path))
+    collectNavPaths(subItem.children ?? []).some((path) => isActive(path))
   );
 };
 
@@ -313,20 +302,19 @@ const isAnySubmenuRouteActive = computed(() => {
   return menuGroups.value.some((group) =>
     group.items.some(
       (item) =>
-        item.subItems &&
-        collectSubItemPaths(item.subItems).some((path) => isActive(path)),
+        item.children?.length &&
+        collectNavPaths(item.children).some((path) => isActive(path)),
     ),
   );
 });
 
-const isSubmenuOpen = (groupIndex, itemIndex) => {
+const isSubmenuOpen = (groupIndex, itemIndex, item) => {
   const key = `${groupIndex}-${itemIndex}`;
-  const item = menuGroups.value[groupIndex]?.items[itemIndex];
   return (
     openSubmenu.value === key ||
     (isAnySubmenuRouteActive.value &&
-      item?.subItems &&
-      collectSubItemPaths(item.subItems).some((path) => isActive(path)))
+      item?.children &&
+      collectNavPaths(item.children).some((path) => isActive(path)))
   );
 };
 

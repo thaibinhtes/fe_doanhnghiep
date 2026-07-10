@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authService } from '@/services/authService'
+import { useMenuStore } from '@/stores/menu'
 import type { AuthUser, LoginPayload } from '@/types/auth'
 
 const TOKEN_KEY = 'token'
@@ -44,6 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
         ...result.user,
         permissions: result.user.permissions ?? result.user.role?.permissionKeys ?? [],
       }
+      await useMenuStore().fetchMenu()
       return result
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } }
@@ -66,6 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
         ...me,
         permissions: me.permissions ?? me.role?.permissionKeys ?? [],
       }
+      await useMenuStore().fetchMenu()
       return me
     } catch {
       setToken(null)
@@ -97,6 +100,7 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       setToken(null)
       user.value = null
+      useMenuStore().reset()
     }
   }
 

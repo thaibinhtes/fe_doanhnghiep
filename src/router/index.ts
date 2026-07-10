@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getRoutePermission, getFirstAccessibleRoute, hasRouteAccess } from '@/config/menu'
+import { useMenuStore } from '@/stores/menu'
 import { APP_NAME } from '@/config/app'
 
 const router = createRouter({
@@ -212,6 +213,12 @@ const router = createRouter({
       redirect: '/reports/identity-history',
     },
     {
+      path: '/admin/menu-config',
+      name: 'Menu Configuration',
+      component: () => import('../views/Admin/MenuConfiguration.vue'),
+      meta: { title: 'Cấu hình menu', requiresAuth: true },
+    },
+    {
       path: '/signin',
       name: 'Signin',
       component: () => import('../views/Auth/Signin.vue'),
@@ -240,12 +247,23 @@ router.beforeEach(async (to, _from, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${APP_NAME}` : APP_NAME
 
   const auth = useAuthStore()
+  const menuStore = useMenuStore()
 
   if (!auth.initialized) {
     await auth.init()
   }
 
-  const homePath = () => getFirstAccessibleRoute((key) => auth.hasPermission(key))
+  if (auth.isAuthenticated && !menuStore.loaded) {
+    await menuStore.fetchMenu()
+  }
+
+  const isRoot = auth.user?.role?.slug === 'root'
+  const homePath = () =>
+    getFirstAccessibleRoute(
+      (key) => auth.hasPermission(key),
+      menuStore.items,
+      isRoot,
+    )
 
   if (to.meta.guestOnly && auth.isAuthenticated) {
     if (to.query.error === 'no-permission') {
@@ -258,8 +276,12 @@ router.beforeEach(async (to, _from, next) => {
     return next({ path: '/signin', query: { redirect: to.fullPath } })
   }
 
-  const requiredPermission = getRoutePermission(to.path)
-  if (requiredPermission && auth.isAuthenticated && !hasRouteAccess(requiredPermission, auth.hasPermission)) {
+  const requiredPermission = getRoutePermission(to.path, menuStore.routePermissionMap)
+  if (
+    requiredPermission &&
+    auth.isAuthenticated &&
+    !hasRouteAccess(requiredPermission, auth.hasPermission, isRoot)
+  ) {
     const fallback = homePath()
     if (fallback !== to.path) {
       return next({ path: fallback })
