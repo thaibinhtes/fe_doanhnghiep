@@ -60,12 +60,12 @@ export const menuConfig: MenuGroup[] = [
             permissions: ['feature.companies.import', 'menu.companies.list'],
           },
           {
-            name: 'Cập nhật tình trạng thuế doanh nghiệp',
+            name: 'Cập nhật tình trạng hoạt động doanh nghiệp',
             path: '/companies/import-tax',
             permission: 'menu.admin.org-units',
           },
           {
-            name: 'Tình trạng thuế doanh nghiệp',
+            name: 'Tình trạng hoạt động doanh nghiệp',
             path: '/admin/tax-management?tab=companies',
             permission: 'menu.admin.org-units',
           },
@@ -93,19 +93,13 @@ export const menuConfig: MenuGroup[] = [
             permission: 'feature.cooperatives.import',
             permissions: ['feature.cooperatives.import', 'menu.cooperatives.list', 'menu.companies.list'],
           },
-          // {
-          //   name: 'Lịch sử import',
-          //   path: '/cooperatives/import-history',
-          //   permission: 'feature.cooperatives.import',
-          //   permissions: ['feature.cooperatives.import', 'menu.cooperatives.list', 'menu.companies.list'],
-          // },
           {
-            name: 'Cập nhật tình trạng thuế HTX',
+            name: 'Cập nhật tình trạng hoạt động HTX',
             path: '/cooperatives/import-tax',
             permission: 'menu.admin.org-units',
           },
           {
-            name: 'Tình trạng thuế HTX',
+            name: 'Tình trạng hoạt động HTX',
             path: '/cooperatives/tax',
             permission: 'menu.admin.org-units',
           },

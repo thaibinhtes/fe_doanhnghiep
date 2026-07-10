@@ -283,7 +283,7 @@
               <div class="flex-none w-[120px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Phường/xã</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Vốn điều lệ</div>
               <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Trạng thái</div>
-              <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tình trạng thuế</div>
+              <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tình trạng hoạt động (thuế)</div>
               <div class="flex-none w-[110px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Điện thoại</div>
               <div class="flex-none w-[180px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Ngườ i đại diện theo pháp luật</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Ngày sinh ngườ i đại diện</div>

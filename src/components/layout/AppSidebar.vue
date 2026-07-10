@@ -135,7 +135,7 @@
                       (isExpanded || isHovered || isMobileOpen)
                     "
                   >
-                    <ul class="mt-2 space-y-1 ml-9">
+                    <ul class="mt-2 space-y-1 ml-5">
                       <li
                         v-for="(subItem, subIndex) in item.subItems"
                         :key="subItem.name"
@@ -154,7 +154,7 @@
                             }"
                             @click="toggleNestedSubmenu(groupIndex, index, subIndex)"
                           >
-                            <span>{{ subItem.name }}</span>
+                            <span class="min-w-0 flex-1">{{ subItem.name }}</span>
                             <ChevronDownIcon
                               :class="[
                                 'ml-auto h-4 w-4 shrink-0 transition-transform duration-200',
@@ -171,7 +171,7 @@
                           </button>
                           <ul
                             v-show="isNestedSubmenuOpen(groupIndex, index, subIndex, subItem)"
-                            class="mt-1 space-y-1 border-l border-gray-200 pl-3 dark:border-gray-700"
+                            class="mt-1 space-y-1 border-l border-gray-200 pl-2 dark:border-gray-700"
                           >
                             <li
                               v-for="nestedItem in subItem.subItems"

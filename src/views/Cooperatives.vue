@@ -62,7 +62,7 @@
                   <th class="px-3 py-2">STT</th>
                   <th class="px-3 py-2">Tên HTX</th>
                   <th class="px-3 py-2">Mã số thuế</th>
-                  <th class="px-3 py-2">Tình trạng thuế</th>
+                  <th class="px-3 py-2">Tình trạng hoạt động</th>
                   <th class="px-3 py-2">Năm TL</th>
                   <th class="px-3 py-2">CT HĐQT</th>
                   <th class="px-3 py-2">Điện thoại</th>
