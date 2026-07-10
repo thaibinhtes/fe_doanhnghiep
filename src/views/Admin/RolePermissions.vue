@@ -6,7 +6,113 @@
           <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
         </div>
 
-        <div v-else class="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <div v-else>
+          <div
+            v-if="isRootUser"
+            class="mb-6 rounded-xl border border-dashed border-brand-300 bg-brand-50/40 p-4 dark:border-brand-700 dark:bg-brand-500/5"
+          >
+            <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Thêm quyền mới (ROOT)</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Tạo quyền menu/tính năng mới để gán cho các vai trò.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="inline-flex h-9 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white hover:bg-brand-600"
+                @click="showCreatePermission = !showCreatePermission"
+              >
+                {{ showCreatePermission ? 'Đóng form' : 'Thêm quyền' }}
+              </button>
+            </div>
+
+            <form
+              v-if="showCreatePermission"
+              class="grid gap-3 sm:grid-cols-2"
+              @submit.prevent="createPermission"
+            >
+              <label class="block space-y-1">
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Mã quyền (key)</span>
+                <input
+                  v-model="newPermission.key"
+                  type="text"
+                  required
+                  placeholder="menu.reports.custom"
+                  class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
+                />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Tên hiển thị</span>
+                <input
+                  v-model="newPermission.name"
+                  type="text"
+                  required
+                  placeholder="Báo cáo tùy chỉnh"
+                  class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
+                />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Loại</span>
+                <select
+                  v-model="newPermission.type"
+                  class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
+                >
+                  <option value="menu">Menu</option>
+                  <option value="feature">Tính năng</option>
+                </select>
+              </label>
+              <label class="block space-y-1">
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Nhóm</span>
+                <input
+                  v-model="newPermission.groupName"
+                  type="text"
+                  required
+                  list="permission-group-options"
+                  placeholder="Báo cáo"
+                  class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
+                />
+                <datalist id="permission-group-options">
+                  <option v-for="group in permissionGroups" :key="group.group" :value="group.group" />
+                </datalist>
+              </label>
+              <label class="block space-y-1">
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Đường dẫn (menu)</span>
+                <input
+                  v-model="newPermission.path"
+                  type="text"
+                  placeholder="/reports/custom"
+                  class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
+                />
+              </label>
+              <label class="block space-y-1">
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Thứ tự</span>
+                <input
+                  v-model.number="newPermission.sortOrder"
+                  type="number"
+                  min="0"
+                  class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
+                />
+              </label>
+              <div class="flex items-end sm:col-span-2">
+                <button
+                  type="submit"
+                  :disabled="creatingPermission"
+                  class="inline-flex h-10 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+                >
+                  {{ creatingPermission ? 'Đang tạo...' : 'Tạo quyền' }}
+                </button>
+              </div>
+              <p v-if="createPermissionError" class="text-sm text-red-600 sm:col-span-2 dark:text-red-400">
+                {{ createPermissionError }}
+              </p>
+              <p v-if="createPermissionSuccess" class="text-sm text-emerald-600 sm:col-span-2 dark:text-emerald-400">
+                {{ createPermissionSuccess }}
+              </p>
+            </form>
+          </div>
+
+          <div class="grid gap-6 lg:grid-cols-[280px_1fr]">
           <div class="space-y-2">
             <button
               v-for="role in roles"
@@ -81,6 +187,7 @@
               </div>
             </div>
           </div>
+          </div>
         </div>
       </ComponentCard>
     </div>
@@ -93,18 +200,33 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { roleService } from '@/services/roleService'
 import { useAuthStore } from '@/stores/auth'
-import type { PermissionGroup, RoleItem } from '@/types/auth'
+import type { PermissionCreatePayload, PermissionGroup, RoleItem } from '@/types/auth'
 
 const auth = useAuthStore()
 const isRootUser = computed(() => auth.user?.role?.slug === 'root')
 
 const loading = ref(true)
 const saving = ref(false)
+const creatingPermission = ref(false)
+const showCreatePermission = ref(false)
 const message = ref('')
+const createPermissionError = ref('')
+const createPermissionSuccess = ref('')
 const roles = ref<RoleItem[]>([])
 const permissionGroups = ref<PermissionGroup[]>([])
 const selectedRole = ref<RoleItem | null>(null)
 const selectedPermissionKeys = ref<string[]>([])
+
+const defaultNewPermission = (): PermissionCreatePayload => ({
+  key: '',
+  name: '',
+  type: 'menu',
+  groupName: '',
+  path: '',
+  sortOrder: 900,
+})
+
+const newPermission = ref<PermissionCreatePayload>(defaultNewPermission())
 
 const selectRole = (role: RoleItem) => {
   selectedRole.value = role
@@ -112,20 +234,56 @@ const selectRole = (role: RoleItem) => {
   message.value = ''
 }
 
+const loadPermissions = async () => {
+  const permissionsData = await roleService.getPermissions()
+  permissionGroups.value = permissionsData.grouped
+}
+
 const loadData = async () => {
   loading.value = true
   try {
-    const [rolesData, permissionsData] = await Promise.all([
+    const [rolesData] = await Promise.all([
       roleService.getRoles(),
-      roleService.getPermissions(),
+      loadPermissions(),
     ])
     roles.value = rolesData
-    permissionGroups.value = permissionsData.grouped
-    if (rolesData.length > 0) {
+    if (rolesData.length > 0 && !selectedRole.value) {
       selectRole(rolesData[0])
+    } else if (selectedRole.value) {
+      const refreshed = rolesData.find((role) => role.id === selectedRole.value?.id)
+      if (refreshed) {
+        selectRole(refreshed)
+      }
     }
   } finally {
     loading.value = false
+  }
+}
+
+const createPermission = async () => {
+  creatingPermission.value = true
+  createPermissionError.value = ''
+  createPermissionSuccess.value = ''
+  try {
+    const created = await roleService.createPermission({
+      key: newPermission.value.key.trim(),
+      name: newPermission.value.name.trim(),
+      type: newPermission.value.type,
+      groupName: newPermission.value.groupName.trim(),
+      path: newPermission.value.path?.trim() || undefined,
+      sortOrder: newPermission.value.sortOrder ?? 900,
+    })
+    await loadPermissions()
+    if (selectedRole.value && !selectedPermissionKeys.value.includes(created.key)) {
+      selectedPermissionKeys.value = [...selectedPermissionKeys.value, created.key]
+    }
+    newPermission.value = defaultNewPermission()
+    createPermissionSuccess.value = `Đã tạo quyền "${created.name}" (${created.key}).`
+  } catch (err: unknown) {
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    createPermissionError.value = axiosErr.response?.data?.message ?? 'Tạo quyền thất bại.'
+  } finally {
+    creatingPermission.value = false
   }
 }
 

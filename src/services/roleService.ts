@@ -1,5 +1,5 @@
 import api from './api'
-import type { PermissionGroup, PermissionItem, RoleItem } from '@/types/auth'
+import type { PermissionCreatePayload, PermissionGroup, PermissionItem, RoleItem } from '@/types/auth'
 
 export const roleService = {
   async getRoles(): Promise<RoleItem[]> {
@@ -23,6 +23,11 @@ export const roleService = {
     const { data } = await api.get<{
       data: { all: PermissionItem[]; grouped: PermissionGroup[] }
     }>('/permissions')
+    return data.data
+  },
+
+  async createPermission(payload: PermissionCreatePayload): Promise<PermissionItem> {
+    const { data } = await api.post<{ data: PermissionItem }>('/permissions', payload)
     return data.data
   },
 }

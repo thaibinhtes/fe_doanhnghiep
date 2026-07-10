@@ -53,7 +53,7 @@
 
       <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
         <div class="md:col-span-2">
-          <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Ngày đóng thuế</label>
+          <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Ngày cập nhật</label>
           <input
             v-model="taxPaidAt"
             type="date"

@@ -304,7 +304,7 @@
             </div>
             <div v-if="activeTab === 'companies'" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
               <div class="md:col-span-2">
-                <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-200">Ngày đóng thuế</label>
+                <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-200">Ngày cập nhật</label>
                 <input
                   v-model="companyImportTaxPaidAt"
                   type="date"
@@ -459,7 +459,7 @@
     <Modal v-if="showTaxPaymentHistoryModal" @close="showTaxPaymentHistoryModal = false">
       <div class="no-scrollbar relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 dark:bg-gray-900">
           <h3 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">Lịch sử đóng thuế doanh nghiệp</h3>
-          <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">Chỉnh sửa ngày đóng thuế và lưu trực tiếp theo từng doanh nghiệp.</p>
+          <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">Chỉnh sửa ngày cập nhật và lưu trực tiếp theo từng doanh nghiệp.</p>
           <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
             <table class="min-w-[960px] w-full text-sm">
               <thead class="bg-gray-50 dark:bg-gray-800/60">
@@ -467,7 +467,7 @@
                   <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">MST</th>
                   <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Tên doanh nghiệp</th>
                   <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Đơn vị thuế</th>
-                  <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Ngày đóng thuế</th>
+                  <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Ngày cập nhật</th>
                   <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Người import</th>
                   <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Lưu</th>
                 </tr>
@@ -521,7 +521,7 @@
                 <tr>
                   <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">MST</th>
                   <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Tên doanh nghiệp</th>
-                  <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Ngày đóng thuế</th>
+                  <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Ngày cập nhật</th>
                   <th class="border border-gray-200 px-3 py-2 text-left dark:border-gray-700">Người import</th>
                 </tr>
               </thead>
@@ -545,7 +545,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import ImportLoadingSkeleton from '@/components/companies/ImportLoadingSkeleton.vue'
@@ -561,6 +561,7 @@ import type {
   TaxImportResult,
   TaxUnit,
 } from '@/types/taxManagement'
+import { useAuthStore } from '@/stores/auth'
 
 type TabKey = 'companies' | 'tax-units'
 
@@ -579,10 +580,21 @@ const formatImportMappedValues = (row: TaxImportJobRow) => {
 }
 
 const route = useRoute()
+const router = useRouter()
+const auth = useAuthStore()
+
+const canAccessCompaniesTab = computed(() => auth.hasPermission('menu.admin.org-units'))
+const canAccessTaxUnitsTab = computed(() => auth.hasPermission('menu.admin.tax-units'))
 
 const resolveTabFromQuery = (value: unknown): TabKey => {
-  const tab = String(value ?? 'companies')
-  return tab === 'tax-units' ? 'tax-units' : 'companies'
+  const tab = String(value ?? '')
+  if (tab === 'tax-units' && canAccessTaxUnitsTab.value) {
+    return 'tax-units'
+  }
+  if (canAccessCompaniesTab.value) {
+    return 'companies'
+  }
+  return 'tax-units'
 }
 
 const activeTab = ref<TabKey>(resolveTabFromQuery(route.query.tab))
@@ -1099,7 +1111,11 @@ onMounted(async () => {
 watch(
   () => route.query.tab,
   (tab) => {
-    activeTab.value = resolveTabFromQuery(tab)
+    const nextTab = resolveTabFromQuery(tab)
+    activeTab.value = nextTab
+    if (String(tab ?? '') !== nextTab) {
+      router.replace({ path: route.path, query: { ...route.query, tab: nextTab } })
+    }
   },
 )
 

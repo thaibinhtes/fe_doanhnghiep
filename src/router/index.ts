@@ -158,6 +158,10 @@ const router = createRouter({
       meta: { title: 'Quản lý đơn vị', requiresAuth: true },
     },
     {
+      path: '/admin/tax-units',
+      redirect: { path: '/admin/tax-management', query: { tab: 'tax-units' } },
+    },
+    {
       path: '/admin/tax-management',
       name: 'Tax Management',
       component: () => import('../views/Admin/TaxManagement.vue'),
@@ -199,9 +203,13 @@ const router = createRouter({
     },
     {
       path: '/reports/identity-history',
-      name: 'Identity History Report',
+      name: 'Company Identity History',
       component: () => import('../views/Reports/IdentityHistoryReport.vue'),
       meta: { title: 'Lịch sử định danh doanh nghiệp', requiresAuth: true, fillViewport: true },
+    },
+    {
+      path: '/companies/identity-history',
+      redirect: '/reports/identity-history',
     },
     {
       path: '/signin',

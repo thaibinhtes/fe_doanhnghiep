@@ -52,6 +52,15 @@ export interface PermissionGroup {
   permissions: PermissionItem[]
 }
 
+export interface PermissionCreatePayload {
+  key: string
+  name: string
+  type: 'menu' | 'feature'
+  groupName: string
+  path?: string | null
+  sortOrder?: number
+}
+
 export interface RoleItem {
   id: number
   name: string
