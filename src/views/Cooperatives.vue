@@ -4,12 +4,8 @@
       <ComponentCard title="Danh sách hợp tác xã" hide-header className="flex h-full min-h-0 flex-1 flex-col overflow-hidden" bodyClass="flex min-h-0 flex-1 flex-col overflow-hidden p-2 sm:p-3" slotClass="flex min-h-0 flex-1 flex-col gap-2">
         <div class="shrink-0 rounded-lg border border-gray-200 p-2 dark:border-gray-700">
           <div class="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
-            <div class="grid min-w-0 flex-1 grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(220px,1fr)] xl:items-center">
+            <div class="grid min-w-0 flex-1 grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-[minmax(180px,1.2fr)_minmax(220px,1fr)] xl:items-center">
               <input v-model="filter.search" type="text" placeholder="Tìm kiếm tên, mã số thuế..." class="h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-              <select v-model="filter.donViId" class="h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-                <option v-if="hasUnrestrictedOrgScopeFlag" value="">Đơn vị</option>
-                <option v-for="opt in orgUnitOptions" :key="opt.id" :value="String(opt.id)">{{ opt.label }}</option>
-              </select>
               <AdministrativeFilter
                 v-model:provinceCode="filterProvinceCode"
                 v-model:wardCode="filterWardCode"
@@ -26,8 +22,8 @@
               <button
                 v-if="hasUnrestrictedOrgScopeFlag && (auth.hasPermission('feature.cooperatives.delete') || auth.hasPermission('feature.companies.delete'))"
                 type="button"
-                :disabled="!filter.donViId || clearingByUnit"
-                title="Xóa toàn bộ hợp tác xã theo đơn vị đang chọn"
+                :disabled="!implicitDonViId || clearingByUnit"
+                title="Xóa toàn bộ hợp tác xã theo đơn vị trực thuộc"
                 class="inline-flex h-8 items-center rounded-lg border border-red-300 bg-white px-2.5 text-xs font-medium text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-800 dark:bg-gray-900 dark:text-red-400"
                 @click="openClearByUnitModal"
               >
@@ -78,7 +74,6 @@
                   <th class="px-3 py-2">Lao động</th>
                   <th class="px-3 py-2">Lĩnh vực</th>
                   <th class="px-3 py-2">Hoạt động</th>
-                  <th class="px-3 py-2">Đơn vị</th>
                   <th class="px-3 py-2"></th>
                 </tr>
               </thead>
@@ -108,7 +103,6 @@
                   <td class="px-3 py-2">{{ item.soNguoiLaoDong ?? '—' }}</td>
                   <td class="px-3 py-2">{{ item.linhVuc || '—' }}</td>
                   <td class="px-3 py-2">{{ item.hoatDong || '—' }}</td>
-                  <td class="px-3 py-2">{{ item.donViTen || '—' }}</td>
                   <td class="px-3 py-2">
                     <button type="button" class="text-xs text-red-600 hover:underline" @click="confirmDelete(item)">Xóa</button>
                   </td>
@@ -207,9 +201,7 @@ import ImportHistoryModal from '@/components/cooperatives/ImportHistoryModal.vue
 import { useCooperativesStore } from '@/stores/cooperatives'
 import { useAuthStore } from '@/stores/auth'
 import { cooperativeService } from '@/services/cooperativeService'
-import { orgUnitService } from '@/services/orgUnitService'
-import type { OrgUnit, ImportScopeOrgUnit } from '@/types/orgUnit'
-import { buildScopedOrgUnitOptions, defaultOrgUnitFilterValue, hasUnrestrictedOrgScope } from '@/types/orgUnit'
+import { hasUnrestrictedOrgScope } from '@/types/orgUnit'
 import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
 import type { Cooperative, CooperativeFilters } from '@/types/cooperative'
 
@@ -222,6 +214,7 @@ const canImportCooperatives = computed(
   () => auth.hasPermission('feature.cooperatives.import') || auth.hasPermission('feature.companies.import'),
 )
 const hasUnrestrictedOrgScopeFlag = computed(() => hasUnrestrictedOrgScope(auth.user))
+const implicitDonViId = computed(() => auth.user?.donViId ?? null)
 
 const pageSizeOptions = [15, 25, 50, 100, 200, 300, 400, 500]
 const pageSize = computed({
@@ -229,10 +222,9 @@ const pageSize = computed({
   set: (value: number) => store.setPerPage(value),
 })
 
-const filter = reactive({ search: '', phuongXa: '', donViId: '' })
+const filter = reactive({ search: '', phuongXa: '' })
 const filterProvinceCode = ref(DEFAULT_PROVINCE_CODE)
 const filterWardCode = ref('')
-const orgUnits = ref<OrgUnit[]>([])
 const exporting = ref(false)
 
 const showImportModal = ref(false)
@@ -250,8 +242,6 @@ const clearByUnitPreview = ref<{
 } | null>(null)
 const clearByUnitError = ref<string | null>(null)
 
-const orgUnitOptions = computed(() => buildScopedOrgUnitOptions(orgUnits.value, auth.user))
-
 const taxStatusClass = (status?: string | null) => {
   if (status === 'Đang hoạt động') {
     return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
@@ -263,17 +253,12 @@ const taxStatusClass = (status?: string | null) => {
   return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
 }
 
-const applyDefaultOrgUnitFilter = () => {
-  filter.donViId = defaultOrgUnitFilterValue(orgUnitOptions.value, auth.user)
-}
-
 function currentFilters(): CooperativeFilters {
   return {
     page: store.page,
     per_page: store.perPage,
     search: filter.search || undefined,
     phuongXa: filter.phuongXa || undefined,
-    donViId: filter.donViId || undefined,
   }
 }
 
@@ -284,7 +269,6 @@ function handleAdministrativeFilterChange(payload: { provinceName: string; wardN
 function resetFilters() {
   filter.search = ''
   filter.phuongXa = ''
-  applyDefaultOrgUnitFilter()
   filterWardCode.value = ''
   filterProvinceCode.value = DEFAULT_PROVINCE_CODE
   store.setPage(1)
@@ -330,7 +314,7 @@ async function handleDelete() {
 }
 
 async function openClearByUnitModal() {
-  const donViId = Number(filter.donViId)
+  const donViId = implicitDonViId.value
   if (!donViId) return
 
   clearByUnitError.value = null
@@ -353,7 +337,7 @@ function closeClearByUnitModal() {
 }
 
 async function confirmClearByUnit() {
-  const donViId = Number(filter.donViId)
+  const donViId = implicitDonViId.value
   if (!donViId || !clearByUnitPreview.value) return
 
   clearingByUnit.value = true
@@ -388,8 +372,6 @@ function openImportHistory() {
 }
 
 onMounted(async () => {
-  orgUnits.value = await orgUnitService.getTree()
-  applyDefaultOrgUnitFilter()
   await store.fetchCooperatives(currentFilters())
 })
 

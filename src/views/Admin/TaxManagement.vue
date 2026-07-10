@@ -38,7 +38,7 @@
                 class="inline-flex h-8 items-center justify-center rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 @click="openTaxPaymentHistoryModal"
               >
-                Lịch sử đóng thuế
+                Lịch sử cập nhật thuế doanh nghiệp
               </button>
               <div class="relative" ref="importDropdownRef">
                 <button

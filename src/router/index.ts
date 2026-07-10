@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getRoutePermission, getFirstAccessibleRoute, hasRouteAccess } from '@/config/menu'
+import { APP_NAME } from '@/config/app'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -197,6 +198,12 @@ const router = createRouter({
       meta: { title: 'Báo cáo tiến độ định danh', requiresAuth: true },
     },
     {
+      path: '/reports/identity-history',
+      name: 'Identity History Report',
+      component: () => import('../views/Reports/IdentityHistoryReport.vue'),
+      meta: { title: 'Lịch sử định danh doanh nghiệp', requiresAuth: true, fillViewport: true },
+    },
+    {
       path: '/signin',
       name: 'Signin',
       component: () => import('../views/Auth/Signin.vue'),
@@ -222,7 +229,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, _from, next) => {
-  document.title = `${to.meta.title ?? 'HTQLDN'} | Hệ Thống Quản Lý Doanh Nghiệp (HTQLDN)`
+  document.title = to.meta.title ? `${to.meta.title} | ${APP_NAME}` : APP_NAME
 
   const auth = useAuthStore()
 

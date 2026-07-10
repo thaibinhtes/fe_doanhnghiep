@@ -35,14 +35,12 @@
     <p
       class="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400"
     >
-      &copy; {{ currentYear }} - HTQLDN
+      {{ APP_FOOTER }}
     </p>
   </div>
 </template>
 
-<script setup>
-import { ref } from "vue";
-import CommonGridShape from "../../components/common/CommonGridShape.vue";
-
-const currentYear = ref(new Date().getFullYear());
+<script setup lang="ts">
+import CommonGridShape from '../../components/common/CommonGridShape.vue'
+import { APP_FOOTER } from '@/config/app'
 </script>

@@ -44,12 +44,6 @@ export const menuConfig: MenuGroup[] = [
         permission: 'menu.dashboard',
       },
       {
-        name: 'Lịch sử import',
-        icon: ArchiveIcon,
-        path: '/admin/import-history',
-        permission: 'menu.import-history',
-      },
-      {
         name: 'Quản lý doanh nghiệp',
         icon: TableIcon,
         subItems: [
@@ -66,18 +60,12 @@ export const menuConfig: MenuGroup[] = [
             permissions: ['feature.companies.import', 'menu.companies.list'],
           },
           {
-            name: 'Lịch sử import',
-            path: '/companies/import-history',
-            permission: 'feature.companies.import',
-            permissions: ['feature.companies.import', 'menu.companies.list'],
-          },
-          {
-            name: 'Import thuế doanh nghiệp',
+            name: 'Cập nhật tình trạng thuế doanh nghiệp',
             path: '/companies/import-tax',
             permission: 'menu.admin.org-units',
           },
           {
-            name: 'Thuế doanh nghiệp',
+            name: 'Tình trạng thuế doanh nghiệp',
             path: '/admin/tax-management?tab=companies',
             permission: 'menu.admin.org-units',
           },
@@ -105,19 +93,19 @@ export const menuConfig: MenuGroup[] = [
             permission: 'feature.cooperatives.import',
             permissions: ['feature.cooperatives.import', 'menu.cooperatives.list', 'menu.companies.list'],
           },
+          // {
+          //   name: 'Lịch sử import',
+          //   path: '/cooperatives/import-history',
+          //   permission: 'feature.cooperatives.import',
+          //   permissions: ['feature.cooperatives.import', 'menu.cooperatives.list', 'menu.companies.list'],
+          // },
           {
-            name: 'Lịch sử import',
-            path: '/cooperatives/import-history',
-            permission: 'feature.cooperatives.import',
-            permissions: ['feature.cooperatives.import', 'menu.cooperatives.list', 'menu.companies.list'],
-          },
-          {
-            name: 'Import thuế hợp tác xã',
+            name: 'Cập nhật tình trạng thuế HTX',
             path: '/cooperatives/import-tax',
             permission: 'menu.admin.org-units',
           },
           {
-            name: 'Thuế hợp tác xã',
+            name: 'Tình trạng thuế HTX',
             path: '/cooperatives/tax',
             permission: 'menu.admin.org-units',
           },
@@ -137,17 +125,20 @@ export const menuConfig: MenuGroup[] = [
         subItems: [
           { name: 'Báo cáo tổng hợp', path: '/reports/summary', permission: 'menu.reports.summary' },
           { name: 'Báo cáo tiến độ', path: '/reports/progress', permission: 'menu.reports.progress' },
-        ],
-      },
-      {
-        name: 'Thuế',
-        icon: SettingsIcon,
-        permission: 'menu.admin.org-units',
-        subItems: [
           {
-            name: 'Danh sách đơn vị thuế',
-            path: '/admin/tax-management?tab=tax-units',
-            permission: 'menu.admin.org-units',
+            name: 'Lịch sử định danh doanh nghiệp',
+            path: '/reports/identity-history',
+            permission: 'menu.reports.identity-history',
+          },
+          {
+            name: 'Lịch sử import doanh nghiệp',
+            path: '/companies/import-history',
+            permission: 'menu.import-history',
+          },
+          {
+            name: 'Lịch sử import hợp tác xã',
+            path: '/cooperatives/import-history',
+            permission: 'menu.import-history',
           },
         ],
       },
@@ -202,6 +193,11 @@ export const menuConfig: MenuGroup[] = [
             permission: 'menu.admin.users',
           },
           {
+            name: 'Danh sách đơn vị thuế',
+            path: '/admin/tax-units',
+            permission: 'menu.admin.tax-units',
+          },
+          {
             name: 'Phân quyền',
             path: '/admin/roles',
             permission: 'menu.admin.roles',
@@ -236,6 +232,7 @@ export const routePermissions: Record<string, RoutePermission> = {
   '/members/create': 'menu.members.create',
   '/reports/summary': 'menu.reports.summary',
   '/reports/progress': 'menu.reports.progress',
+  '/reports/identity-history': 'menu.reports.identity-history',
   '/admin/roles': 'menu.admin.roles',
   '/admin/cadastral': 'menu.admin.cadastral',
   '/admin/business-types': 'menu.admin.business-types',

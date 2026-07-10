@@ -1,6 +1,7 @@
 import api from './api'
 import type { ProgressReport, ProgressReportFilters } from '@/types/report'
 import type { SummaryReport } from '@/types/status'
+import type { IdentityHistoryFilters, IdentityHistoryListResponse } from '@/types/identityHistory'
 
 export type ProgressReportQuery = ProgressReportFilters & {
   reportDate?: string
@@ -32,5 +33,19 @@ export const reportService = {
       responseType: 'blob',
     })
     return data
+  },
+
+  async getIdentityHistory(filters?: IdentityHistoryFilters): Promise<IdentityHistoryListResponse> {
+    const { data } = await api.get<{
+      data: IdentityHistoryListResponse['data']
+      meta: IdentityHistoryListResponse['meta']
+    }>('/reports/dinh-danh-lich-su', {
+      params: filters,
+    })
+
+    return {
+      data: data.data ?? [],
+      meta: data.meta ?? { current_page: 1, last_page: 1, per_page: 20, total: 0 },
+    }
   },
 }

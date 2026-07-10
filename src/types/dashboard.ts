@@ -48,7 +48,12 @@ export interface DashboardData {
   generatedAt: string
   overview: DashboardOverview
   identity: DashboardIdentity
+  cooperativeOverview?: {
+    totalCooperatives: number
+  }
+  cooperativeIdentity?: DashboardIdentity
   summary: SummaryReport
+  cooperativeSummary?: SummaryReport
   progress: {
     title: string
     reportDateLabel: string

@@ -2,17 +2,19 @@
   <div
     class="mx-auto mb-10 w-full max-w-60 rounded-2xl bg-gray-50 px-4 py-5 text-center dark:bg-white/[0.03]"
   >
-    <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">Hệ Thống Quản Lý Doanh Nghiệp</h3>
+    <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">{{ APP_NAME }}</h3>
     <p class="mb-4 text-gray-500 text-theme-sm dark:text-gray-400">
-      HTQLDN - Quản lý tập trung thông tin doanh nghiệp.
+      Hỗ trợ định danh và quản lý thông tin tổ chức.
     </p>
-    <a
-      href="https://tailadmin.com/pricing"
-      target="_blank"
-      rel="nofollow"
+    <router-link
+      to="/"
       class="flex items-center justify-center p-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
     >
-      HTQLDN
-    </a>
+      {{ APP_SHORT_NAME }}
+    </router-link>
   </div>
 </template>
+
+<script setup lang="ts">
+import { RouterLink } from 'vue-router'
+import { APP_NAME, APP_SHORT_NAME } from '@/config/app'

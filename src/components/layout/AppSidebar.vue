@@ -22,15 +22,15 @@
       <router-link to="/" class="flex items-center">
         <span
           v-if="isExpanded || isHovered || isMobileOpen"
-          class="text-sm font-semibold text-gray-900 dark:text-white"
+          class="text-sm font-semibold leading-snug text-gray-900 dark:text-white uppercase"
         >
-          Hệ Thống Quản Lý Doanh Nghiệp (HTQLDN)
+          {{ APP_NAME }}
         </span>
         <span
           v-else
           class="text-xs font-bold text-gray-900 dark:text-white"
         >
-          HTQLDN
+          {{ APP_SHORT_NAME }}
         </span>
       </router-link>
     </div>
@@ -233,6 +233,7 @@ import {
   collectSubItemPaths,
 } from "@/config/menu";
 import { useAuthStore } from "@/stores/auth";
+import { APP_NAME, APP_SHORT_NAME } from "@/config/app";
 
 const route = useRoute();
 const auth = useAuthStore();

@@ -297,11 +297,11 @@
             <div class="flex flex-col items-center max-w-xs">
               <router-link to="/" class="block mb-4">
                 <span class="text-xl font-semibold text-white">
-                  Hệ Thống Quản Lý Doanh Nghiệp (HTQLDN)
+                  {{ APP_NAME }}
                 </span>
               </router-link>
               <p class="text-center text-gray-400 dark:text-white/60">
-                Nền tảng quản lý doanh nghiệp tập trung
+                Hỗ trợ định danh và quản lý thông tin tổ chức
               </p>
             </div>
           </div>
@@ -316,6 +316,7 @@ import FullScreenLayout from '@/components/layout/FullScreenLayout.vue'
 import CommonGridShape from '@/components/common/CommonGridShape.vue'
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { APP_NAME } from '@/config/app'
 
 const firstName = ref('')
 const lastName = ref('')

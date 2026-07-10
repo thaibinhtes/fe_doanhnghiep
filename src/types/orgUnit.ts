@@ -97,6 +97,16 @@ export function defaultOrgUnitFilterValue(
   return options[0] ? String(options[0].id) : ''
 }
 
+/** Giá trị gửi API — luôn dùng đơn vị mặc định khi user thuộc phạm vi đơn vị. */
+export function resolveOrgUnitFilterValue(
+  donViId: string | number,
+  user: AuthUser | null | undefined,
+  options: Array<{ id: number }>,
+): string | number | undefined {
+  const resolved = donViId || defaultOrgUnitFilterValue(options, user)
+  return resolved || undefined
+}
+
 export function buildOrgUnitOptions(items: OrgUnit[], depth = 0): Array<{ id: number; label: string; cap: number }> {
   const options: Array<{ id: number; label: string; cap: number }> = []
 

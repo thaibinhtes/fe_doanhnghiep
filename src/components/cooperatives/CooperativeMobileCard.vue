@@ -50,10 +50,6 @@
           </span>
         </dd>
       </div>
-      <div v-if="cooperative.donViTen && cooperative.donViTen !== '-'" class="flex gap-2">
-        <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">Đơn vị</dt>
-        <dd class="text-gray-800 dark:text-gray-200">{{ cooperative.donViTen }}</dd>
-      </div>
     </dl>
 
     <div v-if="showActions" class="mt-4 flex gap-2 border-t border-gray-100 pt-3 dark:border-gray-800">

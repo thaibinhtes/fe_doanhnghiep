@@ -34,11 +34,34 @@
             <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
               Chưa định danh gồm: <strong>Cần rà soát</strong> (có liên kết thuế) và <strong>Chưa định danh</strong> (không có liên kết thuế).
             </p>
-            <VueApexCharts type="donut" height="320" :options="identityChartOptions" :series="identitySeries" />
+            <VueApexCharts type="donut" height="320" :options="companyIdentityChartOptions" :series="companyIdentitySeries" />
           </ComponentCard>
 
-          <ComponentCard title="Phân bổ trạng thái (báo cáo tổng hợp)">
-            <VueApexCharts type="pie" height="320" :options="summaryChartOptions" :series="summarySeries" />
+          <ComponentCard title="Tỷ lệ định danh hợp tác xã">
+            <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+              Đã định danh: có liên kết thuế đang hoạt động. <strong>Cần rà soát</strong>: có liên kết thuế ngừng hoạt động. <strong>Chưa định danh</strong>: chưa có liên kết thuế.
+            </p>
+            <VueApexCharts type="donut" height="320" :options="cooperativeIdentityChartOptions" :series="cooperativeIdentitySeries" />
+          </ComponentCard>
+        </div>
+
+        <div class="grid gap-5 xl:grid-cols-2">
+          <ComponentCard title="Phân bổ trạng thái doanh nghiệp (báo cáo tổng hợp)">
+            <VueApexCharts
+              type="bar"
+              height="360"
+              :options="companySummaryBarOptions"
+              :series="companySummaryBarSeries"
+            />
+          </ComponentCard>
+
+          <ComponentCard title="Phân bổ trạng thái HTX (báo cáo tổng hợp)">
+            <VueApexCharts
+              type="bar"
+              height="360"
+              :options="cooperativeSummaryBarOptions"
+              :series="cooperativeSummaryBarSeries"
+            />
           </ComponentCard>
         </div>
 
@@ -73,10 +96,6 @@
           </p>
           <VueApexCharts type="bar" height="360" :options="progressChartOptions" :series="progressSeries" />
         </ComponentCard>
-
-        <ComponentCard title="Số lượng theo trạng thái báo cáo">
-          <VueApexCharts type="bar" height="360" :options="summaryBarOptions" :series="summaryBarSeries" />
-        </ComponentCard>
       </template>
 
       <div v-else-if="error" class="rounded-lg bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
@@ -94,6 +113,7 @@ import ComponentCard from '@/components/common/ComponentCard.vue'
 import { dashboardService } from '@/services/dashboardService'
 import type { DashboardData, DashboardIdentityMonthlyStats } from '@/types/dashboard'
 import type { ProgressReportMetrics } from '@/types/report'
+import type { ReportColumn } from '@/types/status'
 
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -102,7 +122,8 @@ const identityMonthly = ref<DashboardIdentityMonthlyStats | null>(null)
 const identityMonth = ref(new Date().toISOString().slice(0, 7))
 
 const chartFont = 'Outfit, sans-serif'
-const chartColors = ['#465fff', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#64748b']
+const identityLabels = ['Đã định danh', 'Cần rà soát', 'Chưa định danh']
+const identityColors = ['#10b981', '#f59e0b', '#94a3b8']
 
 const statCards = computed(() => {
   if (!dashboard.value) return []
@@ -117,70 +138,106 @@ const statCards = computed(() => {
   ]
 })
 
-const identitySeries = computed(() => {
-  if (!dashboard.value) return []
-  return [
-    dashboard.value.identity.daDinhDanh,
-    dashboard.value.identity.canRaSoat,
-    dashboard.value.identity.chuaDinhDanh,
-  ]
-})
-
-const identityChartOptions = computed(() => ({
-  chart: { fontFamily: chartFont, type: 'donut' },
-  colors: ['#10b981', '#f59e0b', '#94a3b8'],
-  labels: ['Đã định danh', 'Cần rà soát', 'Chưa định danh'],
-  legend: { position: 'bottom' },
-  dataLabels: { enabled: true },
-  plotOptions: {
-    pie: {
-      donut: {
-        size: '62%',
-        labels: {
-          show: true,
-          total: {
+function buildIdentityDonutOptions(total: number) {
+  return {
+    chart: { fontFamily: chartFont, type: 'donut' },
+    colors: identityColors,
+    labels: identityLabels,
+    legend: { position: 'bottom' },
+    dataLabels: { enabled: true },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '62%',
+          labels: {
             show: true,
-            label: 'Tổng',
-            formatter: () => String(dashboard.value?.overview.totalCompanies ?? 0),
+            total: {
+              show: true,
+              label: 'Tổng',
+              formatter: () => String(total),
+            },
           },
         },
       },
     },
-  },
-}))
+  }
+}
 
-const summarySeries = computed(() => {
-  if (!dashboard.value) return []
-  return dashboard.value.summary.columns.map((col) => col.count)
-})
+function buildIdentitySeries(identity?: { daDinhDanh: number; canRaSoat: number; chuaDinhDanh: number }) {
+  if (!identity) return []
+  return [identity.daDinhDanh, identity.canRaSoat, identity.chuaDinhDanh]
+}
 
-const summaryChartOptions = computed(() => ({
-  chart: { fontFamily: chartFont, type: 'pie' },
-  colors: chartColors,
-  labels: dashboard.value?.summary.columns.map((col) => col.ten) ?? [],
-  legend: { position: 'bottom' },
-  dataLabels: { enabled: true },
-}))
+const companyIdentitySeries = computed(() => buildIdentitySeries(dashboard.value?.identity))
 
-const summaryBarSeries = computed(() => [
-  {
-    name: 'Số lượng',
-    data: dashboard.value?.summary.columns.map((col) => col.count) ?? [],
-  },
-])
+const companyIdentityChartOptions = computed(() =>
+  buildIdentityDonutOptions(dashboard.value?.overview.totalCompanies ?? 0),
+)
 
-const summaryBarOptions = computed(() => ({
-  chart: { fontFamily: chartFont, type: 'bar', toolbar: { show: false } },
-  colors: ['#465fff'],
-  plotOptions: { bar: { borderRadius: 6, columnWidth: '45%' } },
-  dataLabels: { enabled: false },
-  xaxis: {
-    categories: dashboard.value?.summary.columns.map((col) => col.ten) ?? [],
-    labels: { rotate: -30, trim: true },
-  },
-  yaxis: { labels: { formatter: (val: number) => Math.round(val).toString() } },
-  grid: { strokeDashArray: 4 },
-}))
+const cooperativeIdentitySeries = computed(() => buildIdentitySeries(dashboard.value?.cooperativeIdentity))
+
+const cooperativeIdentityChartOptions = computed(() =>
+  buildIdentityDonutOptions(dashboard.value?.cooperativeOverview?.totalCooperatives ?? 0),
+)
+
+function buildHorizontalStatusBarOptions(columns: ReportColumn[], color: string) {
+  const labels = columns.map((col) => col.ten)
+  const maxCount = Math.max(...columns.map((col) => col.count), 0)
+
+  return {
+    chart: { fontFamily: chartFont, type: 'bar', toolbar: { show: false } },
+    colors: [color],
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        borderRadius: 6,
+        barHeight: '60%',
+        dataLabels: { position: 'right' },
+      },
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: (val: number) => Math.round(val).toString(),
+      offsetX: 8,
+      style: { fontSize: '12px' },
+    },
+    xaxis: {
+      categories: labels,
+      max: maxCount > 0 ? Math.ceil(maxCount * 1.15) : undefined,
+      labels: { formatter: (val: number) => Math.round(val).toString() },
+    },
+    yaxis: {
+      labels: {
+        maxWidth: 220,
+        style: { fontSize: '12px' },
+      },
+    },
+    grid: { strokeDashArray: 4, padding: { left: 8, right: 24 } },
+    tooltip: {
+      y: { formatter: (val: number) => `${Math.round(val)} đơn vị` },
+    },
+  }
+}
+
+function buildHorizontalStatusBarSeries(columns: ReportColumn[]) {
+  return [{ name: 'Số lượng', data: columns.map((col) => col.count) }]
+}
+
+const companySummaryBarSeries = computed(() =>
+  buildHorizontalStatusBarSeries(dashboard.value?.summary.columns ?? []),
+)
+
+const companySummaryBarOptions = computed(() =>
+  buildHorizontalStatusBarOptions(dashboard.value?.summary.columns ?? [], '#465fff'),
+)
+
+const cooperativeSummaryBarSeries = computed(() =>
+  buildHorizontalStatusBarSeries(dashboard.value?.cooperativeSummary?.columns ?? []),
+)
+
+const cooperativeSummaryBarOptions = computed(() =>
+  buildHorizontalStatusBarOptions(dashboard.value?.cooperativeSummary?.columns ?? [], '#8b5cf6'),
+)
 
 const progressSeries = computed(() => {
   const totalRow = dashboard.value?.progress.totalRow

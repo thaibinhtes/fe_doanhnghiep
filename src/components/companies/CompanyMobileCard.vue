@@ -38,10 +38,6 @@
         <dt class="shrink-0 text-gray-500 dark:text-gray-400 w-24">Địa chỉ</dt>
         <dd class="text-gray-800 dark:text-gray-200 break-words">{{ company.diaChi }}</dd>
       </div>
-      <div v-if="donViLabel" class="flex gap-2">
-        <dt class="shrink-0 text-gray-500 dark:text-gray-400 w-24">Đơn vị</dt>
-        <dd class="text-gray-800 dark:text-gray-200 break-words">{{ donViLabel }}</dd>
-      </div>
       <div v-if="company.quanHuyenCuMoiLabel" class="flex gap-2">
         <dt class="shrink-0 text-gray-500 dark:text-gray-400 w-24">Q/H cũ-mới</dt>
         <dd class="text-gray-800 dark:text-gray-200 break-words">{{ company.quanHuyenCuMoiLabel }}</dd>
@@ -171,10 +167,4 @@ const repName = computed(
 const ownerName = computed(
   () => props.company.chuSoHuuTen || props.company.chuSoHuu?.fullName || '',
 )
-const donViLabel = computed(() => {
-  const ten = props.company.donViTen ?? props.company.donVi?.ten
-  if (!ten) return ''
-  const ma = props.company.donVi?.ma
-  return ma && ma !== 'ROOT' ? `${ma} — ${ten}` : ten
-})
 </script>

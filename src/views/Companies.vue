@@ -51,22 +51,6 @@
                 </svg>
               </span>
             </div>
-            <div class="relative w-[160px] shrink-0 bg-transparent">
-              <select
-                v-model="filter.donViId"
-                class="h-9 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 pr-8 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-              >
-                <option v-if="hasUnrestrictedOrgScopeFlag" value="">Đơn vị</option>
-                <option v-for="opt in orgUnitOptions" :key="opt.id" :value="String(opt.id)">
-                  {{ opt.label }}
-                </option>
-              </select>
-              <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                <svg class="stroke-current" width="16" height="16" viewBox="0 0 20 20" fill="none">
-                  <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-            </div>
             <div class="w-[200px] shrink-0">
               <AdministrativeFilter
                 v-model:provinceCode="filterProvinceCode"
@@ -89,8 +73,8 @@
             <button
               v-if="hasUnrestrictedOrgScopeFlag && auth.hasPermission('feature.companies.delete')"
               type="button"
-              :disabled="!filter.donViId || clearingByUnit"
-              title="Xóa toàn bộ doanh nghiệp theo đơn vị đang chọn"
+              :disabled="!implicitDonViId || clearingByUnit"
+              title="Xóa toàn bộ doanh nghiệp theo đơn vị trực thuộc"
               class="inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-red-300 bg-white px-2.5 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-800 dark:bg-gray-900 dark:text-red-400 dark:hover:bg-red-950/30"
               @click="openClearByUnitModal"
             >
@@ -109,7 +93,7 @@
               <span class="hidden sm:inline">{{ exporting ? 'Đang xuất...' : 'Xuất' }}</span>
             </button>
             <button
-              v-if="auth.hasPermission('feature.cadastral.manage')"
+              v-if="hasUnrestrictedOrgScopeFlag && auth.hasPermission('feature.cadastral.manage')"
               type="button"
               title="Đồng bộ field hành chính"
               class="inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg border border-violet-500 bg-white px-2.5 text-xs font-medium text-violet-600 transition hover:bg-violet-50 dark:border-violet-400 dark:bg-gray-900 dark:text-violet-400 dark:hover:bg-violet-500/10"
@@ -288,7 +272,6 @@
               <div class="flex-none w-[50px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">TT</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Mã số doanh nghiệp</div>
               <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tên doanh nghiệp</div>
-              <div class="flex-none w-[180px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Đơn vị trực thuộc</div>
               <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Địa chỉ trụ sở chính</div>
               <div class="flex-none w-[120px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Quận / Huyện</div>
               <div
@@ -335,7 +318,6 @@
                 <div class="flex-none w-[50px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ index + 1 }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.maSoDoanhNghiep }}</div>
                 <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tenDoanhNghiep }}</div>
-                <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ formatDonVi(company) }}</div>
                 <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.diaChi }}</div>
                 <div class="flex-none w-[120px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.quanHuyen }}</div>
                 <div
@@ -1719,7 +1701,7 @@ import { companyService } from '@/services/companyService'
 import { hanhChinhService } from '@/services/hanhChinhService'
 import { settingService, type CompanyImportDocs } from '@/services/settingService'
 import { orgUnitService } from '@/services/orgUnitService'
-import { buildScopedOrgUnitOptions, defaultOrgUnitFilterValue, hasUnrestrictedOrgScope, resolveImportScopeOrgUnits } from '@/types/orgUnit'
+import { hasUnrestrictedOrgScope, resolveImportScopeOrgUnits } from '@/types/orgUnit'
 import type { OrgUnit, ImportScopeOrgUnit } from '@/types/orgUnit'
 import { formatImportUploadError } from '@/utils/apiError'
 import { useAuthStore } from '@/stores/auth'
@@ -1740,14 +1722,13 @@ const filter = reactive({
   search: '',
   dnTrangThaiId: '' as string | number,
   loaiHinhId: '' as string | number,
-  donViId: '' as string | number,
   quanHuyen: '',
   phuongXa: '',
 })
 
 const orgUnits = ref<OrgUnit[]>([])
-const orgUnitOptions = computed(() => buildScopedOrgUnitOptions(orgUnits.value, auth.user))
 const hasUnrestrictedOrgScopeFlag = computed(() => hasUnrestrictedOrgScope(auth.user))
+const implicitDonViId = computed(() => auth.user?.donViId ?? null)
 const importScopeOrgUnits = ref<ImportScopeOrgUnit[]>([])
 const loadingImportScope = ref(false)
 
@@ -2352,15 +2333,10 @@ const handlePerPageChange = (event: Event) => {
   store.setPerPage(value)
 }
 
-const applyDefaultOrgUnitFilter = () => {
-  filter.donViId = defaultOrgUnitFilterValue(orgUnitOptions.value, auth.user)
-}
-
 const resetFilters = () => {
   filter.search = ''
   filter.dnTrangThaiId = ''
   filter.loaiHinhId = ''
-  applyDefaultOrgUnitFilter()
   filter.phuongXa = ''
   filterWardCode.value = ''
   if (!HIDE_PROVINCE_FILTER) {
@@ -2440,7 +2416,6 @@ const currentCompanyFilters = () => ({
   search: filter.search,
   dnTrangThaiId: filter.dnTrangThaiId || undefined,
   loaiHinhId: filter.loaiHinhId || undefined,
-  donViId: filter.donViId || undefined,
   quanHuyen: filter.quanHuyen || undefined,
   phuongXa: filter.phuongXa,
   page: store.page,
@@ -2465,7 +2440,6 @@ const handleExport = async () => {
       search: filter.search,
       dnTrangThaiId: filter.dnTrangThaiId || undefined,
       loaiHinhId: filter.loaiHinhId || undefined,
-      donViId: filter.donViId || undefined,
       quanHuyen: filter.quanHuyen || undefined,
       phuongXa: filter.phuongXa,
     })
@@ -2726,7 +2700,7 @@ const closeDeleteConfirm = () => {
 }
 
 const openClearByUnitModal = async () => {
-  const donViId = Number(filter.donViId)
+  const donViId = implicitDonViId.value
   if (!donViId) return
 
   clearByUnitError.value = null
@@ -2749,7 +2723,7 @@ const closeClearByUnitModal = () => {
 }
 
 const confirmClearByUnit = async () => {
-  const donViId = Number(filter.donViId)
+  const donViId = implicitDonViId.value
   if (!donViId || !clearByUnitPreview.value) return
 
   clearingByUnit.value = true
@@ -2823,13 +2797,6 @@ const formatNganhNgheChinh = (company: Company) => {
   return company.nganhNgheKDChinh
 }
 
-const formatDonVi = (company: Company) => {
-  const ten = company.donViTen ?? company.donVi?.ten
-  if (!ten) return '-'
-  const ma = company.donVi?.ma
-  return ma && ma !== 'ROOT' ? `${ma} — ${ten}` : ten
-}
-
 const companyStatusClass = (company: Company) => {
   const loai = company.dnTrangThai?.loai
   const ma = company.dnTrangThai?.ma
@@ -2870,7 +2837,7 @@ const dinhDanhClass = (isUpdated?: boolean) =>
 
 // Fetch when filters or page changes
 watch(
-  () => [filter.search, filter.dnTrangThaiId, filter.loaiHinhId, filter.donViId, filter.quanHuyen, filter.phuongXa, store.page, store.perPage],
+  () => [filter.search, filter.dnTrangThaiId, filter.loaiHinhId, filter.quanHuyen, filter.phuongXa, store.page, store.perPage],
   () => {
     selectedCompanyIds.value = []
     store.fetchCompanies(currentCompanyFilters())
@@ -2880,7 +2847,6 @@ watch(
 
 onMounted(async () => {
   orgUnits.value = await orgUnitService.getTree()
-  applyDefaultOrgUnitFilter()
   await Promise.all([loadStatuses(), loadBusinessTypes(), loadCompanyImportDocs()])
 
   store.fetchCompanies(currentCompanyFilters())
