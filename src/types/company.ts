@@ -42,6 +42,8 @@ export interface Company {
   maSoDoanhNghiep: string
   tenDoanhNghiep: string
   diaChi: string | null
+  diaChiCu?: string | null
+  diaChiMoi?: string | null
   long?: number | null
   lat?: number | null
   quanHuyen: string | null
@@ -56,6 +58,17 @@ export interface Company {
     code: string
     fullName: string
   } | null
+  xaPhuongCuCode?: string | null
+  xaPhuongCu?: {
+    code: string
+    fullName: string
+  } | null
+  xaPhuongCode?: string | null
+  xaPhuong?: {
+    code: string
+    fullName: string
+  } | null
+  ghiChuHanhChinh?: string | null
   quanHuyenHanhChinhLinked?: boolean
   quanHuyenCuMoiLabel?: string | null
   vonDieuLe: string | null
@@ -168,13 +181,12 @@ export const COMPANY_IMPORT_COLUMN_LABELS: Record<string, string> = {
   tt: 'TT',
   maSoDoanhNghiep: 'Mã số doanh nghiệp',
   tenDoanhNghiep: 'Tên doanh nghiệp',
-  diaChi: 'Địa chỉ trụ sở chính',
-  quanHuyen: 'Quận / Huyện',
-  phuongXa: 'Phường/xã',
   quanHuyenCu: 'Quận / Huyện cũ',
   quanHuyenMoi: 'Quận / Huyện mới',
   phuongXaCu: 'Phường / Xã cũ',
   phuongXaMoi: 'Phường / Xã mới',
+  diaChiCu: 'Địa chỉ cũ',
+  diaChiMoi: 'Địa chỉ mới',
   vonDieuLe: 'Vốn điều lệ',
   trangThai: 'Trạng thái',
   dienThoai: 'Điện thoại',

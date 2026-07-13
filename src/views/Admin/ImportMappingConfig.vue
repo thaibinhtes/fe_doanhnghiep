@@ -304,8 +304,20 @@ function openEdit(item: MappingConfig) {
   form.startRow = item.startRow
   form.sortOrder = item.sortOrder ?? 0
   form.isActive = item.isActive !== false
+  const map = item.columnMap || {}
+  const legacyAliases: Record<string, string> = {
+    quanHuyenCu: 'quanHuyen',
+    phuongXaCu: 'phuongXa',
+    diaChiCu: 'diaChi',
+  }
   fieldKeys.value.forEach((key) => {
-    columnInputs[key] = key in (item.columnMap || {}) ? columnsToDisplay(item.columnMap[key]) : ''
+    if (key in map) {
+      columnInputs[key] = columnsToDisplay(map[key])
+      return
+    }
+    const legacyKey = legacyAliases[key]
+    columnInputs[key] =
+      legacyKey && legacyKey in map ? columnsToDisplay(map[legacyKey]) : ''
   })
   showForm.value = true
 }
