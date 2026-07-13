@@ -371,7 +371,7 @@
           <section class="space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
             <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">3. Đồng bộ theo field</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Liên kết dữ liệu text import thủ công với bảng hành chính. Hiện hỗ trợ field Quận / Huyện.
+              Liên kết dữ liệu text import thủ công với bảng hành chính. Hỗ trợ field Quận / Huyện và Phường / Xã.
             </p>
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
@@ -790,7 +790,7 @@ const importing = ref(false)
 const syncing = ref(false)
 const fieldSyncing = ref(false)
 const fieldSyncOptions = ref<CompanyFieldSyncOption[]>([])
-const fieldSyncField = ref<'quanHuyen'>('quanHuyen')
+const fieldSyncField = ref<'quanHuyen' | 'phuongXa'>('quanHuyen')
 const fieldSyncSourceTable = ref<'hanh_chinh_cu' | 'hanh_chinh_moi'>('hanh_chinh_cu')
 const fieldSyncResult = ref<CompanyFieldSyncResult | null>(null)
 const actionError = ref('')

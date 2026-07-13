@@ -183,7 +183,7 @@ export interface CompanyFieldSyncSourceOption {
 }
 
 export interface CompanyFieldSyncOption {
-  key: 'quanHuyen'
+  key: 'quanHuyen' | 'phuongXa'
   label: string
   sources: CompanyFieldSyncSourceOption[]
 }

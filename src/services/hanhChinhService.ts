@@ -239,7 +239,7 @@ export const hanhChinhService = {
   },
 
   async syncCompanyField(payload: {
-    field: 'quanHuyen'
+    field: 'quanHuyen' | 'phuongXa'
     sourceTable: 'hanh_chinh_cu' | 'hanh_chinh_moi'
     dryRun?: boolean
   }): Promise<CompanyFieldSyncResult> {
