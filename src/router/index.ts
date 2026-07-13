@@ -219,6 +219,26 @@ const router = createRouter({
       meta: { title: 'Cấu hình menu', requiresAuth: true },
     },
     {
+      path: '/admin/import-mapping/companies',
+      name: 'Import Mapping Companies',
+      component: () => import('../views/Admin/ImportMappingConfig.vue'),
+      meta: {
+        title: 'Cấu hình format ánh xạ import DN',
+        requiresAuth: true,
+        importMappingEntity: 'companies',
+      },
+    },
+    {
+      path: '/admin/import-mapping/cooperatives',
+      name: 'Import Mapping Cooperatives',
+      component: () => import('../views/Admin/ImportMappingConfig.vue'),
+      meta: {
+        title: 'Cấu hình format ánh xạ import HTX',
+        requiresAuth: true,
+        importMappingEntity: 'cooperatives',
+      },
+    },
+    {
       path: '/signin',
       name: 'Signin',
       component: () => import('../views/Auth/Signin.vue'),

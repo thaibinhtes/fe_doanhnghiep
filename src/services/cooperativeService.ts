@@ -195,6 +195,49 @@ export const cooperativeService = {
     return data.data
   },
 
+  async getAdminImportConfigs(): Promise<CooperativeImportExampleConfig[]> {
+    const { data } = await api.get<{ data: CooperativeImportExampleConfig[] }>(`${BASE_PATH}/import-configs/admin`)
+    return data.data
+  },
+
+  async createImportConfig(payload: {
+    name: string
+    code: string
+    description?: string | null
+    startRow: number
+    columnMap: CooperativeImportColumnMap
+    valueExtensions?: Record<string, string>
+    isActive?: boolean
+    sortOrder?: number
+  }): Promise<CooperativeImportExampleConfig> {
+    const { data } = await api.post<{ data: CooperativeImportExampleConfig }>(`${BASE_PATH}/import-configs`, payload)
+    return data.data
+  },
+
+  async updateImportConfig(
+    id: number,
+    payload: {
+      name: string
+      code: string
+      description?: string | null
+      startRow: number
+      columnMap: CooperativeImportColumnMap
+      valueExtensions?: Record<string, string>
+      isActive?: boolean
+      sortOrder?: number
+    },
+  ): Promise<CooperativeImportExampleConfig> {
+    const { data } = await api.put<{ data: CooperativeImportExampleConfig }>(
+      `${BASE_PATH}/import-configs/${id}`,
+      payload,
+    )
+    return data.data
+  },
+
+  async deleteImportConfig(id: number): Promise<void> {
+    await api.delete(`${BASE_PATH}/import-configs/${id}`)
+  },
+
   async getImportFormats(): Promise<CooperativeImportFormat[]> {
     const { data } = await api.get<{ data: CooperativeImportFormat[] }>(`${BASE_PATH}/import-formats`)
     return data.data

@@ -38,6 +38,8 @@ export const routePermissions: Record<string, RoutePermission> = {
   '/admin/users': 'menu.admin.users',
   '/admin/import-history': 'menu.import-history',
   '/admin/menu-config': '__root__',
+  '/admin/import-mapping/companies': 'menu.admin.import-mapping-companies',
+  '/admin/import-mapping/cooperatives': 'menu.admin.import-mapping-cooperatives',
 }
 
 export function getRoutePermission(

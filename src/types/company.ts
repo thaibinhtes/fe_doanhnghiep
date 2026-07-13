@@ -259,6 +259,7 @@ export interface CompanyImportExampleConfig {
   startRow: number
   columnMap: CompanyImportColumnMap
   valueExtensions?: Record<string, string>
+  isActive?: boolean
   sortOrder?: number
 }
 

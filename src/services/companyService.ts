@@ -304,6 +304,46 @@ export const companyService = {
     return data.data
   },
 
+  async getAdminImportConfigs(): Promise<CompanyImportExampleConfig[]> {
+    const { data } = await api.get<{ data: CompanyImportExampleConfig[] }>(`${BASE_PATH}/import-configs/admin`)
+    return data.data
+  },
+
+  async createImportConfig(payload: {
+    name: string
+    code: string
+    description?: string | null
+    startRow: number
+    columnMap: Record<string, string[]>
+    valueExtensions?: Record<string, string>
+    isActive?: boolean
+    sortOrder?: number
+  }): Promise<CompanyImportExampleConfig> {
+    const { data } = await api.post<{ data: CompanyImportExampleConfig }>(`${BASE_PATH}/import-configs`, payload)
+    return data.data
+  },
+
+  async updateImportConfig(
+    id: number,
+    payload: {
+      name: string
+      code: string
+      description?: string | null
+      startRow: number
+      columnMap: Record<string, string[]>
+      valueExtensions?: Record<string, string>
+      isActive?: boolean
+      sortOrder?: number
+    },
+  ): Promise<CompanyImportExampleConfig> {
+    const { data } = await api.put<{ data: CompanyImportExampleConfig }>(`${BASE_PATH}/import-configs/${id}`, payload)
+    return data.data
+  },
+
+  async deleteImportConfig(id: number): Promise<void> {
+    await api.delete(`${BASE_PATH}/import-configs/${id}`)
+  },
+
   async getImportFormats(): Promise<CompanyImportFormat[]> {
     const { data } = await api.get<{ data: CompanyImportFormat[] }>(`${BASE_PATH}/import-formats`)
     return data.data

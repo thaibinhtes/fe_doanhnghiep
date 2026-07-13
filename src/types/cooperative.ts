@@ -79,6 +79,8 @@ export interface CooperativeImportExampleConfig {
   startRow: number
   columnMap: CooperativeImportColumnMap
   valueExtensions?: Record<string, string>
+  isActive?: boolean
+  sortOrder?: number
 }
 
 export interface CooperativeImportJobQueued {
