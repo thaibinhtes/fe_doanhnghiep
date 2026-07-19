@@ -177,37 +177,55 @@ export interface SyncResult {
   }>
 }
 
-export interface CompanyFieldSyncSourceOption {
-  key: 'hanh_chinh_cu' | 'hanh_chinh_moi'
-  label: string
-}
+export type CompanyAdministrativeField =
+  | 'tinhThanhCu'
+  | 'tinhThanhMoi'
+  | 'quanHuyenCu'
+  | 'quanHuyenMoi'
+  | 'phuongXaCu'
+  | 'phuongXaMoi'
 
 export interface CompanyFieldSyncOption {
-  key: 'quanHuyen' | 'phuongXa'
+  key: CompanyAdministrativeField
   label: string
-  sources: CompanyFieldSyncSourceOption[]
+  catalog: string
+  loai: 'cu' | 'moi'
 }
 
-export interface CompanyFieldSyncResult extends SyncResult {
+export interface CompanyFieldSyncResult {
   field: string
-  sourceTable: string
+  label: string
+  catalog: string
+  loai: 'cu' | 'moi'
+  scanned: number
+  matched: number
+  created: number
+  updated: number
+  skipped: number
+  alreadyLinked: number
+  unmapped: Array<Record<string, unknown>>
 }
 
 export interface CompanyAdministrativeCatalogSyncResult {
   scanned: number
+  alreadySynced: number
   updatedCompanies: number
-  createdLegacyProvinces: number
-  createdLegacyDistricts: number
-  createdLegacyWards: number
-  createdNewProvinces: number
-  createdNewWards: number
-  skipped: number
-  conflicts: Array<{
-    companyId: number
-    field: string
-    value: string
-    reason: string
-  }>
+  createdTinh: number
+  createdQuanHuyen: number
+  createdPhuongXa: number
+}
+
+export type HanhChinhDanhMucCap = 'tinh' | 'quan-huyen' | 'phuong-xa'
+
+export type HanhChinhDanhMucLoai = 'cu' | 'moi'
+
+export interface HanhChinhDanhMucItem {
+  id: number
+  ten: string
+  loai: HanhChinhDanhMucLoai
+  ma: string | null
+  tinh: { id: number; ten: string } | null
+  quanHuyen: { id: number; ten: string } | null
 }
 
 export interface NewDataClearPreview {

@@ -14,6 +14,7 @@ export interface Cooperative {
   quanHuyenCu?: string | null
   quanHuyenMoi?: string | null
   tinhThanhCu?: string | null
+  tinhThanhMoi?: string | null
   dienTichHa?: number | null
   vonDieuLe?: string | null
   soThanhVien?: number | null
@@ -156,6 +157,7 @@ export const COOPERATIVE_IMPORT_COLUMN_LABELS: Record<string, string> = {
   quanHuyenCu: 'Cấp huyện cũ',
   quanHuyenMoi: 'Cấp huyện mới',
   tinhThanhCu: 'Cấp tỉnh cũ',
+  tinhThanhMoi: 'Cấp tỉnh mới',
   dienTichHa: 'Diện tích (ha)',
   vonDieuLe: 'Vốn điều lệ',
   soThanhVien: 'Thành viên',

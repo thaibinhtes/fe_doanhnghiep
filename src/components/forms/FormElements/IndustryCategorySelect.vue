@@ -9,25 +9,19 @@
       </span>
       <div
         v-else
-        class="min-w-0 flex-1 overflow-hidden"
-        :class="multiple ? 'flex flex-wrap items-center gap-2' : ''"
+        class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden"
       >
         <div
-          v-for="item in selectedItems"
-          :key="item.ma"
-          class="group flex min-w-0 items-center overflow-hidden rounded-full border-[0.7px] border-transparent bg-gray-100 py-1 pl-2.5 text-sm text-gray-800 hover:border-gray-200 dark:bg-gray-800 dark:text-white/90 dark:hover:border-gray-800"
-          :class="[
-            multiple ? 'max-w-[calc(100%-0.25rem)] pr-2' : 'w-full pr-2',
-          ]"
+          class="group flex min-w-0 flex-1 items-center overflow-hidden rounded-full border-[0.7px] border-transparent bg-gray-100 py-1 pl-2.5 pr-2 text-sm text-gray-800 hover:border-gray-200 dark:bg-gray-800 dark:text-white/90 dark:hover:border-gray-800"
         >
           <span
             class="block min-w-0 truncate"
-            :title="formatLabel(item)"
-          >{{ formatLabel(item) }}</span>
+            :title="formatLabel(selectedItems[0])"
+          >{{ formatLabel(selectedItems[0]) }}</span>
           <button
-            v-if="multiple"
+            v-if="multiple && selectedItems.length === 1"
             type="button"
-            @click.stop="removeCode(item.ma)"
+            @click.stop="removeCode(selectedItems[0].ma)"
             class="ml-1 shrink-0 text-gray-500 cursor-pointer group-hover:text-gray-400 dark:text-gray-400"
             aria-label="Xóa ngành nghề"
           >
@@ -41,6 +35,15 @@
             </svg>
           </button>
         </div>
+        <button
+          v-if="multiple && hiddenSelectedCount > 0"
+          type="button"
+          class="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-600 transition hover:bg-brand-100 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25"
+          :aria-label="`Xem ${selectedItems.length} ngành nghề đã chọn`"
+          @click.stop="openDropdown"
+        >
+          +{{ hiddenSelectedCount }} ngành nghề
+        </button>
       </div>
       <svg
         class="shrink-0"
@@ -81,6 +84,50 @@
             class="h-9 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
             @click.stop
           />
+        </div>
+        <div
+          v-if="multiple && selectedItems.length > 0"
+          class="border-b border-gray-200 px-3 py-2.5 dark:border-gray-700"
+        >
+          <div class="mb-2 flex items-center justify-between gap-3">
+            <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+              Đã chọn {{ selectedItems.length }} ngành nghề
+            </span>
+            <button
+              type="button"
+              class="text-xs font-medium text-gray-500 transition hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/20 dark:text-gray-400 dark:hover:text-red-400"
+              @click.stop="clearSelected"
+            >
+              Xóa tất cả
+            </button>
+          </div>
+          <ul class="max-h-36 space-y-1 overflow-y-auto pr-1">
+            <li
+              v-for="item in selectedItems"
+              :key="`selected-${item.ma}`"
+              class="flex items-start gap-2 rounded-md bg-gray-50 px-2.5 py-2 text-sm dark:bg-gray-800/70"
+            >
+              <span class="min-w-0 flex-1 text-gray-700 dark:text-gray-300">
+                <strong class="font-semibold text-gray-900 dark:text-white/90">{{ item.ma }}</strong>
+                — {{ item.ten }}
+              </span>
+              <button
+                type="button"
+                class="mt-0.5 shrink-0 rounded p-0.5 text-gray-400 transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/20 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                :aria-label="`Xóa ngành nghề ${item.ma}`"
+                @click.stop="removeCode(item.ma)"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M3.40717 4.46881C3.11428 4.17591 3.11428 3.70104 3.40717 3.40815C3.70006 3.11525 4.17494 3.11525 4.46783 3.40815L6.99943 5.93975L9.53095 3.40822C9.82385 3.11533 10.2987 3.11533 10.5916 3.40822C10.8845 3.70112 10.8845 4.17599 10.5916 4.46888L8.06009 7.00041L10.5916 9.53193C10.8845 9.82482 10.8845 10.2997 10.5916 10.5926C10.2987 10.8855 9.82385 10.8855 9.53095 10.5926L6.99943 8.06107L4.46783 10.5927C4.17494 10.8856 3.70006 10.8856 3.40717 10.5927C3.11428 10.2998 3.11428 9.8249 3.40717 9.53201L5.93877 7.00041L3.40717 4.46881Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </button>
+            </li>
+          </ul>
         </div>
         <ul class="max-h-60 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
           <li v-if="loading" class="px-3 py-3 text-sm text-gray-500 dark:text-gray-400">
@@ -159,6 +206,10 @@ const selectedItems = computed(() =>
   selectedCodes.value.map((code) => selectedCatalog.value[code] ?? { ma: code, ten: code } as IndustryCategory),
 )
 
+const hiddenSelectedCount = computed(() =>
+  props.multiple ? Math.max(0, selectedItems.value.length - 1) : 0,
+)
+
 const formatLabel = (item: IndustryCategory) => `${item.ma} — ${item.ten}`
 
 const isSelected = (code: string) => selectedCodes.value.includes(code)
@@ -208,12 +259,19 @@ const scheduleSearch = (search: string) => {
 }
 
 const toggleDropdown = async () => {
-  isOpen.value = !isOpen.value
   if (isOpen.value) {
-    await fetchOptions(searchQuery.value)
-    await nextTick()
-    searchInputRef.value?.focus()
+    isOpen.value = false
+    return
   }
+
+  await openDropdown()
+}
+
+const openDropdown = async () => {
+  isOpen.value = true
+  await fetchOptions(searchQuery.value)
+  await nextTick()
+  searchInputRef.value?.focus()
 }
 
 const selectItem = (item: IndustryCategory) => {
@@ -233,6 +291,10 @@ const selectItem = (item: IndustryCategory) => {
 
 const removeCode = (code: string) => {
   emitValue(selectedCodes.value.filter((item) => item !== code))
+}
+
+const clearSelected = () => {
+  emitValue([])
 }
 
 const handleClickOutside = (event: MouseEvent) => {

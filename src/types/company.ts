@@ -49,6 +49,7 @@ export interface Company {
   quanHuyen: string | null
   phuongXa: string | null
   tinhThanhCu?: string | null
+  tinhThanhMoi?: string | null
   tinhThanhCuCode?: string | null
   tinhThanhCuLinked?: {
     code: string
@@ -80,6 +81,12 @@ export interface Company {
     code: string
     fullName: string
   } | null
+  tinhThanhCuId?: number | null
+  tinhThanhMoiId?: number | null
+  quanHuyenCuId?: number | null
+  xaPhuongCuId?: number | null
+  quanHuyenMoiId?: number | null
+  xaPhuongMoiId?: number | null
   ghiChuHanhChinh?: string | null
   quanHuyenHanhChinhLinked?: boolean
   quanHuyenCuMoiLabel?: string | null

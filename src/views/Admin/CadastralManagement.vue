@@ -213,6 +213,99 @@
         </div>
       </ComponentCard>
 
+      <!-- Danh mục hành chính hợp nhất -->
+      <ComponentCard v-else-if="activeTab === 'catalog'" title="Danh mục hành chính hợp nhất (tỉnh / quận huyện / phường xã)">
+        <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+          Mỗi record có loại <strong>cũ</strong> hoặc <strong>mới</strong>. Dữ liệu được tạo từ danh mục hiện có và từ
+          tính năng đồng bộ text doanh nghiệp (tab Import &amp; đồng bộ, mục 3).
+        </p>
+        <div class="mb-4 flex flex-wrap items-center gap-3">
+          <select
+            v-model="catalogCap"
+            class="h-9 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+            @change="loadCatalog(1)"
+          >
+            <option value="tinh">Bảng tỉnh</option>
+            <option value="quan-huyen">Bảng quận huyện</option>
+            <option value="phuong-xa">Bảng phường xã</option>
+          </select>
+          <select
+            v-model="catalogLoai"
+            class="h-9 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+            @change="loadCatalog(1)"
+          >
+            <option value="">Tất cả loại</option>
+            <option value="cu">Cũ</option>
+            <option value="moi">Mới</option>
+          </select>
+          <input
+            v-model="catalogSearch"
+            type="search"
+            placeholder="Tìm theo tên..."
+            class="h-9 min-w-[220px] flex-1 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+            @keyup.enter="loadCatalog(1)"
+          />
+          <button
+            type="button"
+            class="h-9 rounded-lg bg-brand-500 px-4 text-sm font-medium text-white hover:bg-brand-600"
+            @click="loadCatalog(1)"
+          >
+            Tìm
+          </button>
+        </div>
+
+        <div v-if="catalogLoading" class="flex items-center justify-center py-10">
+          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
+        </div>
+
+        <div v-else class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+          <table class="min-w-[640px] w-full border-collapse text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-800/60">
+              <tr>
+                <th class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">ID</th>
+                <th class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">Tên</th>
+                <th class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">Loại</th>
+                <th v-if="catalogCap !== 'tinh'" class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">Cấp cha</th>
+                <th class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">Mã (nếu có)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in catalogItems" :key="item.id">
+                <td class="border border-gray-200 px-3 py-2.5 dark:border-gray-700">{{ item.id }}</td>
+                <td class="border border-gray-200 px-3 py-2.5 dark:border-gray-700">{{ item.ten }}</td>
+                <td class="border border-gray-200 px-3 py-2.5 dark:border-gray-700">
+                  <span
+                    class="rounded-full px-2 py-0.5 text-xs font-medium"
+                    :class="item.loai === 'moi'
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'"
+                  >
+                    {{ item.loai === 'moi' ? 'Mới' : 'Cũ' }}
+                  </span>
+                </td>
+                <td v-if="catalogCap !== 'tinh'" class="border border-gray-200 px-3 py-2.5 dark:border-gray-700">
+                  {{ item.quanHuyen?.ten ?? item.tinh?.ten ?? '-' }}
+                </td>
+                <td class="border border-gray-200 px-3 py-2.5 dark:border-gray-700">{{ item.ma ?? '-' }}</td>
+              </tr>
+              <tr v-if="catalogItems.length === 0">
+                <td :colspan="catalogCap !== 'tinh' ? 5 : 4" class="border border-gray-200 px-3 py-6 text-center text-gray-500 dark:border-gray-700">
+                  Chưa có dữ liệu. Chạy đồng bộ text doanh nghiệp ở tab Import &amp; đồng bộ.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div v-if="catalogTotalPages > 1" class="mt-4 flex items-center justify-end gap-2 text-sm">
+          <button type="button" class="rounded border border-gray-300 px-3 py-1 disabled:opacity-40 dark:border-gray-600" :disabled="catalogPage <= 1" @click="loadCatalog(catalogPage - 1)">Trước</button>
+          <span>{{ catalogPage }} / {{ catalogTotalPages }}</span>
+          <button type="button" class="rounded border border-gray-300 px-3 py-1 disabled:opacity-40 dark:border-gray-600" :disabled="catalogPage >= catalogTotalPages" @click="loadCatalog(catalogPage + 1)">Sau</button>
+        </div>
+
+        <p v-if="actionError && activeTab === 'catalog'" class="mt-4 text-sm text-red-600 dark:text-red-400">{{ actionError }}</p>
+      </ComponentCard>
+
       <!-- Import & đồng bộ -->
       <ComponentCard v-else-if="activeTab === 'import'" title="Import dữ liệu & đồng bộ doanh nghiệp">
         <div v-if="!canManage" class="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
@@ -371,7 +464,8 @@
           <section class="space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
             <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">3. Tạo danh mục từ text doanh nghiệp</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Tạo các cấp hành chính còn thiếu từ field text và cập nhật code liên kết. Dữ liệu text gốc không bị thay đổi.
+              Tạo record vào 3 bảng danh mục hợp nhất (tỉnh / quận huyện / phường xã, loại cũ hoặc mới) từ field text
+              và gán ID liên kết từng field. Field đã có ID (đã sync) sẽ bỏ qua. Dữ liệu text gốc không bị thay đổi.
             </p>
             <div class="flex flex-wrap gap-2">
               <button
@@ -394,14 +488,10 @@
             <div v-if="textCatalogSyncResult" class="rounded-lg bg-gray-50 px-4 py-3 text-sm dark:bg-gray-800/60">
               <p>
                 Quét: {{ textCatalogSyncResult.scanned }} · DN cập nhật: {{ textCatalogSyncResult.updatedCompanies }}
-                · Tỉnh cũ mới: {{ textCatalogSyncResult.createdLegacyProvinces }}
-                · Huyện cũ mới: {{ textCatalogSyncResult.createdLegacyDistricts }}
-                · Xã cũ mới: {{ textCatalogSyncResult.createdLegacyWards }}
-                · Cấp huyện/tỉnh mới: {{ textCatalogSyncResult.createdNewProvinces }}
-                · Xã mới: {{ textCatalogSyncResult.createdNewWards }}
-              </p>
-              <p v-if="textCatalogSyncResult.conflicts.length" class="mt-1 text-amber-700 dark:text-amber-300">
-                Chưa liên kết: {{ textCatalogSyncResult.conflicts.length }} field do thiếu cấp cha.
+                · Đã sync (bỏ qua): {{ textCatalogSyncResult.alreadySynced }}
+                · Tỉnh tạo mới: {{ textCatalogSyncResult.createdTinh }}
+                · Quận huyện tạo mới: {{ textCatalogSyncResult.createdQuanHuyen }}
+                · Phường xã tạo mới: {{ textCatalogSyncResult.createdPhuongXa }}
               </p>
             </div>
           </section>
@@ -409,9 +499,9 @@
           <section class="space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
             <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">4. Đồng bộ theo field</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Liên kết dữ liệu text import thủ công với bảng hành chính. Hỗ trợ field Quận / Huyện và Phường / Xã.
+              Chọn riêng tỉnh, quận huyện hoặc phường xã cũ/mới. Hệ thống tự dùng đúng bảng danh mục và loại dữ liệu.
             </p>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-3">
               <div>
                 <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Chọn field</label>
                 <select
@@ -420,17 +510,6 @@
                 >
                   <option v-for="option in fieldSyncOptions" :key="option.key" :value="option.key">
                     {{ option.label }}
-                  </option>
-                </select>
-              </div>
-              <div>
-                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Chọn bảng đồng bộ</label>
-                <select
-                  v-model="fieldSyncSourceTable"
-                  class="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
-                >
-                  <option v-for="source in activeFieldSyncSources" :key="source.key" :value="source.key">
-                    {{ source.label }}
                   </option>
                 </select>
               </div>
@@ -455,7 +534,9 @@
             </div>
             <div v-if="fieldSyncResult" class="rounded-lg bg-gray-50 px-4 py-3 text-sm dark:bg-gray-800/60">
               <p>
-                Khớp: {{ fieldSyncResult.matched }} · Cập nhật: {{ fieldSyncResult.updated }} · Đã liên kết: {{ fieldSyncResult.alreadyLinked ?? 0 }} · Bỏ qua: {{ fieldSyncResult.skipped }}
+                Quét: {{ fieldSyncResult.scanned }} · Khớp: {{ fieldSyncResult.matched }}
+                · Tạo mới: {{ fieldSyncResult.created }} · Cập nhật: {{ fieldSyncResult.updated }}
+                · Đã liên kết: {{ fieldSyncResult.alreadyLinked }} · Không có text: {{ fieldSyncResult.skipped }}
               </p>
               <p v-if="fieldSyncResult.unmapped.length" class="mt-1 text-amber-700 dark:text-amber-300">
                 Chưa map được: {{ fieldSyncResult.unmapped.length }} doanh nghiệp
@@ -788,7 +869,11 @@ import type {
   SyncResult,
   CompanyFieldSyncOption,
   CompanyFieldSyncResult,
+  CompanyAdministrativeField,
   CompanyAdministrativeCatalogSyncResult,
+  HanhChinhDanhMucCap,
+  HanhChinhDanhMucItem,
+  HanhChinhDanhMucLoai,
 } from '@/types/hanhChinh'
 
 const getWardMappings = (ward: LegacyWardItem): HanhChinhMappingItem[] => {
@@ -810,6 +895,7 @@ const canManage = computed(() => auth.hasPermission('feature.cadastral.manage'))
 const tabs = [
   { key: 'new', label: 'Đơn vị hành chính mới' },
   { key: 'legacy', label: 'Đơn vị hành chính cũ' },
+  { key: 'catalog', label: 'Danh mục hợp nhất' },
   { key: 'import', label: 'Import & đồng bộ' },
   { key: 'mapping', label: 'Liên kết cũ → mới' },
 ] as const
@@ -829,8 +915,7 @@ const importing = ref(false)
 const syncing = ref(false)
 const fieldSyncing = ref(false)
 const fieldSyncOptions = ref<CompanyFieldSyncOption[]>([])
-const fieldSyncField = ref<'quanHuyen' | 'phuongXa'>('quanHuyen')
-const fieldSyncSourceTable = ref<'hanh_chinh_cu' | 'hanh_chinh_moi'>('hanh_chinh_cu')
+const fieldSyncField = ref<CompanyAdministrativeField>('phuongXaCu')
 const fieldSyncResult = ref<CompanyFieldSyncResult | null>(null)
 const actionError = ref('')
 
@@ -872,10 +957,34 @@ const syncResult = ref<SyncResult | null>(null)
 const textCatalogSyncing = ref(false)
 const textCatalogSyncResult = ref<CompanyAdministrativeCatalogSyncResult | null>(null)
 
-const activeFieldSyncSources = computed(() => {
-  const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value)
-  return field?.sources ?? []
-})
+const catalogCap = ref<HanhChinhDanhMucCap>('tinh')
+const catalogLoai = ref<HanhChinhDanhMucLoai | ''>('')
+const catalogSearch = ref('')
+const catalogItems = ref<HanhChinhDanhMucItem[]>([])
+const catalogLoading = ref(false)
+const catalogPage = ref(1)
+const catalogTotalPages = ref(1)
+
+const loadCatalog = async (page = 1) => {
+  catalogLoading.value = true
+  actionError.value = ''
+  try {
+    const response = await hanhChinhService.getDanhMuc({
+      cap: catalogCap.value,
+      loai: catalogLoai.value,
+      search: catalogSearch.value.trim(),
+      page,
+      perPage: 50,
+    })
+    catalogItems.value = response.data
+    catalogPage.value = response.meta?.current_page ?? page
+    catalogTotalPages.value = response.meta?.last_page ?? 1
+  } catch (err: unknown) {
+    actionError.value = err instanceof Error ? err.message : 'Không tải được danh mục hợp nhất'
+  } finally {
+    catalogLoading.value = false
+  }
+}
 
 const mappingLoading = ref(false)
 const mappings = ref<HanhChinhMappingItem[]>([])
@@ -1265,7 +1374,7 @@ const runTextCatalogSync = async (dryRun: boolean) => {
   try {
     textCatalogSyncResult.value = await hanhChinhService.syncCompanyTextCatalogs(dryRun)
     if (!dryRun) {
-      await Promise.all([loadLegacyUnits(1), loadNewUnits(1)])
+      await loadCatalog(1)
     }
   } catch (err: unknown) {
     actionError.value = err instanceof Error ? err.message : 'Đồng bộ danh mục hành chính thất bại'
@@ -1279,7 +1388,6 @@ const loadFieldSyncOptions = async () => {
   const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value) ?? fieldSyncOptions.value[0]
   if (field) {
     fieldSyncField.value = field.key
-    fieldSyncSourceTable.value = field.sources[0]?.key ?? 'hanh_chinh_cu'
   }
 }
 
@@ -1289,7 +1397,6 @@ const runFieldSync = async (dryRun: boolean) => {
   try {
     fieldSyncResult.value = await hanhChinhService.syncCompanyField({
       field: fieldSyncField.value,
-      sourceTable: fieldSyncSourceTable.value,
       dryRun,
     })
   } catch (err: unknown) {
@@ -1298,13 +1405,6 @@ const runFieldSync = async (dryRun: boolean) => {
     fieldSyncing.value = false
   }
 }
-
-watch(fieldSyncField, (field) => {
-  const option = fieldSyncOptions.value.find((item) => item.key === field)
-  if (option?.sources[0]) {
-    fieldSyncSourceTable.value = option.sources[0].key
-  }
-})
 
 const legacyLocationLabel = (item: HanhChinhMappingItem) => {
   return item.xaPhuongCu?.quanHuyen?.fullName
@@ -1529,6 +1629,9 @@ watch(activeTab, (tab) => {
   if (tab === 'new') {
     loadNewUnits(1)
   }
+  if (tab === 'catalog') {
+    loadCatalog(1)
+  }
 })
 
 onMounted(async () => {
@@ -1539,6 +1642,9 @@ onMounted(async () => {
   }
   if (activeTab.value === 'new') {
     await loadNewUnits(1)
+  }
+  if (activeTab.value === 'catalog') {
+    await loadCatalog(1)
   }
   if (activeTab.value === 'mapping') {
     await reloadMappingViews()

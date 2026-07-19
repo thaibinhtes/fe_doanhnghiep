@@ -22,6 +22,9 @@ import type {
   CompanyFieldSyncOption,
   CompanyFieldSyncResult,
   CompanyAdministrativeCatalogSyncResult,
+  HanhChinhDanhMucCap,
+  HanhChinhDanhMucItem,
+  HanhChinhDanhMucLoai,
 } from '@/types/hanhChinh'
 
 function unwrap<T>(payload: unknown): T {
@@ -234,6 +237,38 @@ export const hanhChinhService = {
     return unwrap<SyncResult>(data)
   },
 
+  async getDanhMuc(params: {
+    cap: HanhChinhDanhMucCap
+    loai?: HanhChinhDanhMucLoai | ''
+    search?: string
+    page?: number
+    perPage?: number
+    tinhId?: number
+    quanHuyenId?: number
+  }): Promise<PaginatedResponse<HanhChinhDanhMucItem>> {
+    const { data } = await api.get<{
+      data: HanhChinhDanhMucItem[]
+      meta?: PaginatedResponse<HanhChinhDanhMucItem>['meta']
+    }>('/hanh-chinh/danh-muc', {
+      params: {
+        ...params,
+        loai: params.loai || undefined,
+        search: params.search || undefined,
+      },
+    })
+    return unwrapPaginator<HanhChinhDanhMucItem>(data)
+  },
+
+  async createDanhMuc(payload: {
+    cap: HanhChinhDanhMucCap
+    loai: HanhChinhDanhMucLoai
+    ten: string
+    parentId?: number | null
+  }): Promise<HanhChinhDanhMucItem> {
+    const { data } = await api.post<{ data: HanhChinhDanhMucItem }>('/hanh-chinh/danh-muc', payload)
+    return data.data
+  },
+
   async syncCompanyTextCatalogs(dryRun = false): Promise<CompanyAdministrativeCatalogSyncResult> {
     const { data } = await api.post<{ data: CompanyAdministrativeCatalogSyncResult }>(
       '/hanh-chinh/sync-doanh-nghiep-text-catalogs',
@@ -248,8 +283,7 @@ export const hanhChinhService = {
   },
 
   async syncCompanyField(payload: {
-    field: 'quanHuyen' | 'phuongXa'
-    sourceTable: 'hanh_chinh_cu' | 'hanh_chinh_moi'
+    field: import('@/types/hanhChinh').CompanyAdministrativeField
     dryRun?: boolean
   }): Promise<CompanyFieldSyncResult> {
     const { data } = await api.post<{ data: CompanyFieldSyncResult }>('/hanh-chinh/sync-doanh-nghiep-field', payload)

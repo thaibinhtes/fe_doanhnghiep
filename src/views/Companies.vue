@@ -285,6 +285,7 @@
               <div class="flex-none w-[170px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Cấp huyện cũ</div>
               <div class="flex-none w-[170px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Cấp huyện mới</div>
               <div class="flex-none w-[170px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Cấp tỉnh cũ</div>
+              <div class="flex-none w-[170px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Cấp tỉnh mới</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Vốn điều lệ</div>
               <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Trạng thái</div>
               <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tình trạng hoạt động (thuế)</div>
@@ -329,6 +330,7 @@
                 <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.quanHuyenCu || '—' }}</div>
                 <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.quanHuyenMoi || company.tinhThanh?.fullName || '—' }}</div>
                 <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tinhThanhCu || '—' }}</div>
+                <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tinhThanhMoi || '—' }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ formatVND(company.vonDieuLe) }}</div>
                 <div class="flex-none w-[130px] p-[5px]">
                   <span
@@ -624,6 +626,16 @@
                   type="text"
                   v-model="editForm.xaPhuongCu"
                   placeholder="Nhập cấp xã cũ"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                />
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp tỉnh mới</label>
+                <input
+                  type="text"
+                  v-model="editForm.tinhThanhMoi"
+                  placeholder="Nhập cấp tỉnh mới"
                   class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                 />
               </div>
@@ -1633,19 +1645,11 @@
                 </option>
               </select>
             </div>
-            <div>
-              <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Chọn bảng đồng bộ</label>
-              <select
-                v-model="fieldSyncSourceTable"
-                class="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
-              >
-                <option v-for="source in activeFieldSyncSources" :key="source.key" :value="source.key">
-                  {{ source.label }}
-                </option>
-              </select>
-            </div>
             <p class="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:bg-gray-800/60 dark:text-gray-300">
-              Khớp giá trị text cột <strong>{{ activeFieldSyncLabel }}</strong> với dữ liệu trong bảng đã chọn, sau đó lưu mã liên kết.
+              Đồng bộ <strong>{{ activeFieldSyncLabel }}</strong> vào
+              <strong>{{ activeFieldSyncCatalog }}</strong>
+              (loại {{ activeFieldSyncLoai === 'cu' ? 'cũ' : 'mới' }}), tạo danh mục nếu chưa có và lưu ID liên kết.
+              Record đã có ID sẽ được bỏ qua.
             </p>
 
             <div v-if="fieldSyncError" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
@@ -1654,7 +1658,9 @@
 
             <div v-if="fieldSyncResult" class="rounded-lg bg-gray-50 px-4 py-3 text-sm dark:bg-gray-800/60">
               <p>
-                Khớp: {{ fieldSyncResult.matched }} · Cập nhật: {{ fieldSyncResult.updated }} · Đã liên kết: {{ fieldSyncResult.alreadyLinked ?? 0 }} · Bỏ qua: {{ fieldSyncResult.skipped }}
+                Quét: {{ fieldSyncResult.scanned }} · Khớp: {{ fieldSyncResult.matched }}
+                · Tạo mới: {{ fieldSyncResult.created }} · Cập nhật: {{ fieldSyncResult.updated }}
+                · Đã liên kết: {{ fieldSyncResult.alreadyLinked }} · Không có text: {{ fieldSyncResult.skipped }}
               </p>
               <p v-if="fieldSyncResult.unmapped.length" class="mt-1 text-amber-700 dark:text-amber-300">
                 Chưa map được: {{ fieldSyncResult.unmapped.length }} doanh nghiệp
@@ -1708,7 +1714,7 @@ import IndustryCategorySelect from '@/components/forms/FormElements/IndustryCate
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
 import type { Company, CapitalMemberInput, CompanyImportResult, CompanyIdentityBulkItem, CompanyImportColumnMap, CompanyImportValueExtensionField, CompanyImportFormat, CompanyImportExampleConfig } from '@/types/company'
-import type { CompanyFieldSyncOption, CompanyFieldSyncResult } from '@/types/hanhChinh'
+import type { CompanyAdministrativeField, CompanyFieldSyncOption, CompanyFieldSyncResult } from '@/types/hanhChinh'
 import { COMPANY_IMPORT_COLUMN_LABELS } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 import { columnsToDisplay, parseColumnInput } from '@/utils/excelColumns'
@@ -1751,8 +1757,7 @@ const isImportHistoryOpen = ref(false)
 const isFieldSyncModalOpen = ref(false)
 const fieldSyncOptions = ref<CompanyFieldSyncOption[]>([])
 const fieldSyncOptionsLoading = ref(false)
-const fieldSyncField = ref<'quanHuyen' | 'phuongXa'>('quanHuyen')
-const fieldSyncSourceTable = ref<'hanh_chinh_cu' | 'hanh_chinh_moi'>('hanh_chinh_cu')
+const fieldSyncField = ref<CompanyAdministrativeField>('phuongXaCu')
 const fieldSyncing = ref(false)
 const fieldSyncResult = ref<CompanyFieldSyncResult | null>(null)
 const fieldSyncError = ref('')
@@ -1824,6 +1829,7 @@ const editForm = reactive<Company>({
   quanHuyen: '',
   phuongXa: '',
   tinhThanhCu: '',
+  tinhThanhMoi: '',
   quanHuyenCu: '',
   quanHuyenMoi: '',
   xaPhuongCu: '',
@@ -1885,15 +1891,18 @@ const importModalDescription = computed(() =>
     : 'File gồm cột mã số doanh nghiệp. Trạng thái lấy theo option đã chọn.',
 )
 
-const activeFieldSyncSources = computed(() => {
-  const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value)
-  return field?.sources ?? []
-})
-
 const activeFieldSyncLabel = computed(() => {
   const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value)
-  return field?.label ?? 'Quận / Huyện'
+  return field?.label ?? 'Phường / Xã cũ'
 })
+
+const activeFieldSyncCatalog = computed(() =>
+  fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value)?.catalog ?? 'Bảng phường xã',
+)
+
+const activeFieldSyncLoai = computed(() =>
+  fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value)?.loai ?? 'cu',
+)
 
 const importSubmitLabel = computed(() => {
   if (!importing.value) {
@@ -1925,7 +1934,6 @@ async function loadFieldSyncOptions() {
     const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value) ?? fieldSyncOptions.value[0]
     if (field) {
       fieldSyncField.value = field.key
-      fieldSyncSourceTable.value = field.sources[0]?.key ?? 'hanh_chinh_cu'
     }
   } catch (err: unknown) {
     fieldSyncError.value = err instanceof Error ? err.message : 'Không tải được danh sách field sync.'
@@ -1953,7 +1961,6 @@ async function runFieldSync(dryRun: boolean) {
   try {
     fieldSyncResult.value = await hanhChinhService.syncCompanyField({
       field: fieldSyncField.value,
-      sourceTable: fieldSyncSourceTable.value,
       dryRun,
     })
     if (!dryRun) {
@@ -1965,13 +1972,6 @@ async function runFieldSync(dryRun: boolean) {
     fieldSyncing.value = false
   }
 }
-
-watch(fieldSyncField, (field) => {
-  const option = fieldSyncOptions.value.find((item) => item.key === field)
-  if (option?.sources[0]) {
-    fieldSyncSourceTable.value = option.sources[0].key
-  }
-})
 
 async function loadImportScopeOrgUnits() {
   loadingImportScope.value = true
@@ -2586,6 +2586,7 @@ const openEditModal = async (company: Company) => {
   Object.assign(editForm, {
     ...company,
     tinhThanhCu: company.tinhThanhCu ?? '',
+    tinhThanhMoi: company.tinhThanhMoi ?? '',
     quanHuyenCu: company.quanHuyenCu ?? '',
     quanHuyenMoi: company.quanHuyenMoi ?? company.tinhThanh?.fullName ?? '',
     xaPhuongCu: company.xaPhuongCu ?? company.phuongXaCu ?? '',

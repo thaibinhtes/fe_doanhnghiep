@@ -26,9 +26,7 @@
         </div>
       </header>
 
-      <div v-if="loading" class="grid gap-5 xl:grid-cols-2">
-        <div v-for="item in 6" :key="item" class="h-72 animate-pulse rounded-2xl bg-gray-100 dark:bg-gray-800"></div>
-      </div>
+      <DashboardSkeleton v-if="loading" />
 
       <div
         v-else-if="error"
@@ -206,6 +204,7 @@ import VueApexCharts from 'vue3-apexcharts'
 import { Building2, CheckCircle2, CircleDashed, MapPinned, RefreshCw, Search, TriangleAlert, UsersRound } from 'lucide-vue-next'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton.vue'
 import { dashboardService } from '@/services/dashboardService'
 import type {
   DashboardAreaIdentity,
