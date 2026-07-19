@@ -80,9 +80,19 @@
 
             <ComponentCard
               title="Theo địa bàn"
-              desc="So sánh tình hình định danh giữa các đơn vị"
+              desc="Group theo danh mục hành chính đã đồng bộ từ API"
               class-name="xl:col-span-8"
             >
+              <template #header-right>
+                <select
+                  v-model="companyAreaKey"
+                  class="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none focus:border-brand-500 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
+                >
+                  <option v-for="option in areaOptions" :key="option.key" :value="option.key">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </template>
               <div v-if="companyAreas.length" class="max-h-[390px] overflow-y-auto">
                 <VueApexCharts
                   type="bar"
@@ -96,7 +106,7 @@
 
             <ComponentCard
               title="Tra cứu một địa bàn"
-              desc="Nhập tên địa bàn để xem riêng số liệu doanh nghiệp"
+              :desc="`Tra cứu ${selectedCompanyAreaLabel.toLowerCase()} trong danh mục hành chính`"
               class-name="xl:col-span-12"
             >
               <AreaLookup
@@ -147,9 +157,19 @@
 
             <ComponentCard
               title="Theo địa bàn"
-              desc="So sánh tình hình định danh giữa các đơn vị"
+              desc="Group theo danh mục hành chính đã đồng bộ từ API"
               class-name="xl:col-span-8"
             >
+              <template #header-right>
+                <select
+                  v-model="cooperativeAreaKey"
+                  class="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none focus:border-brand-500 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
+                >
+                  <option v-for="option in areaOptions" :key="option.key" :value="option.key">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </template>
               <div v-if="cooperativeAreas.length" class="max-h-[390px] overflow-y-auto">
                 <VueApexCharts
                   type="bar"
@@ -163,7 +183,7 @@
 
             <ComponentCard
               title="Tra cứu một địa bàn"
-              desc="Nhập tên địa bàn để xem riêng số liệu hợp tác xã"
+              :desc="`Tra cứu ${selectedCooperativeAreaLabel.toLowerCase()} trong danh mục hành chính`"
               class-name="xl:col-span-12"
             >
               <AreaLookup
@@ -187,7 +207,13 @@ import { Building2, CheckCircle2, CircleDashed, MapPinned, RefreshCw, Search, Tr
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { dashboardService } from '@/services/dashboardService'
-import type { DashboardAreaIdentity, DashboardData, DashboardIdentity } from '@/types/dashboard'
+import type {
+  DashboardAreaIdentity,
+  DashboardAreaKey,
+  DashboardAreaOption,
+  DashboardData,
+  DashboardIdentity,
+} from '@/types/dashboard'
 
 const identityLabels = ['Đã định danh', 'Cần rà soát', 'Chưa định danh']
 const identityColors = ['#12b76a', '#f79009', '#98a2b3']
@@ -200,9 +226,28 @@ const companySearch = ref('')
 const cooperativeSearch = ref('')
 const selectedCompanyAreaId = ref<string>('')
 const selectedCooperativeAreaId = ref<string>('')
+const companyAreaKey = ref<DashboardAreaKey>('quanHuyenMoi')
+const cooperativeAreaKey = ref<DashboardAreaKey>('quanHuyenMoi')
 
-const companyAreas = computed(() => dashboard.value?.companyAreas ?? [])
-const cooperativeAreas = computed(() => dashboard.value?.cooperativeAreas ?? [])
+const defaultAreaOptions: DashboardAreaOption[] = [
+  { key: 'quanHuyenMoi', label: 'Quận / Huyện mới' },
+  { key: 'quanHuyenCu', label: 'Quận / Huyện cũ' },
+  { key: 'phuongXaMoi', label: 'Phường / Xã / Thị trấn mới' },
+  { key: 'phuongXaCu', label: 'Phường / Xã / Thị trấn cũ' },
+]
+const areaOptions = computed(() => dashboard.value?.areaOptions ?? defaultAreaOptions)
+const companyAreas = computed(
+  () => dashboard.value?.companyAreaBreakdowns?.[companyAreaKey.value] ?? [],
+)
+const cooperativeAreas = computed(
+  () => dashboard.value?.cooperativeAreaBreakdowns?.[cooperativeAreaKey.value] ?? [],
+)
+const selectedCompanyAreaLabel = computed(
+  () => areaOptions.value.find((option) => option.key === companyAreaKey.value)?.label ?? '',
+)
+const selectedCooperativeAreaLabel = computed(
+  () => areaOptions.value.find((option) => option.key === cooperativeAreaKey.value)?.label ?? '',
+)
 const cooperativeIdentity = computed<DashboardIdentity>(() =>
   dashboard.value?.cooperativeIdentity ?? { daDinhDanh: 0, canRaSoat: 0, chuaDinhDanh: 0 },
 )
@@ -218,7 +263,7 @@ const formatDate = (iso: string) => {
 }
 
 function areaKey(area: DashboardAreaIdentity) {
-  return area.donViId === null ? 'none' : String(area.donViId)
+  return area.areaCode ?? 'unlinked'
 }
 
 function buildIdentitySeries(identity: DashboardIdentity) {
@@ -251,7 +296,7 @@ function buildDonutOptions(total: number) {
 }
 
 function sortedAreas(areas: DashboardAreaIdentity[]) {
-  return [...areas].sort((a, b) => b.total - a.total)
+  return [...areas]
 }
 
 function areaChartHeight(areas: DashboardAreaIdentity[]) {
@@ -266,7 +311,7 @@ function buildAreaChartOptions(areas: DashboardAreaIdentity[]) {
     plotOptions: { bar: { horizontal: true, barHeight: '62%', borderRadius: 3 } },
     dataLabels: { enabled: false },
     xaxis: {
-      categories: rows.map((area) => area.donViTen),
+      categories: rows.map((area) => area.areaName),
       labels: { formatter: (value: number) => formatNumber(Math.round(value)), style: { colors: '#667085' } },
     },
     yaxis: { labels: { maxWidth: 220, style: { colors: '#475467', fontSize: '12px' } } },
@@ -331,7 +376,7 @@ const AreaLookup = defineComponent({
     const matches = computed(() => {
       const term = normalize(props.search)
       const rows = sortedAreas(props.areas)
-      return term ? rows.filter((area) => normalize(area.donViTen).includes(term)) : rows
+      return term ? rows.filter((area) => normalize(area.areaName).includes(term)) : rows
     })
     const selected = computed(() =>
       props.areas.find((area) => areaKey(area) === props.selectedId) ?? matches.value[0] ?? null,
@@ -367,7 +412,7 @@ const AreaLookup = defineComponent({
               ],
               onClick: () => emit('update:selectedId', areaKey(area)),
             }, [
-              h('span', { class: 'truncate' }, area.donViTen),
+              h('span', { class: 'truncate' }, area.areaName),
               h('span', { class: 'ml-3 tabular-nums text-xs text-gray-500' }, formatNumber(area.total)),
             ]))
             : [h('p', { class: 'px-3 py-4 text-sm text-gray-500' }, 'Không tìm thấy địa bàn phù hợp.')],
@@ -379,7 +424,7 @@ const AreaLookup = defineComponent({
             h('div', [
               h('div', { class: 'flex items-center gap-2' }, [
                 h(MapPinned, { class: 'h-4 w-4 text-brand-500' }),
-                h('h4', { class: 'font-semibold text-gray-900 dark:text-white' }, selected.value.donViTen),
+                h('h4', { class: 'font-semibold text-gray-900 dark:text-white' }, selected.value.areaName),
               ]),
               h('p', { class: 'mt-1 text-sm text-gray-500 dark:text-gray-400' }, `Số liệu ${props.entityLabel} tại địa bàn`),
             ]),

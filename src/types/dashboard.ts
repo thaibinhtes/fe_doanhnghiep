@@ -16,9 +16,16 @@ export interface DashboardIdentity {
 }
 
 export interface DashboardAreaIdentity extends DashboardIdentity {
-  donViId: number | null
-  donViTen: string
+  areaCode: string | null
+  areaName: string
   total: number
+}
+
+export type DashboardAreaKey = 'quanHuyenMoi' | 'quanHuyenCu' | 'phuongXaMoi' | 'phuongXaCu'
+
+export interface DashboardAreaOption {
+  key: DashboardAreaKey
+  label: string
 }
 
 export interface DashboardIdentityMonthlyDay {
@@ -58,8 +65,9 @@ export interface DashboardData {
     totalCooperatives: number
   }
   cooperativeIdentity?: DashboardIdentity
-  companyAreas?: DashboardAreaIdentity[]
-  cooperativeAreas?: DashboardAreaIdentity[]
+  areaOptions?: DashboardAreaOption[]
+  companyAreaBreakdowns?: Partial<Record<DashboardAreaKey, DashboardAreaIdentity[]>>
+  cooperativeAreaBreakdowns?: Partial<Record<DashboardAreaKey, DashboardAreaIdentity[]>>
   summary: SummaryReport
   cooperativeSummary?: SummaryReport
   progress: {
