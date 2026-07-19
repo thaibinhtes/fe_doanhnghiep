@@ -35,6 +35,7 @@
         <option value="all">Tất cả</option>
         <option value="companies">Import doanh nghiệp</option>
         <option value="identities">Import định danh</option>
+        <option value="field_updates">Cập nhật field</option>
       </select>
     </div>
 
@@ -81,7 +82,12 @@
             Đơn vị: {{ job.donVi.ten }}
           </span>
           <span class="text-xs text-gray-600 dark:text-gray-300">
-            {{ jobSummary(job).imported }} mới · {{ jobSummary(job).duplicates }} trùng · {{ jobSummary(job).failed }} lỗi
+            <template v-if="job.type === 'field_updates'">
+              {{ job.result?.updated ?? jobSummary(job).duplicates }} cập nhật · {{ job.result?.skipped ?? 0 }} bỏ qua · {{ jobSummary(job).failed }} lỗi
+            </template>
+            <template v-else>
+              {{ jobSummary(job).imported }} mới · {{ jobSummary(job).duplicates }} trùng · {{ jobSummary(job).failed }} lỗi
+            </template>
           </span>
         </button>
       </div>
@@ -211,7 +217,7 @@ const loadingRows = ref(false)
 const loadError = ref<string | null>(null)
 const rowsError = ref<string | null>(null)
 const jobs = ref<CompanyImportJobListItem[]>([])
-const historyTypeFilter = ref<'all' | 'companies' | 'identities'>('all')
+const historyTypeFilter = ref<'all' | 'companies' | 'identities' | 'field_updates'>('all')
 const selectedJobId = ref<number | null>(null)
 const selectedJob = ref<CompanyImportJobListItem | null>(null)
 const rows = ref<CompanyImportJobRow[]>([])

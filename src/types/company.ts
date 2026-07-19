@@ -225,6 +225,15 @@ export interface CompanyIdentityImportConfig {
   columnLabels?: Record<string, string>
 }
 
+export interface CompanyFieldUpdateConfig {
+  startRow: number
+  lookupField: string
+  columnMap: CompanyImportColumnMap
+  lookupFields: Record<string, string>
+  updateFields: Record<string, string>
+  columnLabels?: Record<string, string>
+}
+
 export interface CompanyIdentityImportSavedConfig extends CompanyIdentityImportConfig {
   id: string
   name: string
@@ -284,6 +293,7 @@ export interface CompanyImportResult {
   imported: number
   duplicates?: number
   updated: number
+  skipped?: number
   failed: number
   errors: CompanyImportError[]
 }

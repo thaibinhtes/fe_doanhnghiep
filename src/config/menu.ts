@@ -8,6 +8,7 @@ export const routePermissions: Record<string, RoutePermission> = {
   '/dashboard': 'menu.dashboard',
   '/companies': 'menu.companies.list',
   '/companies/import': ['feature.companies.import', 'menu.companies.list'],
+  '/companies/update-fields': ['feature.companies.import', 'menu.companies.list'],
   '/companies/import-history': ['feature.companies.import', 'menu.companies.list'],
   '/companies/import-tax': 'menu.admin.org-units',
   '/companies/map': 'menu.companies.map',

@@ -12,6 +12,7 @@ import type {
   CompanyImportRowStatus,
   CompanyImportConfig,
   CompanyIdentityImportConfig,
+  CompanyFieldUpdateConfig,
   CompanyImportFormat,
   CompanyImportExampleConfig,
   CompanyIdentityBulkItem,
@@ -400,6 +401,39 @@ export const companyService = {
   async getIdentityImportColumnMap(): Promise<CompanyIdentityImportConfig> {
     const { data } = await api.get<{ data: CompanyIdentityImportConfig }>(
       `${BASE_PATH}/import-dinh-danh-column-map`,
+    )
+    return data.data
+  },
+
+  async getFieldUpdateColumnMap(): Promise<CompanyFieldUpdateConfig> {
+    const { data } = await api.get<{ data: CompanyFieldUpdateConfig }>(
+      `${BASE_PATH}/import-field-update-column-map`,
+    )
+    return data.data
+  },
+
+  async importFieldUpdatesExcel(
+    file: File,
+    config: {
+      startRow?: number
+      lookupField: string
+      columnMap: Record<string, string[]>
+    },
+  ): Promise<CompanyImportJobQueued> {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('lookupField', config.lookupField)
+    if (config.startRow !== undefined) {
+      formData.append('startRow', String(config.startRow))
+    }
+    formData.append('columnMap', JSON.stringify(config.columnMap))
+
+    const { data } = await api.post<{ data: CompanyImportJobQueued; message: string }>(
+      `${BASE_PATH}/import-field-updates`,
+      formData,
+      {
+        timeout: 600_000,
+      },
     )
     return data.data
   },

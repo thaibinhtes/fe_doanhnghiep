@@ -75,6 +75,12 @@ const router = createRouter({
       meta: { title: 'Import doanh nghiệp', requiresAuth: true },
     },
     {
+      path: '/companies/update-fields',
+      name: 'Update Company Fields',
+      component: () => import('../views/Companies/UpdateCompanyFields.vue'),
+      meta: { title: 'Cập nhật field từ Excel', requiresAuth: true },
+    },
+    {
       path: '/companies/create',
       name: 'Create Company',
       component: () => import('../views/Companies/CreateCompany.vue'),

@@ -123,6 +123,12 @@
                 >
                   Import danh sách mới
                 </router-link>
+                <router-link
+                  to="/companies/update-fields"
+                  class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  Cập nhật field từ Excel
+                </router-link>
                 <button
                   type="button"
                   @click="openImportModal('identity')"
