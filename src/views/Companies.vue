@@ -278,15 +278,13 @@
               <div class="flex-none w-[50px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">TT</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Mã số doanh nghiệp</div>
               <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tên doanh nghiệp</div>
-              <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Địa chỉ trụ sở chính</div>
-              <div class="flex-none w-[120px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Quận / Huyện</div>
-              <div
-                v-if="showQuanHuyenCuMoiColumn"
-                class="flex-none w-[180px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400"
-              >
-                Quận / Huyện cũ / mới
-              </div>
-              <div class="flex-none w-[120px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Phường/xã</div>
+              <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Địa chỉ cũ</div>
+              <div class="flex-none w-[220px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Địa chỉ mới</div>
+              <div class="flex-none w-[150px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Cấp xã cũ</div>
+              <div class="flex-none w-[150px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Cấp xã mới</div>
+              <div class="flex-none w-[170px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Cấp huyện cũ</div>
+              <div class="flex-none w-[170px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Cấp huyện mới</div>
+              <div class="flex-none w-[170px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Cấp tỉnh cũ</div>
               <div class="flex-none w-[140px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Vốn điều lệ</div>
               <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Trạng thái</div>
               <div class="flex-none w-[130px] p-[5px] text-left text-sm font-semibold text-gray-500 dark:text-gray-400">Tình trạng hoạt động (thuế)</div>
@@ -324,15 +322,13 @@
                 <div class="flex-none w-[50px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ index + 1 }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.maSoDoanhNghiep }}</div>
                 <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tenDoanhNghiep }}</div>
-                <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.diaChi }}</div>
-                <div class="flex-none w-[120px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.quanHuyen }}</div>
-                <div
-                  v-if="showQuanHuyenCuMoiColumn"
-                  class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed"
-                >
-                  {{ company.quanHuyenCuMoiLabel || '-' }}
-                </div>
-                <div class="flex-none w-[120px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.phuongXa }}</div>
+                <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.diaChiCu || company.diaChi || '—' }}</div>
+                <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.diaChiMoi || '—' }}</div>
+                <div class="flex-none w-[150px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.xaPhuongCu?.fullName || '—' }}</div>
+                <div class="flex-none w-[150px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.xaPhuong?.fullName || '—' }}</div>
+                <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.quanHuyenCu?.fullName || '—' }}</div>
+                <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tinhThanh?.fullName || '—' }}</div>
+                <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tinhThanhCu?.fullName || '—' }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ formatVND(company.vonDieuLe) }}</div>
                 <div class="flex-none w-[130px] p-[5px]">
                   <span
@@ -1716,9 +1712,6 @@ import { useCompanyBusinessTypes } from '@/composables/useCompanyBusinessTypes'
 import { useImportNotifications } from '@/composables/useImportNotifications'
 
 const store = useCompaniesStore()
-const showQuanHuyenCuMoiColumn = computed(() =>
-  store.companies.some((company) => company.quanHuyenHanhChinhLinked),
-)
 const auth = useAuthStore()
 const router = useRouter()
 const { statuses, identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()

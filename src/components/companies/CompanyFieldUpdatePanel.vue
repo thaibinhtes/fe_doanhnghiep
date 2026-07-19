@@ -215,6 +215,7 @@ const lookupFields = ref<Record<string, string>>({
   dienThoai: 'Điện thoại',
 })
 const updateFields = ref<Record<string, string>>({
+  tinhThanhCu: 'Cấp tỉnh (cũ)',
   phuongXaCu: 'Phường / Xã cũ',
 })
 const updateMappings = ref<UpdateMappingRow[]>([

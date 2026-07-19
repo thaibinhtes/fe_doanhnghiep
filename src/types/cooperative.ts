@@ -7,7 +7,13 @@ export interface Cooperative {
   chuTichHdqtTen?: string | null
   dienThoai?: string | null
   diaChi?: string | null
+  diaChiCu?: string | null
   phuongXa?: string | null
+  phuongXaCu?: string | null
+  phuongXaMoi?: string | null
+  quanHuyenCu?: string | null
+  quanHuyenMoi?: string | null
+  tinhThanhCu?: string | null
   dienTichHa?: number | null
   vonDieuLe?: string | null
   soThanhVien?: number | null
@@ -143,6 +149,13 @@ export const COOPERATIVE_IMPORT_COLUMN_LABELS: Record<string, string> = {
   dienThoai: 'Điện thoại',
   diaChi: 'Địa chỉ',
   phuongXa: 'Xã, Phường',
+  diaChiCu: 'Địa chỉ cũ',
+  diaChiMoi: 'Địa chỉ mới',
+  phuongXaCu: 'Cấp xã cũ',
+  phuongXaMoi: 'Cấp xã mới',
+  quanHuyenCu: 'Cấp huyện cũ',
+  quanHuyenMoi: 'Cấp huyện mới',
+  tinhThanhCu: 'Cấp tỉnh cũ',
   dienTichHa: 'Diện tích (ha)',
   vonDieuLe: 'Vốn điều lệ',
   soThanhVien: 'Thành viên',
@@ -150,6 +163,5 @@ export const COOPERATIVE_IMPORT_COLUMN_LABELS: Record<string, string> = {
   linhVuc: 'Lĩnh vực',
   hoatDong: 'Hoạt động',
   dsThanhVien: 'Thành viên (chi tiết)',
-  diaChiMoi: 'Địa chỉ mới',
   ghiChu: 'Ghi chú',
 }

@@ -48,6 +48,11 @@ export interface Company {
   lat?: number | null
   quanHuyen: string | null
   phuongXa: string | null
+  tinhThanhCuCode?: string | null
+  tinhThanhCu?: {
+    code: string
+    fullName: string
+  } | null
   quanHuyenCuCode?: string | null
   quanHuyenCu?: {
     code: string
@@ -181,6 +186,7 @@ export const COMPANY_IMPORT_COLUMN_LABELS: Record<string, string> = {
   tt: 'TT',
   maSoDoanhNghiep: 'Mã số doanh nghiệp',
   tenDoanhNghiep: 'Tên doanh nghiệp',
+  tinhThanhCu: 'Cấp tỉnh (cũ)',
   quanHuyenCu: 'Quận / Huyện cũ',
   quanHuyenMoi: 'Quận / Huyện mới',
   phuongXaCu: 'Phường / Xã cũ',
