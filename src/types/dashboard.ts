@@ -15,6 +15,12 @@ export interface DashboardIdentity {
   chuaDinhDanh: number
 }
 
+export interface DashboardAreaIdentity extends DashboardIdentity {
+  donViId: number | null
+  donViTen: string
+  total: number
+}
+
 export interface DashboardIdentityMonthlyDay {
   date: string
   label: string
@@ -52,6 +58,8 @@ export interface DashboardData {
     totalCooperatives: number
   }
   cooperativeIdentity?: DashboardIdentity
+  companyAreas?: DashboardAreaIdentity[]
+  cooperativeAreas?: DashboardAreaIdentity[]
   summary: SummaryReport
   cooperativeSummary?: SummaryReport
   progress: {
