@@ -21,6 +21,7 @@ import type {
   SyncResult,
   CompanyFieldSyncOption,
   CompanyFieldSyncResult,
+  CompanyAdministrativeCatalogSyncResult,
 } from '@/types/hanhChinh'
 
 function unwrap<T>(payload: unknown): T {
@@ -231,6 +232,14 @@ export const hanhChinhService = {
   async syncCompanies(dryRun = false): Promise<SyncResult> {
     const { data } = await api.post<{ data: SyncResult }>('/hanh-chinh/sync-doanh-nghiep', { dryRun })
     return unwrap<SyncResult>(data)
+  },
+
+  async syncCompanyTextCatalogs(dryRun = false): Promise<CompanyAdministrativeCatalogSyncResult> {
+    const { data } = await api.post<{ data: CompanyAdministrativeCatalogSyncResult }>(
+      '/hanh-chinh/sync-doanh-nghiep-text-catalogs',
+      { dryRun },
+    )
+    return unwrap<CompanyAdministrativeCatalogSyncResult>(data)
   },
 
   async getCompanyFieldSyncOptions(): Promise<CompanyFieldSyncOption[]> {

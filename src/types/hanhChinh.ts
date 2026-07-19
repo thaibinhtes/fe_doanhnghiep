@@ -193,6 +193,23 @@ export interface CompanyFieldSyncResult extends SyncResult {
   sourceTable: string
 }
 
+export interface CompanyAdministrativeCatalogSyncResult {
+  scanned: number
+  updatedCompanies: number
+  createdLegacyProvinces: number
+  createdLegacyDistricts: number
+  createdLegacyWards: number
+  createdNewProvinces: number
+  createdNewWards: number
+  skipped: number
+  conflicts: Array<{
+    companyId: number
+    field: string
+    value: string
+    reason: string
+  }>
+}
+
 export interface NewDataClearPreview {
   wards: number
   mappings: number

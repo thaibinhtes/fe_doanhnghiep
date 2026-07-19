@@ -324,11 +324,11 @@
                 <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tenDoanhNghiep }}</div>
                 <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.diaChiCu || company.diaChi || '—' }}</div>
                 <div class="flex-none w-[220px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.diaChiMoi || '—' }}</div>
-                <div class="flex-none w-[150px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.xaPhuongCu?.fullName || '—' }}</div>
-                <div class="flex-none w-[150px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.xaPhuong?.fullName || '—' }}</div>
-                <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.quanHuyenCu?.fullName || '—' }}</div>
-                <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tinhThanh?.fullName || '—' }}</div>
-                <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tinhThanhCu?.fullName || '—' }}</div>
+                <div class="flex-none w-[150px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.xaPhuongCu || company.phuongXaCu || '—' }}</div>
+                <div class="flex-none w-[150px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.xaPhuongMoi || company.phuongXaMoi || company.xaPhuong?.fullName || '—' }}</div>
+                <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.quanHuyenCu || '—' }}</div>
+                <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.quanHuyenMoi || company.tinhThanh?.fullName || '—' }}</div>
+                <div class="flex-none w-[170px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.tinhThanhCu || '—' }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ formatVND(company.vonDieuLe) }}</div>
                 <div class="flex-none w-[130px] p-[5px]">
                   <span
@@ -574,53 +574,77 @@
                 />
               </div>
 
-              <!-- Địa chỉ -->
               <div class="sm:col-span-2">
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Địa chỉ trụ sở chính
+                  Địa chỉ cũ
                 </label>
                 <input
                   type="text"
-                  v-model="editForm.diaChi"
+                  v-model="editForm.diaChiCu"
+                  placeholder="Nhập địa chỉ cũ"
                   class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                 />
               </div>
 
-              <!-- Tỉnh / Thành (ẩn tạm — mặc định An Giang) -->
-              <div v-if="!HIDE_PROVINCE_FILTER">
+              <div class="sm:col-span-2">
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Tỉnh / Thành
+                  Địa chỉ mới
                 </label>
-                <ProvinceSelect
-                  ref="editProvinceSelectRef"
-                  v-model="editSelectedProvinceCode"
-                  placeholder="Chọn tỉnh/thành"
-                  search-placeholder="Tìm tỉnh/thành..."
-                  empty-label="Chọn tỉnh/thành"
-                  show-code
-                  :default-code="DEFAULT_PROVINCE_CODE"
-                />
-              </div>
-              <div v-else class="hidden" aria-hidden="true">
-                <ProvinceSelect
-                  ref="editProvinceSelectRef"
-                  v-model="editSelectedProvinceCode"
-                  :default-code="DEFAULT_PROVINCE_CODE"
+                <input
+                  type="text"
+                  v-model="editForm.diaChiMoi"
+                  placeholder="Nhập địa chỉ mới"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                 />
               </div>
 
-              <!-- Phường/xã -->
               <div>
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Xã / Phường
-                </label>
-                <WardSelect
-                  ref="editWardSelectRef"
-                  v-model="editSelectedWardCode"
-                  :province-code="editSelectedProvinceCode"
-                  placeholder="Chọn xã/phường"
-                  search-placeholder="Tìm phường/xã..."
-                  empty-label="Chọn xã/phường"
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp tỉnh cũ</label>
+                <input
+                  type="text"
+                  v-model="editForm.tinhThanhCu"
+                  placeholder="Nhập cấp tỉnh cũ"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                />
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp huyện cũ</label>
+                <input
+                  type="text"
+                  v-model="editForm.quanHuyenCu"
+                  placeholder="Nhập cấp huyện cũ"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                />
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp xã cũ</label>
+                <input
+                  type="text"
+                  v-model="editForm.xaPhuongCu"
+                  placeholder="Nhập cấp xã cũ"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                />
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp huyện mới</label>
+                <input
+                  type="text"
+                  v-model="editForm.quanHuyenMoi"
+                  placeholder="Nhập cấp huyện mới"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+                />
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp xã mới</label>
+                <input
+                  type="text"
+                  v-model="editForm.xaPhuongMoi"
+                  placeholder="Nhập cấp xã mới"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
                 />
               </div>
 
@@ -715,24 +739,15 @@
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Loại hình doanh nghiệp
                 </label>
-                <div class="relative z-20 bg-transparent">
-                  <select
-                    v-model="editForm.dnLoaiHinhId"
-                    class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
-                  >
-                    <option :value="null">Chọn loại hình</option>
-                    <option v-for="type in businessTypes" :key="type.id" :value="type.id">
-                      {{ type.ten }}
-                    </option>
-                  </select>
-                  <span
-                    class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
-                  >
-                    <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </span>
-                </div>
+                <input
+                  v-model="editForm.loaiHinhDN"
+                  list="edit-company-business-types"
+                  placeholder="Nhập loại hình doanh nghiệp"
+                  class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                />
+                <datalist id="edit-company-business-types">
+                  <option v-for="type in businessTypes" :key="type.id" :value="type.ten" />
+                </datalist>
               </div>
 
               <!-- Ngày cấp -->
@@ -1680,7 +1695,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -1690,8 +1705,6 @@ import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
 import ImportLoadingSkeleton from '@/components/companies/ImportLoadingSkeleton.vue'
 import ImportHistoryModal from '@/components/companies/ImportHistoryModal.vue'
 import IndustryCategorySelect from '@/components/forms/FormElements/IndustryCategorySelect.vue'
-import ProvinceSelect from '@/components/forms/FormElements/ProvinceSelect.vue'
-import WardSelect from '@/components/forms/FormElements/WardSelect.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
 import type { Company, CapitalMemberInput, CompanyImportResult, CompanyIdentityBulkItem, CompanyImportColumnMap, CompanyImportValueExtensionField, CompanyImportFormat, CompanyImportExampleConfig } from '@/types/company'
@@ -1799,10 +1812,6 @@ const clearByUnitError = ref<string | null>(null)
 const companyImportDocs = ref<CompanyImportDocs | null>(null)
 const filterProvinceCode = ref(DEFAULT_PROVINCE_CODE)
 const filterWardCode = ref('')
-const editProvinceSelectRef = ref<InstanceType<typeof ProvinceSelect> | null>(null)
-const editWardSelectRef = ref<InstanceType<typeof WardSelect> | null>(null)
-const editSelectedProvinceCode = ref(DEFAULT_PROVINCE_CODE)
-const editSelectedWardCode = ref('')
 
 const editForm = reactive<Company>({
   id: 0,
@@ -1810,8 +1819,15 @@ const editForm = reactive<Company>({
   maSoDoanhNghiep: '',
   tenDoanhNghiep: '',
   diaChi: '',
+  diaChiCu: '',
+  diaChiMoi: '',
   quanHuyen: '',
   phuongXa: '',
+  tinhThanhCu: '',
+  quanHuyenCu: '',
+  quanHuyenMoi: '',
+  xaPhuongCu: '',
+  xaPhuongMoi: '',
   long: null as number | null,
   lat: null as number | null,
   vonDieuLe: '',
@@ -2565,33 +2581,15 @@ const goToMapUpdate = (company: Company) => {
   router.push(`/companies/${company.id}/map`)
 }
 
-const waitForRefData = async <T,>(getter: () => T[], attempts = 40, delayMs = 50): Promise<T[]> => {
-  for (let i = 0; i < attempts; i++) {
-    const data = getter()
-    if (data.length > 0) {
-      return data
-    }
-    await new Promise((resolve) => setTimeout(resolve, delayMs))
-  }
-  return getter()
-}
-
-watch(editSelectedProvinceCode, () => {
-  const provinces = editProvinceSelectRef.value?.provinces ?? []
-  const province = provinces.find((item) => item.code === editSelectedProvinceCode.value)
-  editForm.quanHuyen = province?.fullName ?? ''
-})
-
-watch(editSelectedWardCode, () => {
-  const wards = editWardSelectRef.value?.wards ?? []
-  const ward = wards.find((item) => item.code === editSelectedWardCode.value)
-  editForm.phuongXa = ward?.fullName ?? ''
-})
-
 const openEditModal = async (company: Company) => {
   selectedCompanyId.value = company.id
   Object.assign(editForm, {
     ...company,
+    tinhThanhCu: company.tinhThanhCu ?? '',
+    quanHuyenCu: company.quanHuyenCu ?? '',
+    quanHuyenMoi: company.quanHuyenMoi ?? company.tinhThanh?.fullName ?? '',
+    xaPhuongCu: company.xaPhuongCu ?? company.phuongXaCu ?? '',
+    xaPhuongMoi: company.xaPhuongMoi ?? company.phuongXaMoi ?? company.xaPhuong?.fullName ?? '',
     nganhNgheKDChinh: company.nganhNgheKDChinh ?? null,
     nganhNgheKD: Array.isArray(company.nganhNgheKD) ? [...company.nganhNgheKD] : [],
     nguoiDaiDienTen: company.nguoiDaiDienTen || company.nguoiDaiDien?.fullName || '',
@@ -2605,28 +2603,12 @@ const openEditModal = async (company: Company) => {
       memberId: m.memberId ?? null,
     })),
   })
-
-  editSelectedProvinceCode.value = ''
-  editSelectedWardCode.value = ''
   isEditModalOpen.value = true
-  await nextTick()
-
-  const provinces = await waitForRefData(() => editProvinceSelectRef.value?.provinces ?? [])
-  const matchedProvince = provinces.find((item) => item.fullName === (company.quanHuyen ?? ''))
-  editSelectedProvinceCode.value = matchedProvince?.code ?? ''
-
-  if (matchedProvince) {
-    const wards = await waitForRefData(() => editWardSelectRef.value?.wards ?? [])
-    const matchedWard = wards.find((item) => item.fullName === (company.phuongXa ?? ''))
-    editSelectedWardCode.value = matchedWard?.code ?? ''
-  }
 }
 
 const closeEditModal = () => {
   isEditModalOpen.value = false
   selectedCompanyId.value = null
-  editSelectedProvinceCode.value = ''
-  editSelectedWardCode.value = ''
 }
 
 const loadCompanyImportDocs = async () => {
@@ -2674,8 +2656,15 @@ const saveStatusUpdate = async () => {
 
 const handleUpdate = async () => {
   if (selectedCompanyId.value !== null) {
+    editForm.diaChi = editForm.diaChiMoi || editForm.diaChiCu || ''
+    editForm.quanHuyen = editForm.quanHuyenMoi || editForm.quanHuyenCu || ''
+    editForm.phuongXa = editForm.xaPhuongMoi || editForm.xaPhuongCu || ''
     const { nguoiDaiDien, chuSoHuu, ...payload } = editForm
-    await store.updateCompany(selectedCompanyId.value, payload)
+    await store.updateCompany(selectedCompanyId.value, {
+      ...payload,
+      phuongXaCu: editForm.xaPhuongCu,
+      phuongXaMoi: editForm.xaPhuongMoi,
+    })
     await store.fetchCompanies(currentCompanyFilters())
   }
   closeEditModal()
@@ -2846,7 +2835,11 @@ watch(
 
 onMounted(async () => {
   orgUnits.value = await orgUnitService.getTree()
-  await Promise.all([loadStatuses(), loadBusinessTypes(), loadCompanyImportDocs()])
+  await Promise.all([
+    loadStatuses(),
+    loadBusinessTypes(),
+    loadCompanyImportDocs(),
+  ])
 
   store.fetchCompanies(currentCompanyFilters())
 

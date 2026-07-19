@@ -369,7 +369,45 @@
           </section>
 
           <section class="space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">3. Đồng bộ theo field</h3>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">3. Tạo danh mục từ text doanh nghiệp</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Tạo các cấp hành chính còn thiếu từ field text và cập nhật code liên kết. Dữ liệu text gốc không bị thay đổi.
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium disabled:opacity-50 dark:border-gray-600"
+                :disabled="textCatalogSyncing"
+                @click="runTextCatalogSync(true)"
+              >
+                Xem trước
+              </button>
+              <button
+                type="button"
+                class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                :disabled="textCatalogSyncing"
+                @click="runTextCatalogSync(false)"
+              >
+                {{ textCatalogSyncing ? 'Đang đồng bộ...' : 'Tạo danh mục và liên kết' }}
+              </button>
+            </div>
+            <div v-if="textCatalogSyncResult" class="rounded-lg bg-gray-50 px-4 py-3 text-sm dark:bg-gray-800/60">
+              <p>
+                Quét: {{ textCatalogSyncResult.scanned }} · DN cập nhật: {{ textCatalogSyncResult.updatedCompanies }}
+                · Tỉnh cũ mới: {{ textCatalogSyncResult.createdLegacyProvinces }}
+                · Huyện cũ mới: {{ textCatalogSyncResult.createdLegacyDistricts }}
+                · Xã cũ mới: {{ textCatalogSyncResult.createdLegacyWards }}
+                · Cấp huyện/tỉnh mới: {{ textCatalogSyncResult.createdNewProvinces }}
+                · Xã mới: {{ textCatalogSyncResult.createdNewWards }}
+              </p>
+              <p v-if="textCatalogSyncResult.conflicts.length" class="mt-1 text-amber-700 dark:text-amber-300">
+                Chưa liên kết: {{ textCatalogSyncResult.conflicts.length }} field do thiếu cấp cha.
+              </p>
+            </div>
+          </section>
+
+          <section class="space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">4. Đồng bộ theo field</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
               Liên kết dữ liệu text import thủ công với bảng hành chính. Hỗ trợ field Quận / Huyện và Phường / Xã.
             </p>
@@ -426,7 +464,7 @@
           </section>
 
           <section class="space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">4. Đồng bộ doanh nghiệp (đầy đủ)</h3>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">5. Đồng bộ doanh nghiệp (đầy đủ)</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
               Khớp doanh nghiệp theo quận/huyện + phường/xã cũ, cập nhật sang đơn vị hành chính mới.
             </p>
@@ -750,6 +788,7 @@ import type {
   SyncResult,
   CompanyFieldSyncOption,
   CompanyFieldSyncResult,
+  CompanyAdministrativeCatalogSyncResult,
 } from '@/types/hanhChinh'
 
 const getWardMappings = (ward: LegacyWardItem): HanhChinhMappingItem[] => {
@@ -830,6 +869,8 @@ const legacyImportFormatName = ref('')
 const newImportResult = ref<ImportCounts | null>(null)
 const legacyImportResult = ref<ImportCounts | null>(null)
 const syncResult = ref<SyncResult | null>(null)
+const textCatalogSyncing = ref(false)
+const textCatalogSyncResult = ref<CompanyAdministrativeCatalogSyncResult | null>(null)
 
 const activeFieldSyncSources = computed(() => {
   const field = fieldSyncOptions.value.find((item) => item.key === fieldSyncField.value)
@@ -1215,6 +1256,21 @@ const runSync = async (dryRun: boolean) => {
     actionError.value = err instanceof Error ? err.message : 'Đồng bộ thất bại'
   } finally {
     syncing.value = false
+  }
+}
+
+const runTextCatalogSync = async (dryRun: boolean) => {
+  textCatalogSyncing.value = true
+  actionError.value = ''
+  try {
+    textCatalogSyncResult.value = await hanhChinhService.syncCompanyTextCatalogs(dryRun)
+    if (!dryRun) {
+      await Promise.all([loadLegacyUnits(1), loadNewUnits(1)])
+    }
+  } catch (err: unknown) {
+    actionError.value = err instanceof Error ? err.message : 'Đồng bộ danh mục hành chính thất bại'
+  } finally {
+    textCatalogSyncing.value = false
   }
 }
 

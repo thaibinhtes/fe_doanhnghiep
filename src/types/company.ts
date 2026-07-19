@@ -48,26 +48,33 @@ export interface Company {
   lat?: number | null
   quanHuyen: string | null
   phuongXa: string | null
+  tinhThanhCu?: string | null
   tinhThanhCuCode?: string | null
-  tinhThanhCu?: {
+  tinhThanhCuLinked?: {
     code: string
     fullName: string
   } | null
+  quanHuyenCu?: string | null
   quanHuyenCuCode?: string | null
-  quanHuyenCu?: {
+  quanHuyenCuLinked?: {
     code: string
     fullName: string
   } | null
+  quanHuyenMoi?: string | null
   tinhThanhCode?: string | null
   tinhThanh?: {
     code: string
     fullName: string
   } | null
+  xaPhuongCu?: string | null
+  phuongXaCu?: string | null
   xaPhuongCuCode?: string | null
-  xaPhuongCu?: {
+  xaPhuongCuLinked?: {
     code: string
     fullName: string
   } | null
+  xaPhuongMoi?: string | null
+  phuongXaMoi?: string | null
   xaPhuongCode?: string | null
   xaPhuong?: {
     code: string

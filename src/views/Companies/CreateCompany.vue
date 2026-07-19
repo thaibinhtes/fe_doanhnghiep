@@ -43,54 +43,77 @@
               />
             </div>
 
-            <!-- Địa chỉ trụ sở chính -->
             <div class="sm:col-span-2">
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Địa chỉ trụ sở chính
+                Địa chỉ cũ
               </label>
               <input
                 type="text"
-                v-model="form.diaChi"
-                placeholder="Nhập địa chỉ trụ sở chính"
+                v-model="form.diaChiCu"
+                placeholder="Nhập địa chỉ cũ"
                 class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
               />
             </div>
 
-            <!-- Tỉnh / Thành (ẩn tạm — mặc định An Giang) -->
-            <div v-if="!HIDE_PROVINCE_FILTER">
+            <div class="sm:col-span-2">
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Tỉnh / Thành
+                Địa chỉ mới
               </label>
-              <ProvinceSelect
-                ref="provinceSelectRef"
-                v-model="selectedProvinceCode"
-                placeholder="Chọn tỉnh/thành"
-                search-placeholder="Tìm tỉnh/thành..."
-                empty-label="Chọn tỉnh/thành"
-                show-code
-                :default-code="DEFAULT_PROVINCE_CODE"
-              />
-            </div>
-            <div v-else class="hidden" aria-hidden="true">
-              <ProvinceSelect
-                ref="provinceSelectRef"
-                v-model="selectedProvinceCode"
-                :default-code="DEFAULT_PROVINCE_CODE"
+              <input
+                type="text"
+                v-model="form.diaChiMoi"
+                placeholder="Nhập địa chỉ mới"
+                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
               />
             </div>
 
-            <!-- Xã / Phường -->
             <div>
-              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Xã / Phường
-              </label>
-              <WardSelect
-                ref="wardSelectRef"
-                v-model="selectedWardCode"
-                :province-code="selectedProvinceCode"
-                placeholder="Chọn xã/phường"
-                search-placeholder="Tìm phường/xã..."
-                empty-label="Chọn xã/phường"
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp tỉnh cũ</label>
+              <input
+                type="text"
+                v-model="form.tinhThanhCu"
+                placeholder="Nhập cấp tỉnh cũ"
+                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+              />
+            </div>
+
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp huyện cũ</label>
+              <input
+                type="text"
+                v-model="form.quanHuyenCu"
+                placeholder="Nhập cấp huyện cũ"
+                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+              />
+            </div>
+
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp xã cũ</label>
+              <input
+                type="text"
+                v-model="form.xaPhuongCu"
+                placeholder="Nhập cấp xã cũ"
+                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+              />
+            </div>
+
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp huyện mới</label>
+              <input
+                type="text"
+                v-model="form.quanHuyenMoi"
+                placeholder="Nhập cấp huyện mới"
+                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+              />
+            </div>
+
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Cấp xã mới</label>
+              <input
+                type="text"
+                v-model="form.xaPhuongMoi"
+                placeholder="Nhập cấp xã mới"
+                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
               />
             </div>
 
@@ -202,24 +225,15 @@
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Loại hình doanh nghiệp
               </label>
-              <div class="relative z-20 bg-transparent">
-                <select
-                  v-model="form.dnLoaiHinhId"
-                  class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                >
-                  <option :value="null">Chọn loại hình</option>
-                  <option v-for="type in businessTypes" :key="type.id" :value="type.id">
-                    {{ type.ten }}
-                  </option>
-                </select>
-                <span
-                  class="absolute z-30 text-gray-500 -translate-y-1/2 pointer-events-none right-4 top-1/2 dark:text-gray-400"
-                >
-                  <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </span>
-              </div>
+              <input
+                v-model="form.loaiHinhDN"
+                list="company-business-types"
+                placeholder="Nhập loại hình doanh nghiệp"
+                class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+              />
+              <datalist id="company-business-types">
+                <option v-for="type in businessTypes" :key="type.id" :value="type.ten" />
+              </datalist>
             </div>
 
             <!-- Ngày cấp -->
@@ -460,7 +474,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
 import { useCompanyStatuses } from '@/composables/useCompanyStatuses'
@@ -470,26 +484,25 @@ import type { CapitalMemberInput } from '@/types/company'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import IndustryCategorySelect from '@/components/forms/FormElements/IndustryCategorySelect.vue'
-import ProvinceSelect from '@/components/forms/FormElements/ProvinceSelect.vue'
-import WardSelect from '@/components/forms/FormElements/WardSelect.vue'
-import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
-import { locationService } from '@/services/locationService'
 
 const router = useRouter()
 const store = useCompaniesStore()
 const { identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()
 const { businessTypes, loadBusinessTypes, defaultTypeId } = useCompanyBusinessTypes()
-const provinceSelectRef = ref<InstanceType<typeof ProvinceSelect> | null>(null)
-const wardSelectRef = ref<InstanceType<typeof WardSelect> | null>(null)
-const selectedProvinceCode = ref(DEFAULT_PROVINCE_CODE)
-const selectedWardCode = ref('')
 
 const form = reactive({
   maSoDoanhNghiep: '',
   tenDoanhNghiep: '',
   diaChi: '',
+  diaChiCu: '',
+  diaChiMoi: '',
   quanHuyen: '',
   phuongXa: '',
+  tinhThanhCu: '',
+  quanHuyenCu: '',
+  quanHuyenMoi: '',
+  xaPhuongCu: '',
+  xaPhuongMoi: '',
   long: null as number | null,
   lat: null as number | null,
   vonDieuLe: '',
@@ -504,7 +517,7 @@ const form = reactive({
   nganhNgheKD: [] as string[],
   ngayCap: '',
   ngayDangKyThayDoi: '',
-  dnLoaiHinhId: null as number | null,
+  loaiHinhDN: '',
   soLuongLaoDong: 0,
   dsThanhVienGopVon: [] as CapitalMemberInput[],
   dsCoDong: '',
@@ -518,7 +531,14 @@ const isOtherStatusSelected = computed(() =>
 )
 
 const buildSubmitPayload = () => {
-  const payload = { ...form }
+  const payload = {
+    ...form,
+    diaChi: form.diaChiMoi || form.diaChiCu,
+    quanHuyen: form.quanHuyenMoi || form.quanHuyenCu,
+    phuongXa: form.xaPhuongMoi || form.xaPhuongCu,
+    phuongXaCu: form.xaPhuongCu,
+    phuongXaMoi: form.xaPhuongMoi,
+  }
 
   if (!isOtherStatusSelected.value) {
     const ma = form.daCapNhatDinhDanh ? 'da_dinh_danh' : 'chua_dinh_danh'
@@ -531,30 +551,13 @@ const buildSubmitPayload = () => {
   return payload
 }
 
-watch(selectedProvinceCode, () => {
-  const provinces = provinceSelectRef.value?.provinces ?? []
-  const province = provinces.find((item) => item.code === selectedProvinceCode.value)
-  form.quanHuyen = province?.fullName ?? ''
-})
-
-watch(selectedWardCode, () => {
-  const wards = wardSelectRef.value?.wards ?? []
-  const ward = wards.find((item) => item.code === selectedWardCode.value)
-  form.phuongXa = ward?.fullName ?? ''
-})
-
 onMounted(async () => {
-  await Promise.all([loadStatuses(), loadBusinessTypes()])
+  await Promise.all([
+    loadStatuses(),
+    loadBusinessTypes(),
+  ])
   if (defaultTypeId.value) {
-    form.dnLoaiHinhId = defaultTypeId.value
-  }
-
-  if (HIDE_PROVINCE_FILTER) {
-    const provinces = await locationService.getProvinces()
-    const province = provinces.find((item) => item.code === DEFAULT_PROVINCE_CODE)
-    if (province) {
-      form.quanHuyen = province.fullName
-    }
+    form.loaiHinhDN = businessTypes.value.find((type) => type.id === defaultTypeId.value)?.ten ?? ''
   }
 })
 

@@ -1,5 +1,9 @@
 import api from './api'
-import type { CompanyBusinessType, CompanyBusinessTypePayload } from '@/types/businessType'
+import type {
+  CompanyBusinessType,
+  CompanyBusinessTypePayload,
+  CompanyBusinessTypeSyncResult,
+} from '@/types/businessType'
 
 const BASE_PATH = '/dn-loai-hinh'
 
@@ -26,5 +30,13 @@ export const businessTypeService = {
 
   async delete(id: number): Promise<void> {
     await api.delete(`${BASE_PATH}/${id}`)
+  },
+
+  async syncFromCompanies(dryRun = false): Promise<CompanyBusinessTypeSyncResult> {
+    const { data } = await api.post<{ data: CompanyBusinessTypeSyncResult }>(
+      `${BASE_PATH}/sync-doanh-nghiep`,
+      { dryRun },
+    )
+    return data.data
   },
 }

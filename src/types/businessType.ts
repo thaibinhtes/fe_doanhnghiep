@@ -19,3 +19,11 @@ export interface CompanyBusinessTypePayload {
   isActive?: boolean
   moTa?: string | null
 }
+
+export interface CompanyBusinessTypeSyncResult {
+  scanned: number
+  matched: number
+  createdTypes: number
+  updatedCompanies: number
+  skipped: number
+}

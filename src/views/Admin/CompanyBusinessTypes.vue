@@ -16,6 +16,35 @@
         </div>
       </div>
 
+      <ComponentCard v-if="canManage" title="Đồng bộ từ dữ liệu doanh nghiệp">
+        <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">
+          Tạo danh mục từ field Loại hình doanh nghiệp dạng text và cập nhật ID liên kết. Text gốc trên doanh nghiệp được giữ nguyên.
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            :disabled="syncing"
+            @click="runSync(true)"
+            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium disabled:opacity-50 dark:border-gray-700"
+          >
+            Xem trước
+          </button>
+          <button
+            type="button"
+            :disabled="syncing"
+            @click="runSync(false)"
+            class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          >
+            {{ syncing ? 'Đang đồng bộ...' : 'Đồng bộ danh mục' }}
+          </button>
+        </div>
+        <div v-if="syncResult" class="mt-3 rounded-lg bg-gray-50 p-3 text-sm dark:bg-gray-800">
+          Quét: {{ syncResult.scanned }} · Khớp: {{ syncResult.matched }} · Danh mục mới:
+          {{ syncResult.createdTypes }} · DN cập nhật: {{ syncResult.updatedCompanies }} · Bỏ qua:
+          {{ syncResult.skipped }}
+        </div>
+      </ComponentCard>
+
       <ComponentCard title="Danh sách loại hình">
         <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div class="grid gap-3 sm:grid-cols-2">
@@ -185,7 +214,11 @@ import ComponentCard from '@/components/common/ComponentCard.vue'
 import Modal from '@/components/ui/Modal.vue'
 import { businessTypeService } from '@/services/businessTypeService'
 import { useAuthStore } from '@/stores/auth'
-import type { CompanyBusinessType, CompanyBusinessTypePayload } from '@/types/businessType'
+import type {
+  CompanyBusinessType,
+  CompanyBusinessTypePayload,
+  CompanyBusinessTypeSyncResult,
+} from '@/types/businessType'
 
 const auth = useAuthStore()
 const canManage = computed(() => auth.hasPermission('feature.business-types.manage'))
@@ -198,6 +231,8 @@ const editingId = ref<number | null>(null)
 const error = ref<string | null>(null)
 const message = ref('')
 const businessTypes = ref<CompanyBusinessType[]>([])
+const syncing = ref(false)
+const syncResult = ref<CompanyBusinessTypeSyncResult | null>(null)
 
 const filter = reactive({
   isActive: '',
@@ -312,6 +347,21 @@ const handleDelete = async (item: CompanyBusinessType) => {
     alert(err instanceof Error ? err.message : 'Không thể xóa loại hình')
   } finally {
     deletingId.value = null
+  }
+}
+
+const runSync = async (dryRun: boolean) => {
+  syncing.value = true
+  message.value = ''
+  try {
+    syncResult.value = await businessTypeService.syncFromCompanies(dryRun)
+    message.value = dryRun ? 'Đã xem trước đồng bộ loại hình.' : 'Đồng bộ loại hình thành công.'
+    if (!dryRun) await loadTypes()
+  } catch (err: unknown) {
+    message.value = ''
+    alert(err instanceof Error ? err.message : 'Không thể đồng bộ loại hình')
+  } finally {
+    syncing.value = false
   }
 }
 
