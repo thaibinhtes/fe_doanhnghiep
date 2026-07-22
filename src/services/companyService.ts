@@ -11,6 +11,7 @@ import type {
   CompanyImportJobRow,
   CompanyImportRowStatus,
   CompanyImportConfig,
+  CompanyImportPreviewResult,
   CompanyIdentityImportConfig,
   CompanyFieldUpdateConfig,
   CompanyImportFormat,
@@ -115,6 +116,12 @@ export const companyService = {
           ? { hasCoordinates: filters.hasCoordinates }
           : {}),
         ...(filters?.donViId ? { donViId: filters.donViId } : {}),
+        ...(filters?.hanhChinhAreaKey && filters?.hanhChinhAreaId
+          ? {
+              hanhChinhAreaKey: filters.hanhChinhAreaKey,
+              hanhChinhAreaId: filters.hanhChinhAreaId,
+            }
+          : {}),
       },
     })
     return {
@@ -255,6 +262,39 @@ export const companyService = {
     return data.data
   },
 
+  async previewImportExcel(
+    file: File,
+    config?: {
+      startRow?: number
+      columnMap?: Record<string, string[]>
+      valueExtensions?: Record<string, string>
+      limit?: number
+    },
+  ): Promise<CompanyImportPreviewResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    if (config?.startRow !== undefined) {
+      formData.append('startRow', String(config.startRow))
+    }
+    if (config?.columnMap) {
+      formData.append('columnMap', JSON.stringify(config.columnMap))
+    }
+    if (config?.valueExtensions && Object.keys(config.valueExtensions).length > 0) {
+      formData.append('valueExtensions', JSON.stringify(config.valueExtensions))
+    }
+    if (config?.limit !== undefined) {
+      formData.append('limit', String(config.limit))
+    }
+
+    const { data } = await api.post<{ data: CompanyImportPreviewResult; message: string }>(
+      `${BASE_PATH}/import-preview`,
+      formData,
+      { timeout: 120_000 },
+    )
+    return data.data
+  },
+
   async getImportJobStatus(importJobId: number): Promise<CompanyImportJobStatus> {
     const { data } = await api.get<{ data: CompanyImportJobStatus }>(
       `${BASE_PATH}/import-jobs/${importJobId}`,
@@ -369,7 +409,7 @@ export const companyService = {
     config?: {
       startRow?: number
       columnMap?: Record<string, string[]>
-      identityDate?: string
+      lookupField?: string
       daCapNhatDinhDanh?: boolean
     },
   ): Promise<CompanyImportJobQueued> {
@@ -381,8 +421,8 @@ export const companyService = {
     if (config?.columnMap) {
       formData.append('columnMap', JSON.stringify(config.columnMap))
     }
-    if (config?.identityDate) {
-      formData.append('identityDate', config.identityDate)
+    if (config?.lookupField) {
+      formData.append('lookupField', config.lookupField)
     }
     if (config?.daCapNhatDinhDanh !== undefined) {
       formData.append('daCapNhatDinhDanh', config.daCapNhatDinhDanh ? '1' : '0')

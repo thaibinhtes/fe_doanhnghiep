@@ -192,6 +192,10 @@ export interface CompanyFilters {
   daCapNhatDinhDanh?: boolean
   hasCoordinates?: boolean
   donViId?: number | string
+  /** Dashboard area key: quanHuyenMoi | quanHuyenCu | phuongXaMoi | phuongXaCu */
+  hanhChinhAreaKey?: string
+  /** Catalog id or "unlinked" */
+  hanhChinhAreaId?: string
   page?: number
   per_page?: number
 }
@@ -231,6 +235,34 @@ export interface CompanyImportColumnMap {
   [key: string]: string[]
 }
 
+export interface CompanyImportPreviewField {
+  field: string
+  label: string
+  columns: string[]
+  columnsDisplay: string
+  rawByLetter: Record<string, string | null>
+  value: string | number | boolean | null
+}
+
+export interface CompanyImportPreviewRow {
+  excelRow: number
+  maSoDoanhNghiep?: string | null
+  tenDoanhNghiep?: string | null
+  fields: CompanyImportPreviewField[]
+  mapped: Record<string, string | number | boolean | null>
+}
+
+export interface CompanyImportPreviewResult {
+  startRow: number
+  limit: number
+  highestRow: number
+  scannedRows: number
+  previewCount: number
+  columnMap: CompanyImportColumnMap
+  columnLabels: Record<string, string>
+  rows: CompanyImportPreviewRow[]
+}
+
 export interface CompanyImportConfig {
   startRow: number
   columnMap: CompanyImportColumnMap
@@ -241,6 +273,9 @@ export interface CompanyImportConfig {
 
 export interface CompanyIdentityImportConfig {
   startRow: number
+  lookupField: string
+  lookupFields: Record<string, string>
+  dateField: string
   columnMap: CompanyImportColumnMap
   columnLabels?: Record<string, string>
 }
@@ -254,10 +289,13 @@ export interface CompanyFieldUpdateConfig {
   columnLabels?: Record<string, string>
 }
 
-export interface CompanyIdentityImportSavedConfig extends CompanyIdentityImportConfig {
+export interface CompanyIdentityImportSavedConfig {
   id: string
   name: string
-  identityDate: string
+  startRow: number
+  lookupField: string
+  columnMap: CompanyImportColumnMap
+  columnLabels?: Record<string, string>
   createdAt: string
 }
 

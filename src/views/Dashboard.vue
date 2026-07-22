@@ -78,7 +78,7 @@
 
             <ComponentCard
               title="Theo địa bàn"
-              desc="Group theo danh mục hành chính đã đồng bộ từ API"
+              desc="Group theo danh mục đã đồng bộ · click cột để mở danh sách DN"
               class-name="xl:col-span-8"
             >
               <template #header-right>
@@ -95,7 +95,7 @@
                 <VueApexCharts
                   type="bar"
                   :height="areaChartHeight(companyAreas)"
-                  :options="buildAreaChartOptions(companyAreas)"
+                  :options="buildAreaChartOptions(companyAreas, { entity: 'companies', areaKey: companyAreaKey })"
                   :series="buildAreaChartSeries(companyAreas)"
                 />
               </div>
@@ -200,6 +200,7 @@
 
 <script setup lang="ts">
 import { computed, defineComponent, h, onMounted, ref, watch, type PropType } from 'vue'
+import { useRouter } from 'vue-router'
 import VueApexCharts from 'vue3-apexcharts'
 import { Building2, CheckCircle2, CircleDashed, MapPinned, RefreshCw, Search, TriangleAlert, UsersRound } from 'lucide-vue-next'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -218,6 +219,7 @@ const identityLabels = ['Đã định danh', 'Cần rà soát', 'Chưa định d
 const identityColors = ['#12b76a', '#f79009', '#98a2b3']
 const chartFont = 'Outfit, sans-serif'
 
+const router = useRouter()
 const loading = ref(true)
 const error = ref<string | null>(null)
 const dashboard = ref<DashboardData | null>(null)
@@ -227,6 +229,7 @@ const selectedCompanyAreaId = ref<string>('')
 const selectedCooperativeAreaId = ref<string>('')
 const companyAreaKey = ref<DashboardAreaKey>('quanHuyenMoi')
 const cooperativeAreaKey = ref<DashboardAreaKey>('quanHuyenMoi')
+let lastAreaNavAt = 0
 
 const defaultAreaOptions: DashboardAreaOption[] = [
   { key: 'quanHuyenMoi', label: 'Quận / Huyện mới' },
@@ -302,13 +305,48 @@ function areaChartHeight(areas: DashboardAreaIdentity[]) {
   return Math.max(270, sortedAreas(areas).length * 44)
 }
 
-function buildAreaChartOptions(areas: DashboardAreaIdentity[]) {
+function buildAreaChartOptions(
+  areas: DashboardAreaIdentity[],
+  clickNav?: { entity: 'companies'; areaKey: DashboardAreaKey },
+) {
   const rows = sortedAreas(areas)
+
+  const goToCompanies = (dataPointIndex: number) => {
+    if (!clickNav) return
+    const area = rows[dataPointIndex]
+    if (!area) return
+    const now = Date.now()
+    if (now - lastAreaNavAt < 400) return
+    lastAreaNavAt = now
+    void navigateFromAreaChart(clickNav.areaKey, area)
+  }
+
   return {
-    chart: { fontFamily: chartFont, stacked: true, toolbar: { show: false }, animations: { enabled: false } },
+    chart: {
+      fontFamily: chartFont,
+      stacked: true,
+      toolbar: { show: false },
+      animations: { enabled: false },
+      events: clickNav
+        ? {
+            dataPointSelection(_event: unknown, _ctx: unknown, config: { dataPointIndex: number }) {
+              if (config.dataPointIndex >= 0) goToCompanies(config.dataPointIndex)
+            },
+            click(_event: unknown, _ctx: unknown, config: { dataPointIndex?: number }) {
+              if (typeof config.dataPointIndex === 'number' && config.dataPointIndex >= 0) {
+                goToCompanies(config.dataPointIndex)
+              }
+            },
+          }
+        : undefined,
+    },
     colors: identityColors,
     plotOptions: { bar: { horizontal: true, barHeight: '62%', borderRadius: 3 } },
     dataLabels: { enabled: false },
+    states: {
+      hover: { filter: { type: 'lighten', value: 0.05 } },
+      active: { allowMultipleDataPointsSelection: false, filter: { type: 'darken', value: 0.1 } },
+    },
     xaxis: {
       categories: rows.map((area) => area.areaName),
       labels: { formatter: (value: number) => formatNumber(Math.round(value)), style: { colors: '#667085' } },
@@ -316,8 +354,25 @@ function buildAreaChartOptions(areas: DashboardAreaIdentity[]) {
     yaxis: { labels: { maxWidth: 220, style: { colors: '#475467', fontSize: '12px' } } },
     legend: { position: 'top', horizontalAlign: 'left', markers: { size: 5 } },
     grid: { borderColor: '#eaecf0', strokeDashArray: 3 },
-    tooltip: { y: { formatter: (value: number) => formatNumber(value) } },
+    tooltip: {
+      y: { formatter: (value: number) => formatNumber(value) },
+    },
   }
+}
+
+function navigateFromAreaChart(areaKey: DashboardAreaKey, area: DashboardAreaIdentity) {
+  const areaId = area.areaCode ?? 'unlinked'
+  const areaLabel = areaOptions.value.find((option) => option.key === areaKey)?.label ?? areaKey
+
+  void router.push({
+    name: 'Companies',
+    query: {
+      hanhChinhAreaKey: areaKey,
+      hanhChinhAreaId: areaId,
+      hanhChinhAreaName: area.areaName,
+      hanhChinhAreaLabel: areaLabel,
+    },
+  })
 }
 
 function buildAreaChartSeries(areas: DashboardAreaIdentity[]) {

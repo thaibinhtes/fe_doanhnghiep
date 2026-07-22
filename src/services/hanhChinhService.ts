@@ -22,6 +22,8 @@ import type {
   CompanyFieldSyncOption,
   CompanyFieldSyncResult,
   CompanyAdministrativeCatalogSyncResult,
+  CompanyRawGroupsPreview,
+  CompanyRawGroupsCommitResult,
   HanhChinhDanhMucCap,
   HanhChinhDanhMucItem,
   HanhChinhDanhMucLoai,
@@ -288,6 +290,25 @@ export const hanhChinhService = {
   }): Promise<CompanyFieldSyncResult> {
     const { data } = await api.post<{ data: CompanyFieldSyncResult }>('/hanh-chinh/sync-doanh-nghiep-field', payload)
     return unwrap<CompanyFieldSyncResult>(data)
+  },
+
+  async previewCompanyRawGroups(field: import('@/types/hanhChinh').CompanyAdministrativeField): Promise<CompanyRawGroupsPreview> {
+    const { data } = await api.get<{ data: CompanyRawGroupsPreview }>('/hanh-chinh/sync-doanh-nghiep/raw-groups', {
+      params: { field },
+    })
+    return unwrap<CompanyRawGroupsPreview>(data)
+  },
+
+  async commitCompanyRawGroups(payload: {
+    field: import('@/types/hanhChinh').CompanyAdministrativeField
+    names?: string[]
+    linkCompanies?: boolean
+  }): Promise<CompanyRawGroupsCommitResult> {
+    const { data } = await api.post<{ data: CompanyRawGroupsCommitResult }>(
+      '/hanh-chinh/sync-doanh-nghiep-raw-groups',
+      payload,
+    )
+    return unwrap<CompanyRawGroupsCommitResult>(data)
   },
 
   async getUnmappedCompanies(): Promise<{ count: number; items: SyncResult['unmapped'] }> {

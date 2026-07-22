@@ -28,7 +28,7 @@
     <div class="rounded-xl border border-brand-200 bg-brand-50/60 p-4 dark:border-brand-800/60 dark:bg-brand-950/20">
       <p class="text-sm font-semibold text-gray-900 dark:text-white">Đơn vị import doanh nghiệp</p>
       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-        Doanh nghiệp mới sẽ gán vào đơn vị của bạn. Hệ thống kiểm tra trùng trong phạm vi các đơn vị bên dưới.
+        Doanh nghiệp mới sẽ gán vào đơn vị của bạn (mặc định Sở Tài Chính). Hệ thống kiểm tra trùng trong phạm vi các đơn vị bên dưới.
       </p>
 
       <div v-if="loadingImportScope" class="mt-3 text-sm text-gray-500 dark:text-gray-400">
@@ -183,13 +183,13 @@
         {{ showImportColumnConfig ? 'Ẩn' : 'Cấu hình' }} ánh xạ cột
       </button>
 
-      <div v-if="showImportColumnConfig" class="mt-3 max-h-64 overflow-y-auto space-y-2 pr-1">
+      <div v-if="showImportColumnConfig" class="mt-3 max-h-64 overflow-y-auto space-y-1 pr-1">
         <div
           v-for="(label, key) in importColumnLabels"
           :key="key"
-          class="grid grid-cols-[1fr_88px] gap-2 items-center"
+          class="group grid grid-cols-[1fr_88px] items-center gap-2 rounded-lg px-2 py-1.5 -mx-1 transition focus-within:bg-brand-50 focus-within:ring-1 focus-within:ring-brand-300 dark:focus-within:bg-brand-500/15 dark:focus-within:ring-brand-700"
         >
-          <span class="text-xs text-gray-600 dark:text-gray-400">{{ label }}</span>
+          <span class="text-xs text-gray-600 transition group-focus-within:font-semibold group-focus-within:text-brand-700 dark:text-gray-400 dark:group-focus-within:text-brand-300">{{ label }}</span>
           <input
             v-model="importColumnInputs[key]"
             type="text"
@@ -260,10 +260,149 @@
       </p>
     </div>
 
+    <div
+      v-if="selectedImportFile"
+      class="flex flex-wrap items-end gap-3 rounded-xl border border-gray-200 bg-gray-50/80 p-3 dark:border-gray-700 dark:bg-gray-900/40"
+    >
+      <div>
+        <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
+          Số dòng xem trước
+        </label>
+        <select
+          v-model.number="previewLimit"
+          class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+        >
+          <option :value="3">3</option>
+          <option :value="5">5</option>
+          <option :value="10">10</option>
+          <option :value="20">20</option>
+        </select>
+      </div>
+      <p class="pb-2 text-xs text-gray-500 dark:text-gray-400">
+        Kiểm tra ánh xạ cột trước khi nhập — không ghi dữ liệu vào hệ thống.
+      </p>
+    </div>
+
     <ImportLoadingSkeleton
       v-if="importing && !importResult"
       :subtitle="importQueuedMessage"
     />
+
+    <div
+      v-if="previewing"
+      class="rounded-lg border border-brand-200 bg-brand-50/50 px-4 py-3 text-sm text-brand-800 dark:border-brand-800 dark:bg-brand-950/30 dark:text-brand-200"
+    >
+      Đang đọc file và ánh xạ cột...
+    </div>
+
+    <div
+      v-if="previewResult && !previewing"
+      class="space-y-3 rounded-xl border border-gray-200 p-4 dark:border-gray-700"
+    >
+      <div class="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <p class="text-sm font-semibold text-gray-900 dark:text-white">
+            Xem trước ánh xạ cột
+          </p>
+          <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+            Hàng bắt đầu {{ previewResult.startRow }} ·
+            {{ previewResult.previewCount }}/{{ previewResult.limit }} dòng ·
+            File có {{ previewResult.highestRow }} hàng
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          @click="previewResult = null; expandedPreviewRow = null"
+        >
+          Đóng preview
+        </button>
+      </div>
+
+      <div
+        v-if="previewResult.previewCount === 0"
+        class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
+      >
+        Không đọc được dòng dữ liệu nào từ hàng {{ previewResult.startRow }}. Kiểm tra lại hàng bắt đầu hoặc ánh xạ cột.
+      </div>
+
+      <div
+        v-for="row in previewResult.rows"
+        :key="row.excelRow"
+        class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700"
+      >
+        <button
+          type="button"
+          class="flex w-full items-center justify-between gap-3 bg-white px-3 py-2.5 text-left hover:bg-gray-50 dark:bg-gray-900/50 dark:hover:bg-gray-800/60"
+          @click="expandedPreviewRow = expandedPreviewRow === row.excelRow ? null : row.excelRow"
+        >
+          <div class="min-w-0">
+            <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Excel hàng {{ row.excelRow }}
+            </p>
+            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
+              <span v-if="row.maSoDoanhNghiep">{{ row.maSoDoanhNghiep }}</span>
+              <span v-else class="text-amber-600 dark:text-amber-400">Thiếu MST</span>
+              <span class="text-gray-400"> · </span>
+              <span>{{ row.tenDoanhNghiep || '—' }}</span>
+            </p>
+          </div>
+          <span class="shrink-0 text-xs text-brand-600 dark:text-brand-400">
+            {{ expandedPreviewRow === row.excelRow ? 'Thu gọn' : 'Chi tiết cột' }}
+          </span>
+        </button>
+
+        <div
+          v-if="expandedPreviewRow === row.excelRow"
+          class="overflow-x-auto border-t border-gray-200 dark:border-gray-700"
+        >
+          <table class="min-w-full text-left text-xs">
+            <thead class="bg-gray-50 text-gray-500 dark:bg-gray-800/80 dark:text-gray-400">
+              <tr>
+                <th class="whitespace-nowrap px-3 py-2 font-medium">Trường</th>
+                <th class="whitespace-nowrap px-3 py-2 font-medium">Cột</th>
+                <th class="whitespace-nowrap px-3 py-2 font-medium">Giá trị thô (Excel)</th>
+                <th class="whitespace-nowrap px-3 py-2 font-medium">Giá trị map</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              <tr
+                v-for="field in row.fields"
+                :key="field.field"
+                class="bg-white dark:bg-gray-900/40"
+                :class="isPreviewFieldSuspicious(field) ? 'bg-amber-50/80 dark:bg-amber-950/20' : ''"
+              >
+                <td class="px-3 py-2 text-gray-700 dark:text-gray-300">
+                  <span class="font-medium">{{ field.label }}</span>
+                  <span class="ml-1 text-gray-400">({{ field.field }})</span>
+                </td>
+                <td class="whitespace-nowrap px-3 py-2 font-mono text-brand-700 dark:text-brand-300">
+                  {{ field.columnsDisplay || '—' }}
+                </td>
+                <td class="max-w-[220px] px-3 py-2 text-gray-600 dark:text-gray-400">
+                  <template v-if="Object.keys(field.rawByLetter).length">
+                    <span
+                      v-for="(raw, letter) in field.rawByLetter"
+                      :key="letter"
+                      class="mr-2 inline-block"
+                    >
+                      <span class="font-mono text-gray-400">{{ letter}}=</span>{{ formatPreviewCell(raw) }}
+                    </span>
+                  </template>
+                  <span v-else>—</span>
+                </td>
+                <td
+                  class="max-w-[220px] px-3 py-2 font-medium"
+                  :class="field.value === null || field.value === '' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-white'"
+                >
+                  {{ formatPreviewCell(field.value) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
     <div
       v-if="importResult"
@@ -304,7 +443,15 @@
       </button>
       <button
         type="button"
-        :disabled="!selectedImportFile || importing"
+        :disabled="!selectedImportFile || importing || previewing"
+        class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg border border-brand-300 bg-white px-5 py-2.5 text-sm font-medium text-brand-700 transition hover:bg-brand-50 disabled:opacity-50 dark:border-brand-700 dark:bg-transparent dark:text-brand-300 dark:hover:bg-brand-950/40"
+        @click="handlePreview"
+      >
+        {{ previewing ? 'Đang xem trước...' : 'Xem trước ánh xạ' }}
+      </button>
+      <button
+        type="button"
+        :disabled="!selectedImportFile || importing || previewing"
         class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-50"
         @click="handleImport"
       >
@@ -325,6 +472,8 @@ import type {
   CompanyImportColumnMap,
   CompanyImportExampleConfig,
   CompanyImportFormat,
+  CompanyImportPreviewField,
+  CompanyImportPreviewResult,
   CompanyImportResult,
   CompanyImportValueExtensionField,
 } from '@/types/company'
@@ -365,6 +514,10 @@ const selectedImportFile = ref<File | null>(null)
 const importFileInput = ref<HTMLInputElement | null>(null)
 const importResult = ref<CompanyImportResult | null>(null)
 const importError = ref<string | null>(null)
+const previewing = ref(false)
+const previewResult = ref<CompanyImportPreviewResult | null>(null)
+const previewLimit = ref(5)
+const expandedPreviewRow = ref<number | null>(null)
 const importStartRow = ref(13)
 const importColumnInputs = reactive<Record<string, string>>({})
 const importColumnLabels = reactive<Record<string, string>>({})
@@ -626,7 +779,12 @@ function applyImportColumnMap(columnMap: CompanyImportColumnMap, labels?: Record
   Object.keys(importColumnInputs).forEach((key) => delete importColumnInputs[key])
   Object.keys(importColumnLabels).forEach((key) => delete importColumnLabels[key])
 
-  const allLabels = labels ?? {}
+  const allLabels: Record<string, string> = { ...(labels ?? {}) }
+  for (const key of Object.keys(columnMap)) {
+    if (!(key in allLabels)) {
+      allLabels[key] = COMPANY_IMPORT_COLUMN_LABELS[key] ?? key
+    }
+  }
 
   for (const [key, label] of Object.entries(allLabels)) {
     importColumnLabels[key] = label
@@ -688,6 +846,58 @@ const onImportFileSelected = (event: Event) => {
   selectedImportFile.value = input.files?.[0] ?? null
   importResult.value = null
   importError.value = null
+  previewResult.value = null
+  expandedPreviewRow.value = null
+}
+
+function formatPreviewCell(value: string | number | boolean | null | undefined): string {
+  if (value === null || value === undefined || value === '') return '—'
+  if (typeof value === 'boolean') return value ? 'true' : 'false'
+  return String(value)
+}
+
+function isPreviewFieldSuspicious(field: CompanyImportPreviewField): boolean {
+  const hasMappedColumns = field.columns.length > 0
+  const rawValues = Object.values(field.rawByLetter)
+  const hasAnyRaw = rawValues.some((v) => v !== null && String(v).trim() !== '')
+  const mappedEmpty = field.value === null || field.value === ''
+
+  // Mapped columns but empty result while Excel has data → likely wrong mapping / merge
+  if (hasMappedColumns && hasAnyRaw && mappedEmpty) return true
+  // Important identity fields empty after mapping
+  if (
+    (field.field === 'maSoDoanhNghiep' || field.field === 'tenDoanhNghiep') &&
+    mappedEmpty
+  ) {
+    return true
+  }
+  return false
+}
+
+const handlePreview = async () => {
+  if (!selectedImportFile.value) return
+
+  previewing.value = true
+  importError.value = null
+  previewResult.value = null
+  expandedPreviewRow.value = null
+
+  try {
+    const result = await companyService.previewImportExcel(selectedImportFile.value, {
+      startRow: importStartRow.value,
+      columnMap: buildImportColumnMap(),
+      valueExtensions: buildImportValueExtensions(),
+      limit: previewLimit.value,
+    })
+    previewResult.value = result
+    if (result.rows.length > 0) {
+      expandedPreviewRow.value = result.rows[0].excelRow
+    }
+  } catch (err: unknown) {
+    importError.value = formatImportUploadError(err, 'Xem trước ánh xạ thất bại.')
+  } finally {
+    previewing.value = false
+  }
 }
 
 const handleImport = async () => {
@@ -723,6 +933,8 @@ async function initialize() {
   selectedImportFile.value = null
   importResult.value = null
   importError.value = null
+  previewResult.value = null
+  expandedPreviewRow.value = null
   showImportColumnConfig.value = true
   showImportExtensions.value = false
   selectedImportFormatId.value = ''
@@ -755,5 +967,65 @@ onUnmounted(() => {
   stopImportPolling()
 })
 
-defineExpose({ initialize })
+defineExpose({
+  initialize,
+  getApiTestPayload,
+})
+
+function getApiTestPayload() {
+  const columnMap = buildImportColumnMap()
+  const valueExtensions = buildImportValueExtensions()
+  const selectedFormat = importFormats.value.find((item) => item.id === selectedImportFormatId.value)
+  const selectedConfig = importExampleConfigs.value.find((item) => item.id === selectedImportConfigId.value)
+
+  return {
+    method: 'POST',
+    path: '/api/doanh-nghiep/import',
+    contentType: 'multipart/form-data',
+    notes: [
+      'Gửi FormData: file (bắt buộc), startRow, columnMap (JSON string), valueExtensions (JSON string, optional).',
+      'Xem trước ánh xạ (không import): POST /api/doanh-nghiep/import-preview với thêm limit (1–20).',
+      'Header Authorization: Bearer <token>.',
+    ],
+    formFields: {
+      file: selectedImportFile.value?.name ?? '<path-to-excel.xlsx>',
+      startRow: importStartRow.value,
+      columnMap,
+      ...(Object.keys(valueExtensions).length > 0 ? { valueExtensions } : {}),
+    },
+    meta: {
+      selectedExampleConfig: selectedConfig
+        ? { id: selectedConfig.id, name: selectedConfig.name, code: selectedConfig.code }
+        : null,
+      selectedPersonalFormat: selectedFormat
+        ? { id: selectedFormat.id, name: selectedFormat.name }
+        : null,
+      fileName: selectedImportFile.value?.name ?? null,
+    },
+    curl: buildCurlExample(importStartRow.value, columnMap, valueExtensions),
+  }
+}
+
+function buildCurlExample(
+  startRow: number,
+  columnMap: CompanyImportColumnMap,
+  valueExtensions: Record<string, string>,
+): string {
+  const apiBase = (import.meta.env.VITE_API_PREFIX as string | undefined) || '/api'
+  const lines = [
+    `curl -X POST '${apiBase}/doanh-nghiep/import' \\`,
+    `  -H 'Authorization: Bearer <token>' \\`,
+    `  -H 'Accept: application/json' \\`,
+    `  -F 'file=@./sample.xlsx' \\`,
+    `  -F 'startRow=${startRow}' \\`,
+    `  -F 'columnMap=${JSON.stringify(columnMap)}'`,
+  ]
+
+  if (Object.keys(valueExtensions).length > 0) {
+    lines[lines.length - 1] += ' \\'
+    lines.push(`  -F 'valueExtensions=${JSON.stringify(valueExtensions)}'`)
+  }
+
+  return lines.join('\n')
+}
 </script>

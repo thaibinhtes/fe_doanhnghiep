@@ -58,12 +58,19 @@ export function columnsToDisplay(cols: string[]): string {
   if (cols.length === 0) return ''
   if (cols.length === 1) return cols[0]
 
-  const indices = cols.map(columnLetterToIndex)
+  const indices = cols
+    .map(columnLetterToIndex)
+    .filter((idx) => idx >= 0)
+    .sort((a, b) => a - b)
+
+  if (indices.length === 0) return ''
+  if (indices.length === 1) return columnIndexToLetter(indices[0])
+
   const isContiguous = indices.every((idx, i) => i === 0 || idx === indices[i - 1] + 1)
 
   if (isContiguous) {
     return `${columnIndexToLetter(indices[0])}-${columnIndexToLetter(indices[indices.length - 1])}`
   }
 
-  return cols.join(',')
+  return indices.map(columnIndexToLetter).join(',')
 }

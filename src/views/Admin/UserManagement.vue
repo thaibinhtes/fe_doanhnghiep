@@ -149,9 +149,11 @@
             <div v-if="isRootUser">
               <label class="mb-1.5 block text-sm font-medium">Đơn vị</label>
               <select v-model.number="form.donViId" class="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm dark:border-gray-700 dark:bg-gray-900">
-                <option :value="null">Không gán</option>
                 <option v-for="opt in orgUnitOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
               </select>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Mặc định: Sở Tài Chính (đơn vị gốc hệ thống).
+              </p>
             </div>
             <div v-else class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm dark:border-gray-700 dark:bg-gray-800/60">
               <p class="text-gray-500 dark:text-gray-400">Đơn vị trực thuộc</p>
@@ -187,7 +189,7 @@ import { useAuthStore } from '@/stores/auth'
 import { orgUnitService } from '@/services/orgUnitService'
 import { userService } from '@/services/userService'
 import type { OrgUnit } from '@/types/orgUnit'
-import { buildOrgUnitOptions } from '@/types/orgUnit'
+import { buildOrgUnitOptions, flattenOrgUnitTree } from '@/types/orgUnit'
 import type { AppUser, UserPayload } from '@/types/user'
 import type { RoleItem } from '@/types/auth'
 
@@ -260,15 +262,23 @@ const resetForm = () => {
   form.email = ''
   form.password = ''
   form.roleId = null
-  form.donViId = null
+  form.donViId = defaultDonViId.value
   form.isActive = true
 }
+
+const defaultDonViId = computed(() => {
+  const root = flattenOrgUnitTree(orgUnits.value).find((item) => item.ma === 'ROOT')
+  if (root) return root.id
+  return auth.user?.donViId ?? auth.user?.donVi?.id ?? null
+})
 
 const openCreate = () => {
   editingId.value = null
   resetForm()
   if (!isRootUser.value) {
     form.donViId = auth.user?.donViId ?? null
+  } else {
+    form.donViId = defaultDonViId.value
   }
   isModalOpen.value = true
 }

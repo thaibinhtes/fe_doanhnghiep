@@ -497,49 +497,136 @@
           </section>
 
           <section class="space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">4. Đồng bộ theo field</h3>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">4. Group-by dữ liệu thô → danh mục</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              Chọn riêng tỉnh, quận huyện hoặc phường xã cũ/mới. Hệ thống tự dùng đúng bảng danh mục và loại dữ liệu.
+              Gom nhóm text thô trên doanh nghiệp (xã/huyện/tỉnh cũ hoặc mới), xem trước, rồi lưu vào bảng danh mục hợp nhất
+              đúng loại <code class="text-xs">cu</code> / <code class="text-xs">moi</code> và liên kết lại DN.
             </p>
-            <div class="grid grid-cols-1 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Chọn field</label>
                 <select
                   v-model="fieldSyncField"
                   class="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+                  @change="rawGroupsPreview = null; rawGroupsCommitResult = null; selectedRawGroupNames = []"
                 >
                   <option v-for="option in fieldSyncOptions" :key="option.key" :value="option.key">
-                    {{ option.label }}
+                    {{ option.label }} → {{ option.catalog }} ({{ option.loai }})
                   </option>
                 </select>
+              </div>
+              <div class="flex items-end">
+                <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                  <input v-model="rawGroupsLinkCompanies" type="checkbox" class="rounded border-gray-300" />
+                  Liên kết ID trên doanh nghiệp sau khi lưu
+                </label>
               </div>
             </div>
             <div class="flex flex-wrap gap-2">
               <button
                 type="button"
                 class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-                :disabled="fieldSyncing"
-                @click="runFieldSync(true)"
+                :disabled="rawGroupsLoading || fieldSyncing"
+                @click="loadRawGroupsPreview"
               >
-                Dry-run field
+                {{ rawGroupsLoading ? 'Đang group...' : 'Xem trước (GROUP BY)' }}
               </button>
               <button
                 type="button"
                 class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+                :disabled="rawGroupsCommitting || !rawGroupsPreview || selectedRawGroupNames.length === 0"
+                @click="commitSelectedRawGroups"
+              >
+                {{ rawGroupsCommitting ? 'Đang lưu...' : `Lưu ${selectedRawGroupNames.length} giá trị đã chọn` }}
+              </button>
+              <button
+                type="button"
+                class="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50 disabled:opacity-50 dark:border-brand-700 dark:text-brand-300"
+                :disabled="rawGroupsCommitting || !rawGroupsPreview || (rawGroupsPreview?.newGroups ?? 0) === 0"
+                @click="commitNewRawGroups"
+              >
+                Lưu tất cả giá trị mới
+              </button>
+              <button
+                type="button"
+                class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200"
                 :disabled="fieldSyncing"
                 @click="runFieldSync(false)"
               >
-                Đồng bộ field
+                Chỉ đồng bộ liên kết (không tạo mới)
               </button>
+            </div>
+            <div v-if="rawGroupsPreview" class="space-y-3">
+              <div class="rounded-lg bg-gray-50 px-4 py-3 text-sm dark:bg-gray-800/60">
+                <p>
+                  {{ rawGroupsPreview.label }} · {{ rawGroupsPreview.catalog }} · loại
+                  <strong>{{ rawGroupsPreview.loai }}</strong>
+                </p>
+                <p class="mt-1">
+                  Nhóm: {{ rawGroupsPreview.totalGroups }}
+                  · Mới: {{ rawGroupsPreview.newGroups }}
+                  · Đã có: {{ rawGroupsPreview.existingGroups }}
+                  · DN liên quan: {{ rawGroupsPreview.totalCompanies }}
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2 text-sm">
+                <button type="button" class="text-brand-600 hover:underline" @click="selectAllNewRawGroups">
+                  Chọn tất cả mới
+                </button>
+                <button type="button" class="text-gray-600 hover:underline dark:text-gray-300" @click="clearRawGroupSelection">
+                  Bỏ chọn
+                </button>
+              </div>
+              <div class="max-h-96 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="min-w-full text-left text-sm">
+                  <thead class="sticky top-0 bg-gray-100 text-xs uppercase text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                    <tr>
+                      <th class="px-3 py-2 w-10"></th>
+                      <th class="px-3 py-2">Tên (group by)</th>
+                      <th class="px-3 py-2 w-24">Số DN</th>
+                      <th class="px-3 py-2 w-36">Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="group in rawGroupsPreview.groups"
+                      :key="group.ten"
+                      class="border-t border-gray-100 dark:border-gray-800"
+                      :class="group.existsInCatalog ? 'bg-emerald-50/40 dark:bg-emerald-900/10' : ''"
+                    >
+                      <td class="px-3 py-2">
+                        <input
+                          v-model="selectedRawGroupNames"
+                          type="checkbox"
+                          class="rounded border-gray-300"
+                          :value="group.ten"
+                          :disabled="group.existsInCatalog"
+                        />
+                      </td>
+                      <td class="px-3 py-2 font-medium text-gray-800 dark:text-white/90">{{ group.ten }}</td>
+                      <td class="px-3 py-2 tabular-nums">{{ group.count }}</td>
+                      <td class="px-3 py-2">
+                        <span v-if="group.existsInCatalog" class="text-emerald-700 dark:text-emerald-300">
+                          Đã có (#{{ group.existingId }})
+                        </span>
+                        <span v-else class="text-amber-700 dark:text-amber-300">Chưa có → sẽ tạo</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div v-if="rawGroupsCommitResult" class="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-200">
+              Đã tạo mới: {{ rawGroupsCommitResult.created }} · Bỏ qua (đã có): {{ rawGroupsCommitResult.skippedExisting }}
+              <template v-if="rawGroupsCommitResult.link">
+                · Liên kết DN: cập nhật {{ rawGroupsCommitResult.link.updated }}, tạo thêm {{ rawGroupsCommitResult.link.created }}
+              </template>
             </div>
             <div v-if="fieldSyncResult" class="rounded-lg bg-gray-50 px-4 py-3 text-sm dark:bg-gray-800/60">
               <p>
-                Quét: {{ fieldSyncResult.scanned }} · Khớp: {{ fieldSyncResult.matched }}
+                Đồng bộ liên kết — Quét: {{ fieldSyncResult.scanned }} · Khớp: {{ fieldSyncResult.matched }}
                 · Tạo mới: {{ fieldSyncResult.created }} · Cập nhật: {{ fieldSyncResult.updated }}
                 · Đã liên kết: {{ fieldSyncResult.alreadyLinked }} · Không có text: {{ fieldSyncResult.skipped }}
-              </p>
-              <p v-if="fieldSyncResult.unmapped.length" class="mt-1 text-amber-700 dark:text-amber-300">
-                Chưa map được: {{ fieldSyncResult.unmapped.length }} doanh nghiệp
               </p>
             </div>
           </section>
@@ -869,6 +956,8 @@ import type {
   SyncResult,
   CompanyFieldSyncOption,
   CompanyFieldSyncResult,
+  CompanyRawGroupsPreview,
+  CompanyRawGroupsCommitResult,
   CompanyAdministrativeField,
   CompanyAdministrativeCatalogSyncResult,
   HanhChinhDanhMucCap,
@@ -917,6 +1006,12 @@ const fieldSyncing = ref(false)
 const fieldSyncOptions = ref<CompanyFieldSyncOption[]>([])
 const fieldSyncField = ref<CompanyAdministrativeField>('phuongXaCu')
 const fieldSyncResult = ref<CompanyFieldSyncResult | null>(null)
+const rawGroupsLoading = ref(false)
+const rawGroupsCommitting = ref(false)
+const rawGroupsPreview = ref<CompanyRawGroupsPreview | null>(null)
+const rawGroupsCommitResult = ref<CompanyRawGroupsCommitResult | null>(null)
+const selectedRawGroupNames = ref<string[]>([])
+const rawGroupsLinkCompanies = ref(true)
 const actionError = ref('')
 
 const newLoading = ref(false)
@@ -1389,6 +1484,60 @@ const loadFieldSyncOptions = async () => {
   if (field) {
     fieldSyncField.value = field.key
   }
+}
+
+const loadRawGroupsPreview = async () => {
+  rawGroupsLoading.value = true
+  actionError.value = ''
+  try {
+    rawGroupsPreview.value = await hanhChinhService.previewCompanyRawGroups(fieldSyncField.value)
+    selectedRawGroupNames.value = rawGroupsPreview.value.groups
+      .filter((item) => !item.existsInCatalog)
+      .map((item) => item.ten)
+  } catch (err: unknown) {
+    actionError.value = err instanceof Error ? err.message : 'Group-by dữ liệu thô thất bại'
+    rawGroupsPreview.value = null
+  } finally {
+    rawGroupsLoading.value = false
+  }
+}
+
+const selectAllNewRawGroups = () => {
+  selectedRawGroupNames.value = (rawGroupsPreview.value?.groups ?? [])
+    .filter((item) => !item.existsInCatalog)
+    .map((item) => item.ten)
+}
+
+const clearRawGroupSelection = () => {
+  selectedRawGroupNames.value = []
+}
+
+const commitSelectedRawGroups = async () => {
+  if (selectedRawGroupNames.value.length === 0) return
+  rawGroupsCommitting.value = true
+  actionError.value = ''
+  try {
+    rawGroupsCommitResult.value = await hanhChinhService.commitCompanyRawGroups({
+      field: fieldSyncField.value,
+      names: selectedRawGroupNames.value,
+      linkCompanies: rawGroupsLinkCompanies.value,
+    })
+    await loadRawGroupsPreview()
+    await loadCatalog(1)
+  } catch (err: unknown) {
+    actionError.value = err instanceof Error ? err.message : 'Lưu danh mục từ dữ liệu thô thất bại'
+  } finally {
+    rawGroupsCommitting.value = false
+  }
+}
+
+const commitNewRawGroups = async () => {
+  const names = (rawGroupsPreview.value?.groups ?? [])
+    .filter((item) => !item.existsInCatalog)
+    .map((item) => item.ten)
+  if (names.length === 0) return
+  selectedRawGroupNames.value = names
+  await commitSelectedRawGroups()
 }
 
 const runFieldSync = async (dryRun: boolean) => {

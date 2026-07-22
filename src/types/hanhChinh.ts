@@ -206,6 +206,38 @@ export interface CompanyFieldSyncResult {
   unmapped: Array<Record<string, unknown>>
 }
 
+export interface CompanyRawGroupItem {
+  ten: string
+  count: number
+  existsInCatalog: boolean
+  existingId: number | null
+}
+
+export interface CompanyRawGroupsPreview {
+  field: CompanyAdministrativeField
+  label: string
+  catalog: string
+  loai: 'cu' | 'moi'
+  totalGroups: number
+  newGroups: number
+  existingGroups: number
+  totalCompanies: number
+  groups: CompanyRawGroupItem[]
+}
+
+export interface CompanyRawGroupsCommitResult {
+  field: string
+  label: string
+  catalog: string
+  loai: 'cu' | 'moi'
+  created: number
+  skippedExisting: number
+  createdTinh: number
+  createdQuanHuyen: number
+  createdPhuongXa: number
+  link: CompanyFieldSyncResult | null
+}
+
 export interface CompanyAdministrativeCatalogSyncResult {
   scanned: number
   alreadySynced: number

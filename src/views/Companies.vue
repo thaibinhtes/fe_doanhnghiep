@@ -178,6 +178,24 @@
               </a>
             </div>
           </div>
+          <div
+            v-if="hanhChinhAreaFilter.active"
+            class="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
+          >
+            <p>
+              Đang lọc theo chart
+              <strong>{{ hanhChinhAreaFilter.areaLabel || 'địa bàn' }}</strong>:
+              <strong>{{ hanhChinhAreaFilter.areaName }}</strong>
+              <span v-if="hanhChinhAreaFilter.areaId === 'unlinked'"> (chưa liên kết danh mục)</span>
+            </p>
+            <button
+              type="button"
+              class="rounded-md border border-amber-300 bg-white px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-100"
+              @click="clearHanhChinhAreaFilter"
+            >
+              Bỏ lọc địa bàn
+            </button>
+          </div>
         </div>
 
         <div
@@ -1149,6 +1167,19 @@
     <Modal v-if="isImportModalOpen" @close="closeImportModal">
       <template v-slot:body>
         <div
+          v-if="importMode === 'identity'"
+          class="no-scrollbar relative w-full max-w-[640px] max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6 lg:p-8"
+        >
+          <CompanyIdentityImportPanel
+            :show-header="true"
+            :show-close="true"
+            :show-actions="true"
+            @close="closeImportModal"
+            @imported="onIdentityImported"
+          />
+        </div>
+        <div
+          v-else
           class="no-scrollbar relative w-full max-w-[640px] max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6 lg:p-8"
         >
           <div class="flex items-center justify-between mb-6">
@@ -1230,7 +1261,6 @@
             </div>
 
             <button
-              v-if="importMode === 'companies'"
               type="button"
               @click="handleDownloadTemplate"
               :disabled="downloadingTemplate"
@@ -1241,21 +1271,8 @@
               </svg>
               {{ downloadingTemplate ? 'Đang tải mẫu...' : 'Tải file mẫu Excel (hệ thống)' }}
             </button>
-            <button
-              v-else
-              type="button"
-              @click="handleDownloadIdentityTemplate"
-              :disabled="downloadingTemplate"
-              class="inline-flex items-center gap-2 text-sm font-medium text-brand-600 hover:text-brand-700 disabled:opacity-50 dark:text-brand-400"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              {{ downloadingTemplate ? 'Đang tải mẫu...' : 'Tải file mẫu định danh' }}
-            </button>
 
             <div
-              v-if="importMode === 'companies'"
               class="rounded-xl border border-gray-200 p-4 dark:border-gray-700 space-y-3"
             >
               <div>
@@ -1347,13 +1364,13 @@
                 {{ showImportColumnConfig ? 'Ẩn' : 'Cấu hình' }} ánh xạ cột
               </button>
 
-              <div v-if="showImportColumnConfig" class="mt-3 max-h-64 overflow-y-auto space-y-2 pr-1">
+              <div v-if="showImportColumnConfig" class="mt-3 max-h-64 overflow-y-auto space-y-1 pr-1">
                 <div
                   v-for="(label, key) in importColumnLabels"
                   :key="key"
-                  class="grid grid-cols-[1fr_88px] gap-2 items-center"
+                  class="group grid grid-cols-[1fr_88px] items-center gap-2 rounded-lg px-2 py-1.5 -mx-1 transition focus-within:bg-brand-50 focus-within:ring-1 focus-within:ring-brand-300 dark:focus-within:bg-brand-500/15 dark:focus-within:ring-brand-700"
                 >
-                  <span class="text-xs text-gray-600 dark:text-gray-400">{{ label }}</span>
+                  <span class="text-xs text-gray-600 transition group-focus-within:font-semibold group-focus-within:text-brand-700 dark:text-gray-400 dark:group-focus-within:text-brand-300">{{ label }}</span>
                   <input
                     v-model="importColumnInputs[key]"
                     type="text"
@@ -1402,131 +1419,6 @@
             </div>
 
             <div
-              v-else
-              class="rounded-xl border border-gray-200 p-4 dark:border-gray-700 space-y-3"
-            >
-              <div class="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Ngày định danh
-                  </label>
-                  <input
-                    v-model="identityImportDate"
-                    type="date"
-                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Hàng bắt đầu đọc dữ liệu
-                  </label>
-                  <input
-                    v-model.number="importStartRow"
-                    type="number"
-                    min="1"
-                    max="1000"
-                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Trạng thái định danh áp dụng cho danh sách import
-                </label>
-                <select
-                  v-model="identityImportStatus"
-                  class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                >
-                  <option value="dinh_danh">Định danh</option>
-                  <option value="chua_dinh_danh">Chưa định danh</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Cấu hình đã lưu (định danh)
-                </label>
-                <div class="flex flex-col gap-2 sm:flex-row">
-                  <select
-                    v-model="selectedIdentityImportConfigId"
-                    class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                  >
-                    <option :value="''">— Chọn cấu hình —</option>
-                    <option v-for="config in identityImportConfigs" :key="config.id" :value="config.id">
-                      {{ config.name }}
-                    </option>
-                  </select>
-                  <button
-                    type="button"
-                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-                    :disabled="!selectedIdentityImportConfigId"
-                    @click="applySelectedIdentityImportConfig"
-                  >
-                    Áp dụng
-                  </button>
-                  <button
-                    type="button"
-                    class="inline-flex items-center justify-center rounded-lg border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
-                    :disabled="!selectedIdentityImportConfigId"
-                    @click="deleteSelectedIdentityImportConfig"
-                  >
-                    Xóa
-                  </button>
-                </div>
-              </div>
-
-              <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
-                <div class="flex-1">
-                  <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Tên cấu hình mới
-                  </label>
-                  <input
-                    v-model="identityImportConfigName"
-                    type="text"
-                    placeholder="VD: Định danh chuẩn A/B/C"
-                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                  />
-                </div>
-                <button
-                  type="button"
-                  class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
-                  :disabled="!identityImportConfigName.trim()"
-                  @click="saveIdentityImportConfig"
-                >
-                  Lưu cấu hình
-                </button>
-              </div>
-
-              <button
-                type="button"
-                class="mt-2 text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
-                @click="showImportColumnConfig = !showImportColumnConfig"
-              >
-                {{ showImportColumnConfig ? 'Ẩn' : 'Cấu hình' }} ánh xạ cột
-              </button>
-
-              <div v-if="showImportColumnConfig" class="mt-2 space-y-2">
-                <div
-                  v-for="(label, key) in importColumnLabels"
-                  :key="key"
-                  class="grid grid-cols-[1fr_120px] gap-2 items-center"
-                >
-                  <span class="text-xs text-gray-600 dark:text-gray-400">{{ label }}</span>
-                  <input
-                    v-model="importColumnInputs[key]"
-                    type="text"
-                    placeholder="A hoặc A-B"
-                    class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-gray-800 focus:border-brand-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                  />
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 pt-1">
-                  Cột yêu cầu: mã số doanh nghiệp. Trạng thái định danh lấy từ option đã chọn.
-                </p>
-              </div>
-            </div>
-
-            <div
               class="rounded-xl border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-700"
             >
               <input
@@ -1552,7 +1444,7 @@
             </div>
 
             <ImportLoadingSkeleton
-              v-if="importMode === 'companies' && importing && !importResult"
+              v-if="importing && !importResult"
               :subtitle="importQueuedMessage"
             />
 
@@ -1562,12 +1454,7 @@
               :class="importResult.failed > 0 ? 'border-amber-200 bg-amber-50 dark:bg-amber-900/20' : 'border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20'"
             >
               <p class="font-medium text-gray-800 dark:text-gray-200">
-                <template v-if="importMode === 'companies'">
-                  {{ importResult.imported }} mới · {{ importResultDuplicates }} trùng · {{ importResult.failed }} lỗi
-                </template>
-                <template v-else>
-                  {{ importResult.updated }} cập nhật định danh · {{ importResult.failed }} lỗi
-                </template>
+                {{ importResult.imported }} mới · {{ importResultDuplicates }} trùng · {{ importResult.failed }} lỗi
               </p>
               <ul v-if="importResult.errors.length" class="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
                 <li v-for="(err, idx) in importResult.errors.slice(0, 10)" :key="idx">
@@ -1610,7 +1497,7 @@
     <!-- Field sync modal -->
     <Modal v-if="isFieldSyncModalOpen" @close="closeFieldSyncModal">
       <template v-slot:body>
-        <div class="no-scrollbar relative w-full max-w-lg max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6">
+        <div class="no-scrollbar relative w-full max-w-2xl max-h-[min(90vh,100dvh)] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6">
           <div class="mb-5 flex items-center justify-between">
             <div>
               <h5 class="text-lg font-semibold text-gray-900 dark:text-white">Đồng bộ field doanh nghiệp</h5>
@@ -1639,21 +1526,84 @@
               <select
                 v-model="fieldSyncField"
                 class="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+                @change="onFieldSyncFieldChange"
               >
                 <option v-for="option in fieldSyncOptions" :key="option.key" :value="option.key">
-                  {{ option.label }}
+                  {{ option.label }} → {{ option.catalog }} ({{ option.loai }})
                 </option>
               </select>
             </div>
             <p class="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:bg-gray-800/60 dark:text-gray-300">
-              Đồng bộ <strong>{{ activeFieldSyncLabel }}</strong> vào
+              Group-by text thô <strong>{{ activeFieldSyncLabel }}</strong> → preview → lưu vào
               <strong>{{ activeFieldSyncCatalog }}</strong>
-              (loại {{ activeFieldSyncLoai === 'cu' ? 'cũ' : 'mới' }}), tạo danh mục nếu chưa có và lưu ID liên kết.
-              Record đã có ID sẽ được bỏ qua.
+              (loại {{ activeFieldSyncLoai === 'cu' ? 'cũ' : 'mới' }}) và liên kết ID trên DN.
+              Record đã có ID sẽ bỏ qua khi liên kết.
             </p>
 
             <div v-if="fieldSyncError" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
               {{ fieldSyncError }}
+            </div>
+
+            <div v-if="rawGroupsPreview" class="space-y-3">
+              <div class="rounded-lg bg-gray-50 px-3 py-2 text-sm dark:bg-gray-800/60">
+                Nhóm: {{ rawGroupsPreview.totalGroups }}
+                · Mới: {{ rawGroupsPreview.newGroups }}
+                · Đã có: {{ rawGroupsPreview.existingGroups }}
+                · DN: {{ rawGroupsPreview.totalCompanies }}
+              </div>
+              <div class="flex flex-wrap gap-3 text-xs">
+                <button type="button" class="text-brand-600 hover:underline" @click="selectAllNewRawGroups">
+                  Chọn tất cả mới
+                </button>
+                <button type="button" class="text-gray-500 hover:underline" @click="selectedRawGroupNames = []">
+                  Bỏ chọn
+                </button>
+              </div>
+              <div class="max-h-72 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="min-w-full text-left text-sm">
+                  <thead class="sticky top-0 bg-gray-100 text-xs uppercase text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                    <tr>
+                      <th class="w-10 px-3 py-2"></th>
+                      <th class="px-3 py-2">Tên</th>
+                      <th class="w-20 px-3 py-2">Số DN</th>
+                      <th class="w-36 px-3 py-2">Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="group in rawGroupsPreview.groups"
+                      :key="group.ten"
+                      class="border-t border-gray-100 dark:border-gray-800"
+                      :class="group.existsInCatalog ? 'bg-emerald-50/40 dark:bg-emerald-900/10' : ''"
+                    >
+                      <td class="px-3 py-2">
+                        <input
+                          v-model="selectedRawGroupNames"
+                          type="checkbox"
+                          class="rounded border-gray-300"
+                          :value="group.ten"
+                          :disabled="group.existsInCatalog"
+                        />
+                      </td>
+                      <td class="px-3 py-2 font-medium text-gray-800 dark:text-white/90">{{ group.ten }}</td>
+                      <td class="px-3 py-2 tabular-nums">{{ group.count }}</td>
+                      <td class="px-3 py-2 text-xs">
+                        <span v-if="group.existsInCatalog" class="text-emerald-700 dark:text-emerald-300">
+                          Đã có
+                        </span>
+                        <span v-else class="text-amber-700 dark:text-amber-300">Chưa có</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div v-if="rawGroupsCommitResult" class="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-200">
+              Đã tạo: {{ rawGroupsCommitResult.created }} · Bỏ qua: {{ rawGroupsCommitResult.skippedExisting }}
+              <template v-if="rawGroupsCommitResult.link">
+                · Liên kết DN: {{ rawGroupsCommitResult.link.updated }}
+              </template>
             </div>
 
             <div v-if="fieldSyncResult" class="rounded-lg bg-gray-50 px-4 py-3 text-sm dark:bg-gray-800/60">
@@ -1662,16 +1612,13 @@
                 · Tạo mới: {{ fieldSyncResult.created }} · Cập nhật: {{ fieldSyncResult.updated }}
                 · Đã liên kết: {{ fieldSyncResult.alreadyLinked }} · Không có text: {{ fieldSyncResult.skipped }}
               </p>
-              <p v-if="fieldSyncResult.unmapped.length" class="mt-1 text-amber-700 dark:text-amber-300">
-                Chưa map được: {{ fieldSyncResult.unmapped.length }} doanh nghiệp
-              </p>
             </div>
 
             <div class="flex flex-wrap justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
               <button
                 type="button"
                 class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-                :disabled="fieldSyncing"
+                :disabled="fieldSyncing || rawGroupsLoading || rawGroupsCommitting"
                 @click="closeFieldSyncModal"
               >
                 Đóng
@@ -1679,18 +1626,18 @@
               <button
                 type="button"
                 class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-                :disabled="fieldSyncing"
-                @click="runFieldSync(true)"
+                :disabled="fieldSyncing || rawGroupsLoading || rawGroupsCommitting"
+                @click="loadRawGroupsPreview"
               >
-                Dry-run
+                {{ rawGroupsLoading ? 'Đang group...' : 'Xem trước' }}
               </button>
               <button
                 type="button"
                 class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
-                :disabled="fieldSyncing"
-                @click="runFieldSync(false)"
+                :disabled="fieldSyncing || rawGroupsLoading || rawGroupsCommitting || selectedRawGroupNames.length === 0"
+                @click="commitSelectedRawGroups"
               >
-                {{ fieldSyncing ? 'Đang đồng bộ...' : 'Đồng bộ' }}
+                {{ rawGroupsCommitting ? 'Đang đồng bộ...' : `Đồng bộ (${selectedRawGroupNames.length})` }}
               </button>
             </div>
           </div>
@@ -1702,7 +1649,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
@@ -1710,11 +1657,18 @@ import Modal from '@/components/profile/Modal.vue'
 import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
 import ImportLoadingSkeleton from '@/components/companies/ImportLoadingSkeleton.vue'
 import ImportHistoryModal from '@/components/companies/ImportHistoryModal.vue'
+import CompanyIdentityImportPanel from '@/components/companies/CompanyIdentityImportPanel.vue'
 import IndustryCategorySelect from '@/components/forms/FormElements/IndustryCategorySelect.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 import { DEFAULT_PROVINCE_CODE, HIDE_PROVINCE_FILTER } from '@/config/hanhChinh'
 import type { Company, CapitalMemberInput, CompanyImportResult, CompanyIdentityBulkItem, CompanyImportColumnMap, CompanyImportValueExtensionField, CompanyImportFormat, CompanyImportExampleConfig } from '@/types/company'
-import type { CompanyAdministrativeField, CompanyFieldSyncOption, CompanyFieldSyncResult } from '@/types/hanhChinh'
+import type {
+  CompanyAdministrativeField,
+  CompanyFieldSyncOption,
+  CompanyFieldSyncResult,
+  CompanyRawGroupsPreview,
+  CompanyRawGroupsCommitResult,
+} from '@/types/hanhChinh'
 import { COMPANY_IMPORT_COLUMN_LABELS } from '@/types/company'
 import { formatVND, formatNumber } from '@/utils/formatters'
 import { columnsToDisplay, parseColumnInput } from '@/utils/excelColumns'
@@ -1733,8 +1687,17 @@ import { useImportNotifications } from '@/composables/useImportNotifications'
 const store = useCompaniesStore()
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const { statuses, identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()
 const { businessTypes, loadBusinessTypes } = useCompanyBusinessTypes()
+
+const hanhChinhAreaFilter = reactive({
+  active: false,
+  areaKey: '',
+  areaId: '',
+  areaName: '',
+  areaLabel: '',
+})
 
 const filter = reactive({
   search: '',
@@ -1761,6 +1724,11 @@ const fieldSyncField = ref<CompanyAdministrativeField>('phuongXaCu')
 const fieldSyncing = ref(false)
 const fieldSyncResult = ref<CompanyFieldSyncResult | null>(null)
 const fieldSyncError = ref('')
+const rawGroupsLoading = ref(false)
+const rawGroupsCommitting = ref(false)
+const rawGroupsPreview = ref<CompanyRawGroupsPreview | null>(null)
+const rawGroupsCommitResult = ref<CompanyRawGroupsCommitResult | null>(null)
+const selectedRawGroupNames = ref<string[]>([])
 const selectedCompanyId = ref<number | null>(null)
 const statusCompanyId = ref<number | null>(null)
 const exporting = ref(false)
@@ -1775,7 +1743,6 @@ const importFileInput = ref<HTMLInputElement | null>(null)
 const importResult = ref<CompanyImportResult | null>(null)
 const importError = ref<string | null>(null)
 const importMode = ref<'companies' | 'identity'>('companies')
-const identityImportDate = ref(new Date().toISOString().slice(0, 10))
 const identityImportStatus = ref<'dinh_danh' | 'chua_dinh_danh'>('dinh_danh')
 const importStartRow = ref(13)
 const importColumnInputs = reactive<Record<string, string>>({})
@@ -1888,7 +1855,7 @@ const importModalTitle = computed(() =>
 const importModalDescription = computed(() =>
   importMode.value === 'companies'
     ? 'Upload file Excel từ đơn vị. Import chạy nền — bạn sẽ nhận thông báo khi hoàn tất.'
-    : 'File gồm cột mã số doanh nghiệp. Trạng thái lấy theo option đã chọn.',
+    : 'Chỉ cần cột mã số DN/HTX và thời gian định danh. Ô thời gian trống → lấy thời gian hiện tại.',
 )
 
 const activeFieldSyncLabel = computed(() => {
@@ -1945,6 +1912,9 @@ async function loadFieldSyncOptions() {
 async function openFieldSyncModal() {
   fieldSyncResult.value = null
   fieldSyncError.value = ''
+  rawGroupsPreview.value = null
+  rawGroupsCommitResult.value = null
+  selectedRawGroupNames.value = []
   isFieldSyncModalOpen.value = true
   if (fieldSyncOptions.value.length === 0) {
     await loadFieldSyncOptions()
@@ -1953,6 +1923,56 @@ async function openFieldSyncModal() {
 
 function closeFieldSyncModal() {
   isFieldSyncModalOpen.value = false
+}
+
+function onFieldSyncFieldChange() {
+  rawGroupsPreview.value = null
+  rawGroupsCommitResult.value = null
+  fieldSyncResult.value = null
+  selectedRawGroupNames.value = []
+}
+
+function selectAllNewRawGroups() {
+  selectedRawGroupNames.value = (rawGroupsPreview.value?.groups ?? [])
+    .filter((item) => !item.existsInCatalog)
+    .map((item) => item.ten)
+}
+
+async function loadRawGroupsPreview() {
+  rawGroupsLoading.value = true
+  fieldSyncError.value = ''
+  rawGroupsCommitResult.value = null
+  fieldSyncResult.value = null
+  try {
+    rawGroupsPreview.value = await hanhChinhService.previewCompanyRawGroups(fieldSyncField.value)
+    selectedRawGroupNames.value = rawGroupsPreview.value.groups
+      .filter((item) => !item.existsInCatalog)
+      .map((item) => item.ten)
+  } catch (err: unknown) {
+    fieldSyncError.value = err instanceof Error ? err.message : 'Xem trước group-by thất bại.'
+    rawGroupsPreview.value = null
+  } finally {
+    rawGroupsLoading.value = false
+  }
+}
+
+async function commitSelectedRawGroups() {
+  if (selectedRawGroupNames.value.length === 0) return
+  rawGroupsCommitting.value = true
+  fieldSyncError.value = ''
+  try {
+    rawGroupsCommitResult.value = await hanhChinhService.commitCompanyRawGroups({
+      field: fieldSyncField.value,
+      names: selectedRawGroupNames.value,
+      linkCompanies: true,
+    })
+    await loadRawGroupsPreview()
+    await store.fetchCompanies(currentCompanyFilters())
+  } catch (err: unknown) {
+    fieldSyncError.value = err instanceof Error ? err.message : 'Đồng bộ field thất bại.'
+  } finally {
+    rawGroupsCommitting.value = false
+  }
 }
 
 async function runFieldSync(dryRun: boolean) {
@@ -2051,7 +2071,7 @@ const selectedImportConfigDescription = computed(() => {
   return config?.description ?? ''
 })
 
-const IDENTITY_IMPORT_CONFIGS_STORAGE_KEY = 'companies_identity_import_configs_v1'
+const IDENTITY_IMPORT_CONFIGS_STORAGE_KEY = 'companies_identity_import_configs_v2'
 
 function applyImportMapping(options: {
   startRow: number
@@ -2198,7 +2218,12 @@ function applyImportColumnMap(columnMap: CompanyImportColumnMap, labels?: Record
   Object.keys(importColumnInputs).forEach((key) => delete importColumnInputs[key])
   Object.keys(importColumnLabels).forEach((key) => delete importColumnLabels[key])
 
-  const allLabels = labels ?? {}
+  const allLabels: Record<string, string> = { ...(labels ?? {}) }
+  for (const key of Object.keys(columnMap)) {
+    if (!(key in allLabels)) {
+      allLabels[key] = COMPANY_IMPORT_COLUMN_LABELS[key] ?? key
+    }
+  }
 
   for (const [key, label] of Object.entries(allLabels)) {
     importColumnLabels[key] = label
@@ -2264,15 +2289,28 @@ async function loadIdentityImportColumnMapDefaults() {
   try {
     const config = await companyService.getIdentityImportColumnMap()
     importStartRow.value = config.startRow
-    applyImportColumnMap(config.columnMap, config.columnLabels)
+    applyImportColumnMap(
+      {
+        [config.lookupField || 'maSoDoanhNghiep']: config.columnMap?.[config.lookupField || 'maSoDoanhNghiep'] ?? ['A'],
+        ngayDinhDanh: config.columnMap?.ngayDinhDanh ?? ['B'],
+      },
+      {
+        maSoDoanhNghiep: 'Mã số doanh nghiệp',
+        tenDoanhNghiep: 'Tên doanh nghiệp',
+        ngayDinhDanh: 'Thời gian định danh',
+        ...(config.columnLabels ?? {}),
+      },
+    )
   } catch {
     importStartRow.value = 2
     applyImportColumnMap(
       {
         maSoDoanhNghiep: ['A'],
+        ngayDinhDanh: ['B'],
       },
       {
         maSoDoanhNghiep: 'Mã số doanh nghiệp',
+        ngayDinhDanh: 'Thời gian định danh',
       },
     )
   }
@@ -2283,9 +2321,10 @@ function applySelectedIdentityImportConfig() {
   const config = identityImportConfigs.value.find((item) => item.id === selectedIdentityImportConfigId.value)
   if (!config) return
   importStartRow.value = config.startRow
-  identityImportDate.value = config.identityDate || new Date().toISOString().slice(0, 10)
   applyImportColumnMap(config.columnMap, {
-    maSoDoanhNghiep: 'Mã số doanh nghiệp',
+    maSoDoanhNghiep: 'Mã số DN / HTX',
+    ngayDinhDanh: 'Thời gian định danh',
+    ...(config.columnLabels ?? {}),
   })
 }
 
@@ -2297,7 +2336,6 @@ function saveIdentityImportConfig() {
     name,
     startRow: importStartRow.value,
     columnMap: buildImportColumnMap(),
-    identityDate: identityImportDate.value,
   }
   identityImportConfigs.value.unshift(config)
   persistIdentityImportConfigs()
@@ -2361,7 +2399,52 @@ const resetFilters = () => {
     filter.quanHuyen = ''
     filterProvinceCode.value = DEFAULT_PROVINCE_CODE
   }
+  clearHanhChinhAreaFilter()
   store.setPage(1)
+}
+
+const applyHanhChinhAreaFilterFromQuery = () => {
+  const areaKey = typeof route.query.hanhChinhAreaKey === 'string' ? route.query.hanhChinhAreaKey : ''
+  const areaId = typeof route.query.hanhChinhAreaId === 'string' ? route.query.hanhChinhAreaId : ''
+  const areaName = typeof route.query.hanhChinhAreaName === 'string' ? route.query.hanhChinhAreaName : ''
+  const areaLabel = typeof route.query.hanhChinhAreaLabel === 'string' ? route.query.hanhChinhAreaLabel : ''
+
+  if (!areaKey || !areaId) {
+    hanhChinhAreaFilter.active = false
+    hanhChinhAreaFilter.areaKey = ''
+    hanhChinhAreaFilter.areaId = ''
+    hanhChinhAreaFilter.areaName = ''
+    hanhChinhAreaFilter.areaLabel = ''
+    return
+  }
+
+  hanhChinhAreaFilter.active = true
+  hanhChinhAreaFilter.areaKey = areaKey
+  hanhChinhAreaFilter.areaId = areaId
+  hanhChinhAreaFilter.areaName = areaName || (areaId === 'unlinked' ? 'Chưa liên kết hành chính' : areaId)
+  hanhChinhAreaFilter.areaLabel = areaLabel
+}
+
+const clearHanhChinhAreaFilter = () => {
+  hanhChinhAreaFilter.active = false
+  hanhChinhAreaFilter.areaKey = ''
+  hanhChinhAreaFilter.areaId = ''
+  hanhChinhAreaFilter.areaName = ''
+  hanhChinhAreaFilter.areaLabel = ''
+
+  if (
+    route.query.hanhChinhAreaKey ||
+    route.query.hanhChinhAreaId ||
+    route.query.hanhChinhAreaName ||
+    route.query.hanhChinhAreaLabel
+  ) {
+    const nextQuery = { ...route.query }
+    delete nextQuery.hanhChinhAreaKey
+    delete nextQuery.hanhChinhAreaId
+    delete nextQuery.hanhChinhAreaName
+    delete nextQuery.hanhChinhAreaLabel
+    void router.replace({ query: nextQuery })
+  }
 }
 
 const handleCompanyAdministrativeFilterChange = (payload: {
@@ -2433,6 +2516,12 @@ const currentCompanyFilters = () => ({
   loaiHinhId: filter.loaiHinhId || undefined,
   quanHuyen: filter.quanHuyen || undefined,
   phuongXa: filter.phuongXa,
+  ...(hanhChinhAreaFilter.active && hanhChinhAreaFilter.areaKey && hanhChinhAreaFilter.areaId
+    ? {
+        hanhChinhAreaKey: hanhChinhAreaFilter.areaKey,
+        hanhChinhAreaId: hanhChinhAreaFilter.areaId,
+      }
+    : {}),
   page: store.page,
   per_page: store.perPage,
 })
@@ -2479,15 +2568,13 @@ const openImportModal = async (mode: 'companies' | 'identity') => {
   if (mode === 'companies') {
     await loadImportColumnMapDefaults()
     await Promise.all([loadImportExampleConfigs(), loadImportFormats(), loadImportScopeOrgUnits()])
-  } else {
-    identityImportDate.value = new Date().toISOString().slice(0, 10)
-    identityImportStatus.value = 'dinh_danh'
-    identityImportConfigName.value = ''
-    selectedIdentityImportConfigId.value = ''
-    loadIdentityImportConfigs()
-    await loadIdentityImportColumnMapDefaults()
   }
   isImportModalOpen.value = true
+}
+
+const onIdentityImported = async (result: CompanyImportResult) => {
+  importResult.value = result
+  await store.fetchCompanies()
 }
 
 const closeImportModal = () => {
@@ -2538,31 +2625,16 @@ const handleImport = async () => {
   importQueuedMessage.value = null
 
   try {
-    if (importMode.value === 'companies') {
-      const queued = await companyService.importExcel(selectedImportFile.value, {
-        startRow: importStartRow.value,
-        columnMap: buildImportColumnMap(),
-        valueExtensions: buildImportValueExtensions(),
-      })
-
-      activeImportJobId.value = queued.importJobId
-      trackImportJob(queued.importJobId)
-      importQueuedMessage.value = `File "${queued.originalFilename ?? selectedImportFile.value.name}" đã được đưa vào hàng đợi.`
-      startImportPolling(queued.importJobId)
-      return
-    }
-
-    const queued = await companyService.importIdentityExcel(selectedImportFile.value, {
+    const queued = await companyService.importExcel(selectedImportFile.value, {
       startRow: importStartRow.value,
       columnMap: buildImportColumnMap(),
-      identityDate: identityImportDate.value,
-      daCapNhatDinhDanh: identityImportStatus.value === 'dinh_danh',
+      valueExtensions: buildImportValueExtensions(),
     })
+
     activeImportJobId.value = queued.importJobId
     trackImportJob(queued.importJobId)
     importQueuedMessage.value = `File "${queued.originalFilename ?? selectedImportFile.value.name}" đã được đưa vào hàng đợi.`
     startImportPolling(queued.importJobId)
-    return
   } catch (err: unknown) {
     importError.value = formatImportUploadError(err, 'Nhập Excel thất bại.')
     importing.value = false
@@ -2570,10 +2642,6 @@ const handleImport = async () => {
     importQueuedMessage.value = null
     clearImportJob()
     stopImportPolling()
-  } finally {
-    if (importMode.value === 'identity' && !activeImportJobId.value) {
-      importing.value = false
-    }
   }
 }
 
@@ -2826,12 +2894,30 @@ const dinhDanhClass = (isUpdated?: boolean) =>
 
 // Fetch when filters or page changes
 watch(
-  () => [filter.search, filter.dnTrangThaiId, filter.loaiHinhId, filter.quanHuyen, filter.phuongXa, store.page, store.perPage],
+  () => [
+    filter.search,
+    filter.dnTrangThaiId,
+    filter.loaiHinhId,
+    filter.quanHuyen,
+    filter.phuongXa,
+    hanhChinhAreaFilter.areaKey,
+    hanhChinhAreaFilter.areaId,
+    store.page,
+    store.perPage,
+  ],
   () => {
     selectedCompanyIds.value = []
     store.fetchCompanies(currentCompanyFilters())
   },
   { debounce: 300 } as any,
+)
+
+watch(
+  () => route.query,
+  () => {
+    applyHanhChinhAreaFilterFromQuery()
+    store.setPage(1)
+  },
 )
 
 onMounted(async () => {
@@ -2842,6 +2928,7 @@ onMounted(async () => {
     loadCompanyImportDocs(),
   ])
 
+  applyHanhChinhAreaFilterFromQuery()
   store.fetchCompanies(currentCompanyFilters())
 
   onImportCompleted((payload) => {

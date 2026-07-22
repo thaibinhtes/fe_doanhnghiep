@@ -25,7 +25,7 @@
     <div class="rounded-xl border border-brand-200 bg-brand-50/60 p-4 dark:border-brand-800/60 dark:bg-brand-950/20">
       <p class="text-sm font-semibold text-gray-900 dark:text-white">Đơn vị import hợp tác xã</p>
       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-        Hợp tác xã mới sẽ gán vào đơn vị của bạn. Hệ thống kiểm tra trùng trong phạm vi các đơn vị bên dưới.
+        Hợp tác xã mới sẽ gán vào đơn vị của bạn (mặc định Sở Tài Chính). Hệ thống kiểm tra trùng trong phạm vi các đơn vị bên dưới.
       </p>
 
       <div v-if="loadingImportScope" class="mt-3 text-sm text-gray-500 dark:text-gray-400">
@@ -180,13 +180,13 @@
         {{ showImportColumnConfig ? 'Ẩn' : 'Cấu hình' }} ánh xạ cột
       </button>
 
-      <div v-if="showImportColumnConfig" class="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
+      <div v-if="showImportColumnConfig" class="mt-3 max-h-64 space-y-1 overflow-y-auto pr-1">
         <div
           v-for="(label, key) in importColumnLabels"
           :key="key"
-          class="grid grid-cols-[1fr_88px] items-center gap-2"
+          class="group grid grid-cols-[1fr_88px] items-center gap-2 rounded-lg px-2 py-1.5 -mx-1 transition focus-within:bg-brand-50 focus-within:ring-1 focus-within:ring-brand-300 dark:focus-within:bg-brand-500/15 dark:focus-within:ring-brand-700"
         >
-          <span class="text-xs text-gray-600 dark:text-gray-400">{{ label }}</span>
+          <span class="text-xs text-gray-600 transition group-focus-within:font-semibold group-focus-within:text-brand-700 dark:text-gray-400 dark:group-focus-within:text-brand-300">{{ label }}</span>
           <input
             v-model="importColumnInputs[key]"
             type="text"
@@ -416,7 +416,12 @@ async function loadImportScopeOrgUnits() {
 
 function applyImportColumnMap(columnMap: CooperativeImportColumnMap, labels?: Record<string, string>) {
   Object.keys(importColumnInputs).forEach((key) => delete importColumnInputs[key])
-  const allLabels = labels ?? COOPERATIVE_IMPORT_COLUMN_LABELS
+  const allLabels: Record<string, string> = { ...(labels ?? COOPERATIVE_IMPORT_COLUMN_LABELS) }
+  for (const key of Object.keys(columnMap)) {
+    if (!(key in allLabels)) {
+      allLabels[key] = COOPERATIVE_IMPORT_COLUMN_LABELS[key] ?? key
+    }
+  }
   for (const [key, label] of Object.entries(allLabels)) {
     importColumnLabels[key] = label
     importColumnInputs[key] = key in columnMap ? columnsToDisplay(columnMap[key]) : ''
