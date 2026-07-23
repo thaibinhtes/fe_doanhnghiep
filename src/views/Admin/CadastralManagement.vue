@@ -214,35 +214,57 @@
       </ComponentCard>
 
       <!-- Danh mục hành chính hợp nhất -->
-      <ComponentCard v-else-if="activeTab === 'catalog'" title="Danh mục hành chính hợp nhất (tỉnh / quận huyện / phường xã)">
+      <ComponentCard v-else-if="activeTab === 'catalog'" title="Danh mục hành chính (tỉnh / quận huyện / phường xã)">
         <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-          Mỗi record có loại <strong>cũ</strong> hoặc <strong>mới</strong>. Dữ liệu được tạo từ danh mục hiện có và từ
-          tính năng đồng bộ text doanh nghiệp (tab Import &amp; đồng bộ, mục 3).
+          Quản lý danh mục hợp nhất theo bảng
+          <code>hanh_chinh_tinh</code> /
+          <code>hanh_chinh_quan_huyen</code> /
+          <code>hanh_chinh_phuong_xa</code>
+          với loại <strong>cũ</strong> hoặc <strong>mới</strong>.
         </p>
+
         <div class="mb-4 flex flex-wrap items-center gap-3">
           <select
             v-model="catalogCap"
             class="h-9 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
-            @change="loadCatalog(1)"
+            @change="onCatalogCapChange"
           >
-            <option value="tinh">Bảng tỉnh</option>
-            <option value="quan-huyen">Bảng quận huyện</option>
-            <option value="phuong-xa">Bảng phường xã</option>
+            <option value="tinh">Tỉnh / Thành phố</option>
+            <option value="quan-huyen">Quận / Huyện</option>
+            <option value="phuong-xa">Phường / Xã</option>
           </select>
           <select
             v-model="catalogLoai"
             class="h-9 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
-            @change="loadCatalog(1)"
+            @change="onCatalogFilterChange"
           >
             <option value="">Tất cả loại</option>
             <option value="cu">Cũ</option>
             <option value="moi">Mới</option>
           </select>
+          <select
+            v-if="catalogCap === 'quan-huyen'"
+            v-model="catalogFilterTinhId"
+            class="h-9 max-w-[220px] rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+            @change="loadCatalog(1)"
+          >
+            <option :value="0">Tất cả tỉnh</option>
+            <option v-for="opt in catalogFilterParents" :key="opt.id" :value="opt.id">{{ opt.ten }} ({{ opt.loai }})</option>
+          </select>
+          <select
+            v-if="catalogCap === 'phuong-xa'"
+            v-model="catalogFilterQuanHuyenId"
+            class="h-9 max-w-[240px] rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+            @change="loadCatalog(1)"
+          >
+            <option :value="0">Tất cả quận/huyện</option>
+            <option v-for="opt in catalogFilterParents" :key="opt.id" :value="opt.id">{{ opt.ten }} ({{ opt.loai }})</option>
+          </select>
           <input
             v-model="catalogSearch"
             type="search"
             placeholder="Tìm theo tên..."
-            class="h-9 min-w-[220px] flex-1 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+            class="h-9 min-w-[200px] flex-1 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
             @keyup.enter="loadCatalog(1)"
           />
           <button
@@ -252,6 +274,108 @@
           >
             Tìm
           </button>
+          <button
+            v-if="canManage"
+            type="button"
+            class="h-9 rounded-lg border border-brand-300 px-4 text-sm font-medium text-brand-700 hover:bg-brand-50 dark:border-brand-700 dark:text-brand-300 dark:hover:bg-brand-900/30"
+            @click="openCatalogCreate"
+          >
+            Thêm mới
+          </button>
+        </div>
+
+        <div
+          v-if="canManage && catalogFormOpen"
+          class="mb-4 rounded-xl border border-gray-200 bg-gray-50/70 p-4 dark:border-gray-700 dark:bg-gray-800/40"
+        >
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">
+              {{ catalogEditingId ? 'Sửa đơn vị hành chính' : 'Thêm đơn vị hành chính' }}
+            </h3>
+            <button type="button" class="text-sm text-gray-500 hover:text-gray-800 dark:hover:text-white" @click="closeCatalogForm">
+              Đóng
+            </button>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label class="block space-y-1">
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Cấp</span>
+              <select
+                v-model="catalogForm.cap"
+                class="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+                :disabled="!!catalogEditingId"
+                @change="onCatalogFormCapOrLoaiChange"
+              >
+                <option value="tinh">Tỉnh / Thành phố</option>
+                <option value="quan-huyen">Quận / Huyện</option>
+                <option value="phuong-xa">Phường / Xã</option>
+              </select>
+            </label>
+            <label class="block space-y-1">
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Loại</span>
+              <select
+                v-model="catalogForm.loai"
+                class="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+                @change="onCatalogFormCapOrLoaiChange"
+              >
+                <option value="cu">Cũ</option>
+                <option value="moi">Mới</option>
+              </select>
+            </label>
+            <label class="block space-y-1 sm:col-span-2">
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Tên</span>
+              <input
+                v-model="catalogForm.ten"
+                type="text"
+                class="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+                placeholder="Nhập tên đơn vị"
+              />
+            </label>
+            <label v-if="catalogForm.cap !== 'tinh'" class="block space-y-1 sm:col-span-2">
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                {{ catalogForm.cap === 'quan-huyen' ? 'Thuộc tỉnh' : 'Thuộc quận/huyện' }}
+              </span>
+              <select
+                v-model="catalogForm.parentId"
+                class="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+              >
+                <option :value="0">— Chọn cấp cha —</option>
+                <option v-for="opt in catalogFormParents" :key="opt.id" :value="opt.id">{{ opt.ten }}</option>
+              </select>
+            </label>
+            <label class="block space-y-1">
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Mã (tuỳ chọn)</span>
+              <input
+                v-model="catalogForm.ma"
+                type="text"
+                class="h-9 w-full rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-600 dark:bg-gray-900"
+                placeholder="Mã"
+              />
+            </label>
+          </div>
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              class="h-9 rounded-lg bg-brand-500 px-4 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+              :disabled="catalogSaving"
+              @click="saveCatalogForm"
+            >
+              {{ catalogSaving ? 'Đang lưu...' : (catalogEditingId ? 'Cập nhật' : 'Thêm mới') }}
+            </button>
+            <button
+              type="button"
+              class="h-9 rounded-lg border border-gray-300 px-4 text-sm dark:border-gray-600"
+              :disabled="catalogSaving"
+              @click="closeCatalogForm"
+            >
+              Huỷ
+            </button>
+            <p v-if="catalogFormError" class="text-sm text-red-600 dark:text-red-400">{{ catalogFormError }}</p>
+            <p v-else-if="catalogFormSuccess" class="text-sm text-green-600 dark:text-green-400">{{ catalogFormSuccess }}</p>
+          </div>
+        </div>
+
+        <div v-if="!canManage" class="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
+          Bạn chỉ có quyền xem. Cần <strong>feature.cadastral.manage</strong> để thêm / sửa / xoá.
         </div>
 
         <div v-if="catalogLoading" class="flex items-center justify-center py-10">
@@ -259,14 +383,15 @@
         </div>
 
         <div v-else class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
-          <table class="min-w-[640px] w-full border-collapse text-sm">
+          <table class="min-w-[720px] w-full border-collapse text-sm">
             <thead class="bg-gray-50 dark:bg-gray-800/60">
               <tr>
                 <th class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">ID</th>
                 <th class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">Tên</th>
                 <th class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">Loại</th>
                 <th v-if="catalogCap !== 'tinh'" class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">Cấp cha</th>
-                <th class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">Mã (nếu có)</th>
+                <th class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">Mã</th>
+                <th v-if="canManage" class="border border-gray-200 px-3 py-3 text-left dark:border-gray-700">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -287,10 +412,32 @@
                   {{ item.quanHuyen?.ten ?? item.tinh?.ten ?? '-' }}
                 </td>
                 <td class="border border-gray-200 px-3 py-2.5 dark:border-gray-700">{{ item.ma ?? '-' }}</td>
+                <td v-if="canManage" class="border border-gray-200 px-3 py-2.5 dark:border-gray-700">
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      class="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
+                      @click="openCatalogEdit(item)"
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      type="button"
+                      class="text-sm font-medium text-red-600 hover:underline dark:text-red-400"
+                      :disabled="catalogDeletingId === item.id"
+                      @click="deleteCatalogItem(item)"
+                    >
+                      {{ catalogDeletingId === item.id ? 'Đang xoá...' : 'Xoá' }}
+                    </button>
+                  </div>
+                </td>
               </tr>
               <tr v-if="catalogItems.length === 0">
-                <td :colspan="catalogCap !== 'tinh' ? 5 : 4" class="border border-gray-200 px-3 py-6 text-center text-gray-500 dark:border-gray-700">
-                  Chưa có dữ liệu. Chạy đồng bộ text doanh nghiệp ở tab Import &amp; đồng bộ.
+                <td
+                  :colspan="(catalogCap !== 'tinh' ? 5 : 4) + (canManage ? 1 : 0)"
+                  class="border border-gray-200 px-3 py-6 text-center text-gray-500 dark:border-gray-700"
+                >
+                  Chưa có dữ liệu. Bấm «Thêm mới» hoặc đồng bộ từ tab Import &amp; đồng bộ.
                 </td>
               </tr>
             </tbody>
@@ -984,7 +1131,7 @@ const canManage = computed(() => auth.hasPermission('feature.cadastral.manage'))
 const tabs = [
   { key: 'new', label: 'Đơn vị hành chính mới' },
   { key: 'legacy', label: 'Đơn vị hành chính cũ' },
-  { key: 'catalog', label: 'Danh mục hợp nhất' },
+  { key: 'catalog', label: 'Danh mục hành chính' },
   { key: 'import', label: 'Import & đồng bộ' },
   { key: 'mapping', label: 'Liên kết cũ → mới' },
 ] as const
@@ -1059,6 +1206,52 @@ const catalogItems = ref<HanhChinhDanhMucItem[]>([])
 const catalogLoading = ref(false)
 const catalogPage = ref(1)
 const catalogTotalPages = ref(1)
+const catalogFilterTinhId = ref(0)
+const catalogFilterQuanHuyenId = ref(0)
+const catalogFilterParents = ref<HanhChinhDanhMucItem[]>([])
+
+const catalogFormOpen = ref(false)
+const catalogEditingId = ref<number | null>(null)
+const catalogSaving = ref(false)
+const catalogDeletingId = ref<number | null>(null)
+const catalogFormError = ref('')
+const catalogFormSuccess = ref('')
+const catalogFormParents = ref<HanhChinhDanhMucItem[]>([])
+const catalogForm = ref<{
+  cap: HanhChinhDanhMucCap
+  loai: HanhChinhDanhMucLoai
+  ten: string
+  ma: string
+  parentId: number
+}>({
+  cap: 'tinh',
+  loai: 'cu',
+  ten: '',
+  ma: '',
+  parentId: 0,
+})
+
+const apiErrorMessage = (err: unknown, fallback: string) => {
+  const axiosErr = err as { response?: { data?: { message?: string } } }
+  return axiosErr.response?.data?.message || (err instanceof Error ? err.message : fallback)
+}
+
+const loadCatalogFilterParents = async () => {
+  catalogFilterParents.value = []
+  if (catalogCap.value === 'tinh') return
+
+  try {
+    const response = await hanhChinhService.getDanhMuc({
+      cap: catalogCap.value === 'quan-huyen' ? 'tinh' : 'quan-huyen',
+      loai: catalogLoai.value,
+      page: 1,
+      perPage: 200,
+    })
+    catalogFilterParents.value = response.data
+  } catch {
+    catalogFilterParents.value = []
+  }
+}
 
 const loadCatalog = async (page = 1) => {
   catalogLoading.value = true
@@ -1070,14 +1263,180 @@ const loadCatalog = async (page = 1) => {
       search: catalogSearch.value.trim(),
       page,
       perPage: 50,
+      tinhId: catalogCap.value === 'quan-huyen' && catalogFilterTinhId.value
+        ? catalogFilterTinhId.value
+        : undefined,
+      quanHuyenId: catalogCap.value === 'phuong-xa' && catalogFilterQuanHuyenId.value
+        ? catalogFilterQuanHuyenId.value
+        : undefined,
     })
     catalogItems.value = response.data
     catalogPage.value = response.meta?.current_page ?? page
     catalogTotalPages.value = response.meta?.last_page ?? 1
   } catch (err: unknown) {
-    actionError.value = err instanceof Error ? err.message : 'Không tải được danh mục hợp nhất'
+    actionError.value = apiErrorMessage(err, 'Không tải được danh mục hành chính')
   } finally {
     catalogLoading.value = false
+  }
+}
+
+const onCatalogCapChange = async () => {
+  catalogFilterTinhId.value = 0
+  catalogFilterQuanHuyenId.value = 0
+  await loadCatalogFilterParents()
+  await loadCatalog(1)
+}
+
+const onCatalogFilterChange = async () => {
+  catalogFilterTinhId.value = 0
+  catalogFilterQuanHuyenId.value = 0
+  await loadCatalogFilterParents()
+  await loadCatalog(1)
+}
+
+const loadCatalogFormParents = async () => {
+  catalogFormParents.value = []
+  if (catalogForm.value.cap === 'tinh') return
+
+  const response = await hanhChinhService.getDanhMuc({
+    cap: catalogForm.value.cap === 'quan-huyen' ? 'tinh' : 'quan-huyen',
+    loai: catalogForm.value.loai,
+    page: 1,
+    perPage: 200,
+  })
+  catalogFormParents.value = response.data
+}
+
+const onCatalogFormCapOrLoaiChange = async () => {
+  catalogForm.value.parentId = 0
+  catalogFormError.value = ''
+  try {
+    await loadCatalogFormParents()
+  } catch (err: unknown) {
+    catalogFormError.value = apiErrorMessage(err, 'Không tải được cấp cha')
+  }
+}
+
+const openCatalogCreate = async () => {
+  catalogEditingId.value = null
+  catalogFormOpen.value = true
+  catalogFormError.value = ''
+  catalogFormSuccess.value = ''
+  catalogForm.value = {
+    cap: catalogCap.value,
+    loai: (catalogLoai.value || 'cu') as HanhChinhDanhMucLoai,
+    ten: '',
+    ma: '',
+    parentId: 0,
+  }
+  try {
+    await loadCatalogFormParents()
+  } catch (err: unknown) {
+    catalogFormError.value = apiErrorMessage(err, 'Không tải được cấp cha')
+  }
+}
+
+const openCatalogEdit = async (item: HanhChinhDanhMucItem) => {
+  catalogEditingId.value = item.id
+  catalogFormOpen.value = true
+  catalogFormError.value = ''
+  catalogFormSuccess.value = ''
+  catalogForm.value = {
+    cap: catalogCap.value,
+    loai: item.loai,
+    ten: item.ten,
+    ma: item.ma ?? '',
+    parentId: catalogCap.value === 'quan-huyen'
+      ? (item.tinh?.id ?? 0)
+      : catalogCap.value === 'phuong-xa'
+        ? (item.quanHuyen?.id ?? 0)
+        : 0,
+  }
+  try {
+    await loadCatalogFormParents()
+  } catch (err: unknown) {
+    catalogFormError.value = apiErrorMessage(err, 'Không tải được cấp cha')
+  }
+}
+
+const closeCatalogForm = () => {
+  catalogFormOpen.value = false
+  catalogEditingId.value = null
+  catalogFormError.value = ''
+  catalogFormSuccess.value = ''
+}
+
+const saveCatalogForm = async () => {
+  const ten = catalogForm.value.ten.trim()
+  if (!ten) {
+    catalogFormError.value = 'Vui lòng nhập tên.'
+    return
+  }
+  if (catalogForm.value.cap !== 'tinh' && !catalogForm.value.parentId) {
+    catalogFormError.value = catalogForm.value.cap === 'quan-huyen'
+      ? 'Vui lòng chọn tỉnh/thành phố cha.'
+      : 'Vui lòng chọn quận/huyện cha.'
+    return
+  }
+
+  catalogSaving.value = true
+  catalogFormError.value = ''
+  catalogFormSuccess.value = ''
+  actionError.value = ''
+
+  const parentId = catalogForm.value.cap === 'tinh' ? null : catalogForm.value.parentId
+
+  try {
+    if (catalogEditingId.value) {
+      await hanhChinhService.updateDanhMuc(catalogEditingId.value, {
+        cap: catalogForm.value.cap,
+        loai: catalogForm.value.loai,
+        ten,
+        ma: catalogForm.value.ma.trim() || null,
+        parentId,
+      })
+      catalogFormSuccess.value = 'Đã cập nhật.'
+    } else {
+      await hanhChinhService.createDanhMuc({
+        cap: catalogForm.value.cap,
+        loai: catalogForm.value.loai,
+        ten,
+        ma: catalogForm.value.ma.trim() || null,
+        parentId,
+      })
+      catalogFormSuccess.value = 'Đã thêm mới.'
+    }
+
+    catalogCap.value = catalogForm.value.cap
+    catalogLoai.value = catalogForm.value.loai
+    await loadCatalogFilterParents()
+    await loadCatalog(1)
+    if (!catalogEditingId.value) {
+      catalogForm.value.ten = ''
+      catalogForm.value.ma = ''
+    } else {
+      closeCatalogForm()
+    }
+  } catch (err: unknown) {
+    catalogFormError.value = apiErrorMessage(err, 'Không lưu được danh mục')
+  } finally {
+    catalogSaving.value = false
+  }
+}
+
+const deleteCatalogItem = async (item: HanhChinhDanhMucItem) => {
+  if (!window.confirm(`Xoá “${item.ten}” khỏi danh mục?`)) return
+
+  catalogDeletingId.value = item.id
+  actionError.value = ''
+  try {
+    await hanhChinhService.deleteDanhMuc(item.id, catalogCap.value)
+    if (catalogEditingId.value === item.id) closeCatalogForm()
+    await loadCatalog(catalogPage.value)
+  } catch (err: unknown) {
+    actionError.value = apiErrorMessage(err, 'Không xoá được đơn vị hành chính')
+  } finally {
+    catalogDeletingId.value = null
   }
 }
 
@@ -1779,7 +2138,7 @@ watch(activeTab, (tab) => {
     loadNewUnits(1)
   }
   if (tab === 'catalog') {
-    loadCatalog(1)
+    void loadCatalogFilterParents().then(() => loadCatalog(1))
   }
 })
 
@@ -1793,6 +2152,7 @@ onMounted(async () => {
     await loadNewUnits(1)
   }
   if (activeTab.value === 'catalog') {
+    await loadCatalogFilterParents()
     await loadCatalog(1)
   }
   if (activeTab.value === 'mapping') {

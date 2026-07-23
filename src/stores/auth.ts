@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
         ...result.user,
         permissions: result.user.permissions ?? result.user.role?.permissionKeys ?? [],
       }
-      await useMenuStore().fetchMenu()
+      void useMenuStore().fetchMenu()
       return result
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } }
@@ -68,7 +68,8 @@ export const useAuthStore = defineStore('auth', () => {
         ...me,
         permissions: me.permissions ?? me.role?.permissionKeys ?? [],
       }
-      await useMenuStore().fetchMenu()
+      // Menu không chặn trả user — chạy song song / nền để init nhanh hơn
+      void useMenuStore().fetchMenu()
       return me
     } catch {
       setToken(null)

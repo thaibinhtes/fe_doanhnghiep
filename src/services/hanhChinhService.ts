@@ -265,10 +265,29 @@ export const hanhChinhService = {
     cap: HanhChinhDanhMucCap
     loai: HanhChinhDanhMucLoai
     ten: string
+    ma?: string | null
     parentId?: number | null
   }): Promise<HanhChinhDanhMucItem> {
     const { data } = await api.post<{ data: HanhChinhDanhMucItem }>('/hanh-chinh/danh-muc', payload)
     return data.data
+  },
+
+  async updateDanhMuc(
+    id: number,
+    payload: {
+      cap: HanhChinhDanhMucCap
+      loai: HanhChinhDanhMucLoai
+      ten: string
+      ma?: string | null
+      parentId?: number | null
+    },
+  ): Promise<HanhChinhDanhMucItem> {
+    const { data } = await api.put<{ data: HanhChinhDanhMucItem }>(`/hanh-chinh/danh-muc/${id}`, payload)
+    return data.data
+  },
+
+  async deleteDanhMuc(id: number, cap: HanhChinhDanhMucCap): Promise<void> {
+    await api.delete(`/hanh-chinh/danh-muc/${id}`, { params: { cap } })
   },
 
   async syncCompanyTextCatalogs(dryRun = false): Promise<CompanyAdministrativeCatalogSyncResult> {

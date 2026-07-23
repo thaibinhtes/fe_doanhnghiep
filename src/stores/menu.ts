@@ -26,6 +26,7 @@ export const useMenuStore = defineStore('menu', () => {
   const items = ref<NavMenuNode[]>([])
   const loading = ref(false)
   const loaded = ref(false)
+  let inflight: Promise<void> | null = null
 
   const menuGroups = computed<NavMenuGroup[]>(() => [
     {
@@ -40,22 +41,35 @@ export const useMenuStore = defineStore('menu', () => {
     return map
   })
 
-  async function fetchMenu() {
-    loading.value = true
-    try {
-      items.value = await navMenuService.getMenu()
-      loaded.value = true
-    } catch {
-      items.value = []
-      loaded.value = false
-    } finally {
-      loading.value = false
+  async function fetchMenu(force = false) {
+    if (loaded.value && !force) {
+      return
     }
+    if (inflight && !force) {
+      return inflight
+    }
+
+    loading.value = true
+    inflight = (async () => {
+      try {
+        items.value = await navMenuService.getMenu()
+        loaded.value = true
+      } catch {
+        items.value = []
+        loaded.value = false
+      } finally {
+        loading.value = false
+        inflight = null
+      }
+    })()
+
+    return inflight
   }
 
   function reset() {
     items.value = []
     loaded.value = false
+    inflight = null
   }
 
   return {

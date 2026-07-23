@@ -223,7 +223,7 @@ async function syncDefaults() {
   try {
     await navMenuService.syncDefaults()
     tree.value = await navMenuService.getAdminMenu()
-    await menuStore.fetchMenu()
+    await menuStore.fetchMenu(true)
     success.value = 'Đã đồng bộ menu mặc định (giữ tên và thứ tự đã cấu hình).'
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { message?: string } } }
@@ -247,7 +247,7 @@ async function saveOrder() {
     const dashboard = dashboardItem.value
     const ordered = dashboard ? [dashboard, ...categories.value] : categories.value
     tree.value = await navMenuService.reorder(flattenTree(ordered))
-    await menuStore.fetchMenu()
+    await menuStore.fetchMenu(true)
     success.value = 'Đã lưu cấu hình menu.'
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { message?: string } } }

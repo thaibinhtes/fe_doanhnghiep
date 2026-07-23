@@ -200,6 +200,7 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import { roleService } from '@/services/roleService'
 import { useAuthStore } from '@/stores/auth'
+import { useMenuStore } from '@/stores/menu'
 import type { PermissionCreatePayload, PermissionGroup, RoleItem } from '@/types/auth'
 
 const auth = useAuthStore()
@@ -299,6 +300,7 @@ const savePermissions = async () => {
     )
     selectedRole.value = updated
     roles.value = roles.value.map((role) => (role.id === updated.id ? updated : role))
+    await useMenuStore().fetchMenu(true)
     message.value = 'Đã cập nhật phân quyền thành công'
   } finally {
     saving.value = false
