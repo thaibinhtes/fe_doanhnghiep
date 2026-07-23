@@ -66,11 +66,13 @@ export interface DashboardData {
   }
   cooperativeIdentity?: DashboardIdentity
   areaOptions?: DashboardAreaOption[]
+  /** @deprecated areas load via /dashboard/company-areas */
   companyAreaBreakdowns?: Partial<Record<DashboardAreaKey, DashboardAreaIdentity[]>>
+  /** @deprecated areas load via /dashboard/cooperative-areas */
   cooperativeAreaBreakdowns?: Partial<Record<DashboardAreaKey, DashboardAreaIdentity[]>>
-  summary: SummaryReport
+  summary?: SummaryReport
   cooperativeSummary?: SummaryReport
-  progress: {
+  progress?: {
     title: string
     reportDateLabel: string
     ranges: ProgressReportRange[]

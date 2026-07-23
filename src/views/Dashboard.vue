@@ -17,24 +17,24 @@
           <button
             type="button"
             class="inline-flex h-10 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 active:translate-y-px dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
-            :disabled="loading"
-            @click="loadDashboard"
+            :disabled="overviewLoading"
+            @click="refreshAll"
           >
-            <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': loading }" />
+            <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': overviewLoading || companyAreasLoading || cooperativeAreasLoading }" />
             Làm mới
           </button>
         </div>
       </header>
 
-      <DashboardSkeleton v-if="loading" />
+      <DashboardSkeleton v-if="overviewLoading && !dashboard" />
 
       <div
-        v-else-if="error"
+        v-else-if="overviewError && !dashboard"
         class="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300"
       >
         <p class="font-medium">Không thể tải dashboard</p>
-        <p class="mt-1 text-sm">{{ error }}</p>
-        <button type="button" class="mt-4 text-sm font-semibold underline" @click="loadDashboard">
+        <p class="mt-1 text-sm">{{ overviewError }}</p>
+        <button type="button" class="mt-4 text-sm font-semibold underline" @click="loadOverview">
           Thử lại
         </button>
       </div>
@@ -91,7 +91,14 @@
                   </option>
                 </select>
               </template>
-              <div v-if="companyAreas.length" class="max-h-[390px] overflow-y-auto">
+              <div v-if="companyAreasLoading" class="flex min-h-[270px] items-center justify-center text-sm text-gray-500">
+                Đang tải địa bàn...
+              </div>
+              <div v-else-if="companyAreasError" class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">
+                {{ companyAreasError }}
+                <button type="button" class="ml-2 underline" @click="loadCompanyAreas(true)">Thử lại</button>
+              </div>
+              <div v-else-if="companyAreas.length" class="max-h-[390px] overflow-y-auto">
                 <VueApexCharts
                   type="bar"
                   :height="areaChartHeight(companyAreas)"
@@ -107,7 +114,9 @@
               :desc="`Tra cứu ${selectedCompanyAreaLabel.toLowerCase()} trong danh mục hành chính`"
               class-name="xl:col-span-12"
             >
+              <div v-if="companyAreasLoading" class="py-10 text-center text-sm text-gray-500">Đang tải...</div>
               <AreaLookup
+                v-else
                 v-model:search="companySearch"
                 v-model:selected-id="selectedCompanyAreaId"
                 :areas="companyAreas"
@@ -168,7 +177,14 @@
                   </option>
                 </select>
               </template>
-              <div v-if="cooperativeAreas.length" class="max-h-[390px] overflow-y-auto">
+              <div v-if="cooperativeAreasLoading" class="flex min-h-[270px] items-center justify-center text-sm text-gray-500">
+                Đang tải địa bàn...
+              </div>
+              <div v-else-if="cooperativeAreasError" class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">
+                {{ cooperativeAreasError }}
+                <button type="button" class="ml-2 underline" @click="loadCooperativeAreas(true)">Thử lại</button>
+              </div>
+              <div v-else-if="cooperativeAreas.length" class="max-h-[390px] overflow-y-auto">
                 <VueApexCharts
                   type="bar"
                   :height="areaChartHeight(cooperativeAreas)"
@@ -184,7 +200,9 @@
               :desc="`Tra cứu ${selectedCooperativeAreaLabel.toLowerCase()} trong danh mục hành chính`"
               class-name="xl:col-span-12"
             >
+              <div v-if="cooperativeAreasLoading" class="py-10 text-center text-sm text-gray-500">Đang tải...</div>
               <AreaLookup
+                v-else
                 v-model:search="cooperativeSearch"
                 v-model:selected-id="selectedCooperativeAreaId"
                 :areas="cooperativeAreas"
@@ -220,8 +238,8 @@ const identityColors = ['#12b76a', '#f79009', '#98a2b3']
 const chartFont = 'Outfit, sans-serif'
 
 const router = useRouter()
-const loading = ref(true)
-const error = ref<string | null>(null)
+const overviewLoading = ref(true)
+const overviewError = ref<string | null>(null)
 const dashboard = ref<DashboardData | null>(null)
 const companySearch = ref('')
 const cooperativeSearch = ref('')
@@ -229,7 +247,15 @@ const selectedCompanyAreaId = ref<string>('')
 const selectedCooperativeAreaId = ref<string>('')
 const companyAreaKey = ref<DashboardAreaKey>('quanHuyenMoi')
 const cooperativeAreaKey = ref<DashboardAreaKey>('quanHuyenMoi')
+const companyAreasCache = ref<Partial<Record<DashboardAreaKey, DashboardAreaIdentity[]>>>({})
+const cooperativeAreasCache = ref<Partial<Record<DashboardAreaKey, DashboardAreaIdentity[]>>>({})
+const companyAreasLoading = ref(false)
+const cooperativeAreasLoading = ref(false)
+const companyAreasError = ref<string | null>(null)
+const cooperativeAreasError = ref<string | null>(null)
 let lastAreaNavAt = 0
+let companyAreasRequestId = 0
+let cooperativeAreasRequestId = 0
 
 const defaultAreaOptions: DashboardAreaOption[] = [
   { key: 'quanHuyenMoi', label: 'Quận / Huyện mới' },
@@ -238,12 +264,8 @@ const defaultAreaOptions: DashboardAreaOption[] = [
   { key: 'phuongXaCu', label: 'Phường / Xã / Thị trấn cũ' },
 ]
 const areaOptions = computed(() => dashboard.value?.areaOptions ?? defaultAreaOptions)
-const companyAreas = computed(
-  () => dashboard.value?.companyAreaBreakdowns?.[companyAreaKey.value] ?? [],
-)
-const cooperativeAreas = computed(
-  () => dashboard.value?.cooperativeAreaBreakdowns?.[cooperativeAreaKey.value] ?? [],
-)
+const companyAreas = computed(() => companyAreasCache.value[companyAreaKey.value] ?? [])
+const cooperativeAreas = computed(() => cooperativeAreasCache.value[cooperativeAreaKey.value] ?? [])
 const selectedCompanyAreaLabel = computed(
   () => areaOptions.value.find((option) => option.key === companyAreaKey.value)?.label ?? '',
 )
@@ -501,18 +523,82 @@ const AreaLookup = defineComponent({
   },
 })
 
-async function loadDashboard() {
-  loading.value = true
-  error.value = null
+async function loadOverview() {
+  overviewLoading.value = true
+  overviewError.value = null
   try {
-    dashboard.value = await dashboardService.getDashboard()
+    dashboard.value = await dashboardService.getOverview()
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { message?: string } } }
-    error.value = axiosErr.response?.data?.message ?? 'Không thể tải dữ liệu dashboard.'
+    overviewError.value = axiosErr.response?.data?.message ?? 'Không thể tải dữ liệu dashboard.'
   } finally {
-    loading.value = false
+    overviewLoading.value = false
   }
 }
 
-onMounted(loadDashboard)
+async function loadCompanyAreas(force = false) {
+  const key = companyAreaKey.value
+  if (!force && companyAreasCache.value[key]) return
+
+  const requestId = ++companyAreasRequestId
+  companyAreasLoading.value = true
+  companyAreasError.value = null
+  try {
+    const response = await dashboardService.getCompanyAreas(key)
+    if (requestId !== companyAreasRequestId) return
+    companyAreasCache.value = { ...companyAreasCache.value, [key]: response.areas }
+  } catch (err: unknown) {
+    if (requestId !== companyAreasRequestId) return
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    companyAreasError.value = axiosErr.response?.data?.message ?? 'Không tải được địa bàn doanh nghiệp.'
+  } finally {
+    if (requestId === companyAreasRequestId) {
+      companyAreasLoading.value = false
+    }
+  }
+}
+
+async function loadCooperativeAreas(force = false) {
+  const key = cooperativeAreaKey.value
+  if (!force && cooperativeAreasCache.value[key]) return
+
+  const requestId = ++cooperativeAreasRequestId
+  cooperativeAreasLoading.value = true
+  cooperativeAreasError.value = null
+  try {
+    const response = await dashboardService.getCooperativeAreas(key)
+    if (requestId !== cooperativeAreasRequestId) return
+    cooperativeAreasCache.value = { ...cooperativeAreasCache.value, [key]: response.areas }
+  } catch (err: unknown) {
+    if (requestId !== cooperativeAreasRequestId) return
+    const axiosErr = err as { response?: { data?: { message?: string } } }
+    cooperativeAreasError.value = axiosErr.response?.data?.message ?? 'Không tải được địa bàn hợp tác xã.'
+  } finally {
+    if (requestId === cooperativeAreasRequestId) {
+      cooperativeAreasLoading.value = false
+    }
+  }
+}
+
+async function refreshAll() {
+  companyAreasCache.value = {}
+  cooperativeAreasCache.value = {}
+  await loadOverview()
+  await Promise.all([loadCompanyAreas(true), loadCooperativeAreas(true)])
+}
+
+watch(companyAreaKey, () => {
+  selectedCompanyAreaId.value = ''
+  void loadCompanyAreas()
+})
+
+watch(cooperativeAreaKey, () => {
+  selectedCooperativeAreaId.value = ''
+  void loadCooperativeAreas()
+})
+
+onMounted(async () => {
+  await loadOverview()
+  void Promise.all([loadCompanyAreas(), loadCooperativeAreas()])
+})
 </script>
