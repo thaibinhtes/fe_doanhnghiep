@@ -20,7 +20,9 @@
       {{ loadError }}
     </div>
 
-    <div v-if="loadingJobs" class="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Đang tải lịch sử...</div>
+    <div v-if="loadingJobs">
+      <TableSkeleton :rows="5" :columns="4" compact />
+    </div>
 
     <div v-else-if="jobs.length === 0" class="rounded-xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
       <p class="text-sm text-gray-500 dark:text-gray-400">Chưa có lịch sử import.</p>
@@ -70,7 +72,9 @@
             </button>
           </div>
 
-          <div v-if="loadingRows" class="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Đang tải chi tiết...</div>
+          <div v-if="loadingRows" class="px-4 py-4">
+            <TableSkeleton :rows="8" :columns="4" compact />
+          </div>
           <div v-else-if="rowsError" class="px-4 py-10 text-center text-sm text-red-600 dark:text-red-400">{{ rowsError }}</div>
           <div v-else-if="rows.length === 0" class="py-10 text-center text-sm text-gray-500 dark:text-gray-400">Không có bản ghi {{ activeStatusLabel.toLowerCase() }}.</div>
           <div v-else class="max-h-[58vh] overflow-y-auto">
@@ -101,6 +105,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import { cooperativeService } from '@/services/cooperativeService'
 import type {
   CooperativeImportJobListItem,

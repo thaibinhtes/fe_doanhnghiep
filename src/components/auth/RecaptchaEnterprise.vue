@@ -69,22 +69,44 @@ function loadScript(): Promise<void> {
         resolve()
         return
       }
-      existing.addEventListener('load', () => resolve())
+      existing.addEventListener('load', () => waitForEnterprise().then(resolve).catch(reject))
       existing.addEventListener('error', () => reject(new Error('Không tải được reCAPTCHA')))
       return
     }
 
     const script = document.createElement('script')
+    // Match Google demo: enterprise.js without render=explicit works for checkbox;
+    // keep explicit so we control mount timing in Vue.
     script.src = 'https://www.google.com/recaptcha/enterprise.js?render=explicit'
     script.async = true
     script.defer = true
     script.dataset.recaptcha = 'enterprise'
-    script.onload = () => resolve()
+    script.onload = () => {
+      waitForEnterprise().then(resolve).catch(reject)
+    }
     script.onerror = () => reject(new Error('Không tải được reCAPTCHA'))
     document.head.appendChild(script)
   })
 
   return scriptPromise
+}
+
+function waitForEnterprise(timeoutMs = 8000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const started = Date.now()
+    const tick = () => {
+      if (window.grecaptcha?.enterprise) {
+        resolve()
+        return
+      }
+      if (Date.now() - started > timeoutMs) {
+        reject(new Error('reCAPTCHA Enterprise chưa sẵn sàng'))
+        return
+      }
+      window.setTimeout(tick, 50)
+    }
+    tick()
+  })
 }
 
 async function renderWidget() {

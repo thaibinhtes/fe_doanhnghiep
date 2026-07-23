@@ -15,6 +15,7 @@ export const routePermissions: Record<string, RoutePermission> = {
   '/companies/identity': 'menu.companies.identity',
   '/companies/identity-history': 'menu.reports.identity-history',
   '/reports/identity-history': 'menu.reports.identity-history',
+  '/reports/tax-import-history': 'menu.reports.tax-import-history',
   '/companies/create': 'menu.companies.create',
   '/companies/statuses': 'menu.companies.statuses',
   '/cooperatives': ['menu.cooperatives.list', 'menu.companies.list'],

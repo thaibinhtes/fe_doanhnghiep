@@ -61,9 +61,19 @@
           </div>
         </div>
 
-        <div v-if="companyLoading" class="flex min-h-[240px] items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-        </div>
+        <TableSkeleton
+          v-if="companyLoading"
+          :rows="8"
+          :columns="[
+            { width: '50px', barClass: 'w-6', headerClass: 'w-6' },
+            { width: '140px', barClass: 'w-20' },
+            { width: '280px', barClass: 'w-36' },
+            { width: '140px', barClass: 'w-24' },
+            { width: '360px', barClass: 'w-44' },
+            { width: '130px', barClass: 'w-16' },
+            { width: '130px', barClass: 'w-16' },
+          ]"
+        />
         <div
           v-else-if="companyRows.length === 0"
           class="flex min-h-[240px] items-center justify-center rounded-xl border border-gray-200 text-sm text-gray-400 dark:border-gray-700"
@@ -120,27 +130,14 @@
           </div>
         </div>
 
-        <div v-if="companyMeta.lastPage > 1" class="mt-3 flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
-          <span>Trang {{ companyMeta.currentPage }} / {{ companyMeta.lastPage }} · {{ companyMeta.total }} doanh nghiệp</span>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700"
-              :disabled="companyMeta.currentPage <= 1"
-              @click="loadCompanies(companyMeta.currentPage - 1)"
-            >
-              Trước
-            </button>
-            <button
-              type="button"
-              class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700"
-              :disabled="companyMeta.currentPage >= companyMeta.lastPage"
-              @click="loadCompanies(companyMeta.currentPage + 1)"
-            >
-              Sau
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          :page="companyMeta.currentPage"
+          :last-page="companyMeta.lastPage"
+          :total="companyMeta.total"
+          item-label="doanh nghiệp"
+          hide-when-single-page
+          @update:page="loadCompanies"
+        />
       </ComponentCard>
 
       <ComponentCard v-else title="Danh sách đơn vị thuế">
@@ -216,7 +213,8 @@
           </div>
         </form>
 
-        <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+        <TableSkeleton v-if="taxUnitLoading" :rows="6" :columns="4" />
+        <div v-else class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
           <table class="min-w-[640px] w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-800/60">
               <tr>
@@ -250,42 +248,35 @@
             </tbody>
           </table>
         </div>
-        <div class="mt-3 flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
-          <p>
-            Trang {{ taxUnitMeta.currentPage }} / {{ taxUnitMeta.lastPage }}
-            <span class="ml-2">Tổng: {{ taxUnitMeta.total }}</span>
-          </p>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700"
-              :disabled="taxUnitMeta.currentPage <= 1"
-              @click="loadTaxUnits(taxUnitMeta.currentPage - 1)"
-            >
-              Trước
-            </button>
-            <button
-              type="button"
-              class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700"
-              :disabled="taxUnitMeta.currentPage >= taxUnitMeta.lastPage"
-              @click="loadTaxUnits(taxUnitMeta.currentPage + 1)"
-            >
-              Sau
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          :page="taxUnitMeta.currentPage"
+          :last-page="taxUnitMeta.lastPage"
+          :total="taxUnitMeta.total"
+          item-label="đơn vị"
+          @update:page="loadTaxUnits"
+        />
       </ComponentCard>
     </div>
 
     <Modal v-if="showImportModal" @close="closeImportModal">
-      <div class="no-scrollbar relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 dark:bg-gray-900">
+      <div class="no-scrollbar relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-4 dark:bg-gray-900 sm:p-6">
+          <template v-if="activeTab === 'tax-units'">
+            <TaxUnitImportPanel
+              show-header
+              show-close
+              show-actions
+              @close="closeImportModal"
+              @dispatched="onTaxUnitImportDispatched"
+            />
+          </template>
+          <template v-else>
           <h3 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">Import Excel</h3>
           <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
-            {{ activeTab === 'companies' ? 'Import doanh nghiệp đóng thuế' : 'Import đơn vị thuế' }}
+            Import doanh nghiệp đóng thuế
           </p>
           <ImportLoadingSkeleton
             v-if="showImportDispatchingSkeleton"
-            :title="activeTab === 'companies' ? 'Đang khởi tạo import doanh nghiệp...' : 'Đang khởi tạo import đơn vị thuế...'"
+            title="Đang khởi tạo import doanh nghiệp..."
             subtitle="Đang đưa file vào hàng đợi xử lý."
           />
           <div v-if="showImportDispatchingSkeleton" class="mt-4 flex justify-end">
@@ -299,10 +290,11 @@
                 <input type="file" accept=".xlsx,.xls,.csv" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" @change="onImportFileChange" />
               </div>
               <div>
+                <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-200">Hàng bắt đầu</label>
                 <input v-model.number="activeImportStartRow" type="number" min="1" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900" />
               </div>
             </div>
-            <div v-if="activeTab === 'companies'" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
               <div class="md:col-span-2">
                 <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-200">Ngày cập nhật</label>
                 <input
@@ -325,6 +317,7 @@
               </button>
             </div>
           </template>
+          </template>
       </div>
     </Modal>
 
@@ -344,8 +337,8 @@
             </select>
           </div>
 
-          <div v-if="importHistoryLoading" class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700">
-            Đang tải lịch sử import...
+          <div v-if="importHistoryLoading">
+            <TableSkeleton :rows="5" :columns="4" compact />
           </div>
           <div v-else-if="importHistory.length === 0" class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700">
             Chưa có lịch sử import.
@@ -386,8 +379,8 @@
                   {{ tab.label }} ({{ tab.count }})
                 </button>
               </div>
-              <div v-if="importHistoryRowsLoading" class="flex min-h-[320px] items-center justify-center px-6 py-10 text-sm text-gray-500 dark:text-gray-400">
-                Đang tải chi tiết...
+              <div v-if="importHistoryRowsLoading" class="px-4 py-4">
+                <TableSkeleton :rows="8" :columns="5" compact />
               </div>
               <div v-else-if="importHistoryRowsError" class="flex min-h-[320px] items-center justify-center px-6 py-10 text-sm text-red-500">
                 {{ importHistoryRowsError }}
@@ -426,32 +419,14 @@
                   </tbody>
                 </table>
               </div>
-              <div
-                v-if="importHistoryRowsMeta && importHistoryRowsMeta.last_page > 1"
-                class="flex items-center justify-between border-t border-gray-200 px-4 py-3 text-sm dark:border-gray-700"
-              >
-                <span class="text-gray-500 dark:text-gray-400">
-                  Trang {{ importHistoryRowsMeta.current_page }} / {{ importHistoryRowsMeta.last_page }}
-                </span>
-                <div class="flex gap-2">
-                  <button
-                    type="button"
-                    class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-700"
-                    :disabled="importHistoryRowsMeta.current_page <= 1"
-                    @click="loadImportHistoryRows(importHistoryRowsMeta.current_page - 1)"
-                  >
-                    Trước
-                  </button>
-                  <button
-                    type="button"
-                    class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-700"
-                    :disabled="importHistoryRowsMeta.current_page >= importHistoryRowsMeta.last_page"
-                    @click="loadImportHistoryRows(importHistoryRowsMeta.current_page + 1)"
-                  >
-                    Sau
-                  </button>
-                </div>
-              </div>
+              <TablePagination
+                v-if="importHistoryRowsMeta"
+                :page="importHistoryRowsMeta.current_page"
+                :last-page="importHistoryRowsMeta.last_page"
+                hide-when-single-page
+                wrapper-class="px-4 py-3"
+                @update:page="loadImportHistoryRows"
+              />
             </div>
           </div>
       </div>
@@ -548,7 +523,10 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TablePagination from '@/components/common/TablePagination.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import ImportLoadingSkeleton from '@/components/companies/ImportLoadingSkeleton.vue'
+import TaxUnitImportPanel from '@/components/admin/TaxUnitImportPanel.vue'
 import Modal from '@/components/profile/Modal.vue'
 import { taxManagementService } from '@/services/taxManagementService'
 import { useImportNotifications } from '@/composables/useImportNotifications'
@@ -601,6 +579,7 @@ const activeTab = ref<TabKey>(resolveTabFromQuery(route.query.tab))
 const companyRows = ref<TaxCompanyItem[]>([])
 const companySearch = ref('')
 const companyLoading = ref(false)
+const taxUnitLoading = ref(false)
 const companyMeta = reactive({
   currentPage: 1,
   lastPage: 1,
@@ -786,16 +765,21 @@ const loadCompaniesByTaxUnitRange = async () => {
 }
 
 const loadTaxUnits = async (page = 1) => {
-  const response = await taxManagementService.getTaxUnits({
-    page,
-    perPage: taxUnitMeta.perPage,
-    search: taxUnitSearch.value.trim() || undefined,
-  })
-  taxUnits.value = response.data
-  taxUnitMeta.currentPage = response.meta?.current_page ?? page
-  taxUnitMeta.lastPage = response.meta?.last_page ?? 1
-  taxUnitMeta.total = response.meta?.total ?? response.data.length
-  taxUnitMeta.perPage = response.meta?.per_page ?? taxUnitMeta.perPage
+  taxUnitLoading.value = true
+  try {
+    const response = await taxManagementService.getTaxUnits({
+      page,
+      perPage: taxUnitMeta.perPage,
+      search: taxUnitSearch.value.trim() || undefined,
+    })
+    taxUnits.value = response.data
+    taxUnitMeta.currentPage = response.meta?.current_page ?? page
+    taxUnitMeta.lastPage = response.meta?.last_page ?? 1
+    taxUnitMeta.total = response.meta?.total ?? response.data.length
+    taxUnitMeta.perPage = response.meta?.per_page ?? taxUnitMeta.perPage
+  } finally {
+    taxUnitLoading.value = false
+  }
 }
 
 const loadTaxUnitOptions = async () => {
@@ -1015,9 +999,13 @@ const changeImportHistoryTab = (tab: 'success' | 'duplicate' | 'failed') => {
 const submitImport = async () => {
   if (activeTab.value === 'companies') {
     await importCompanyTaxExcel()
-  } else {
-    await importTaxUnitExcel()
   }
+}
+
+const onTaxUnitImportDispatched = (payload: { importJobId: number }) => {
+  activeBackgroundImportEntity.value = 'tax-unit'
+  void payload
+  closeImportModal()
 }
 
 const openImportModal = () => {
@@ -1031,9 +1019,7 @@ const closeImportModal = () => {
 
 const openHistoryModal = () => {
   showImportMenu.value = false
-  importHistoryType.value = activeTab.value === 'companies' ? 'company_tax' : 'tax_units'
-  void loadImportHistory()
-  showHistoryModal.value = true
+  void router.push('/reports/tax-import-history')
 }
 
 const openTaxPaymentHistoryModal = async () => {

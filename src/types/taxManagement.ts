@@ -68,6 +68,34 @@ export interface TaxImportConfig {
   valueExtensions?: Record<string, string>
 }
 
+export interface TaxUnitImportPreviewField {
+  field: string
+  label: string
+  columns: string[]
+  columnsDisplay: string
+  rawByLetter: Record<string, string | null>
+  value: string | null
+}
+
+export interface TaxUnitImportPreviewRow {
+  excelRow: number
+  unitCode?: string | null
+  unitName?: string | null
+  fields: TaxUnitImportPreviewField[]
+  mapped: Record<string, unknown>
+}
+
+export interface TaxUnitImportPreviewResult {
+  startRow: number
+  limit: number
+  highestRow: number
+  scannedRows: number
+  previewCount: number
+  columnMap: TaxImportColumnMap
+  columnLabels: Record<string, string>
+  rows: TaxUnitImportPreviewRow[]
+}
+
 export interface TaxImportResult {
   created: number
   updated: number

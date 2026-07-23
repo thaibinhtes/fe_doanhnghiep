@@ -15,8 +15,8 @@
       </select>
     </div>
 
-    <div v-if="importHistoryLoading" class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700">
-      Đang tải lịch sử import...
+    <div v-if="importHistoryLoading">
+      <TableSkeleton :rows="5" :columns="4" compact />
     </div>
     <div v-else-if="importHistory.length === 0" class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 dark:border-gray-700">
       Chưa có lịch sử import.
@@ -69,8 +69,8 @@
             </button>
           </div>
 
-          <div v-if="importHistoryRowsLoading" class="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-            Đang tải chi tiết...
+          <div v-if="importHistoryRowsLoading" class="px-4 py-4">
+            <TableSkeleton :rows="8" :columns="5" compact />
           </div>
           <div v-else-if="importHistoryRowsError" class="px-4 py-10 text-center text-sm text-red-600 dark:text-red-400">
             {{ importHistoryRowsError }}
@@ -106,32 +106,14 @@
             </table>
           </div>
 
-          <div
-            v-if="importHistoryRowsMeta && importHistoryRowsMeta.last_page > 1"
-            class="flex items-center justify-between border-t border-gray-200 px-4 py-3 text-sm dark:border-gray-700"
-          >
-            <span class="text-gray-500 dark:text-gray-400">
-              Trang {{ importHistoryRowsMeta.current_page }} / {{ importHistoryRowsMeta.last_page }}
-            </span>
-            <div class="flex gap-2">
-              <button
-                type="button"
-                class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-700"
-                :disabled="importHistoryRowsMeta.current_page <= 1"
-                @click="loadImportHistoryRows(importHistoryRowsMeta.current_page - 1)"
-              >
-                Trước
-              </button>
-              <button
-                type="button"
-                class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-700"
-                :disabled="importHistoryRowsMeta.current_page >= importHistoryRowsMeta.last_page"
-                @click="loadImportHistoryRows(importHistoryRowsMeta.current_page + 1)"
-              >
-                Sau
-              </button>
-            </div>
-          </div>
+          <TablePagination
+            v-if="importHistoryRowsMeta"
+            :page="importHistoryRowsMeta.current_page"
+            :last-page="importHistoryRowsMeta.last_page"
+            hide-when-single-page
+            wrapper-class="px-4 py-3"
+            @update:page="loadImportHistoryRows"
+          />
         </div>
       </div>
     </div>
@@ -140,6 +122,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import TablePagination from '@/components/common/TablePagination.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import { taxManagementService } from '@/services/taxManagementService'
 import type { TaxImportJobHistoryItem, TaxImportJobRow } from '@/types/taxManagement'
 

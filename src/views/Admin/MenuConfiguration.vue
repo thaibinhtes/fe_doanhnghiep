@@ -14,9 +14,7 @@
           {{ success }}
         </div>
 
-        <div v-if="loading" class="flex items-center justify-center py-16">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-        </div>
+        <TableSkeleton v-if="loading" :rows="8" :columns="3" />
 
         <div v-else class="space-y-4">
           <div
@@ -158,6 +156,7 @@ import { useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import { navMenuService } from '@/services/navMenuService'
 import { useMenuStore } from '@/stores/menu'
 import { useAuthStore } from '@/stores/auth'

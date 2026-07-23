@@ -65,9 +65,19 @@
           </div>
         </div>
 
-        <div v-if="loading" class="flex min-h-[240px] items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-        </div>
+        <TableSkeleton
+          v-if="loading"
+          :rows="8"
+          :columns="[
+            { width: '50px', barClass: 'w-6', headerClass: 'w-6' },
+            { width: '140px', barClass: 'w-20' },
+            { width: '280px', barClass: 'w-36' },
+            { width: '140px', barClass: 'w-24' },
+            { width: '360px', barClass: 'w-44' },
+            { width: '130px', barClass: 'w-16' },
+            { width: '130px', barClass: 'w-16' },
+          ]"
+        />
         <div
           v-else-if="rows.length === 0"
           class="flex min-h-[240px] items-center justify-center rounded-xl border border-gray-200 text-sm text-gray-400 dark:border-gray-700"
@@ -124,27 +134,14 @@
           </div>
         </div>
 
-        <div v-if="meta.lastPage > 1" class="mt-3 flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
-          <span>Trang {{ meta.currentPage }} / {{ meta.lastPage }} · {{ meta.total }} hợp tác xã</span>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700"
-              :disabled="meta.currentPage <= 1"
-              @click="loadRows(meta.currentPage - 1)"
-            >
-              Trước
-            </button>
-            <button
-              type="button"
-              class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700"
-              :disabled="meta.currentPage >= meta.lastPage"
-              @click="loadRows(meta.currentPage + 1)"
-            >
-              Sau
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          :page="meta.currentPage"
+          :last-page="meta.lastPage"
+          :total="meta.total"
+          item-label="hợp tác xã"
+          hide-when-single-page
+          @update:page="loadRows"
+        />
       </ComponentCard>
     </div>
 
@@ -164,6 +161,8 @@
 import { onMounted, onUnmounted, reactive, ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TablePagination from '@/components/common/TablePagination.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import Modal from '@/components/profile/Modal.vue'
 import ImportLoadingSkeleton from '@/components/companies/ImportLoadingSkeleton.vue'
 import TaxImportHistoryPanel from '@/components/admin/TaxImportHistoryPanel.vue'

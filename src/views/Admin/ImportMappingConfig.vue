@@ -24,9 +24,7 @@
           </button>
         </div>
 
-        <div v-if="loading" class="flex items-center justify-center py-16">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-        </div>
+        <TableSkeleton v-if="loading" :rows="6" :columns="6" />
 
         <div v-else-if="configs.length === 0" class="py-12 text-center text-sm text-gray-500">
           Chưa có cấu hình format ánh xạ.
@@ -187,6 +185,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import Modal from '@/components/profile/Modal.vue'
 import { companyService } from '@/services/companyService'
 import { cooperativeService } from '@/services/cooperativeService'

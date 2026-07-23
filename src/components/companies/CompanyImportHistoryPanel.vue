@@ -39,8 +39,8 @@
       </select>
     </div>
 
-    <div v-if="loadingJobs" class="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-      Đang tải lịch sử...
+    <div v-if="loadingJobs">
+      <TableSkeleton :rows="5" :columns="4" compact />
     </div>
 
     <div v-else-if="filteredJobs.length === 0" class="rounded-xl border border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
@@ -116,8 +116,8 @@
             </button>
           </div>
 
-          <div v-if="loadingRows" class="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-            Đang tải chi tiết...
+          <div v-if="loadingRows" class="px-4 py-4">
+            <TableSkeleton :rows="8" :columns="4" compact />
           </div>
 
           <div v-else-if="rowsError" class="py-10 px-4 text-center text-sm text-red-600 dark:text-red-400">
@@ -153,32 +153,14 @@
             </table>
           </div>
 
-          <div
-            v-if="rowsMeta && rowsMeta.last_page > 1"
-            class="flex items-center justify-between border-t border-gray-200 px-4 py-3 text-sm dark:border-gray-700"
-          >
-            <span class="text-gray-500 dark:text-gray-400">
-              Trang {{ rowsMeta.current_page }} / {{ rowsMeta.last_page }}
-            </span>
-            <div class="flex gap-2">
-              <button
-                type="button"
-                class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-700"
-                :disabled="rowsMeta.current_page <= 1"
-                @click="loadRows(rowsMeta.current_page - 1)"
-              >
-                Trước
-              </button>
-              <button
-                type="button"
-                class="rounded-lg border border-gray-300 px-3 py-1.5 disabled:opacity-50 dark:border-gray-700"
-                :disabled="rowsMeta.current_page >= rowsMeta.last_page"
-                @click="loadRows(rowsMeta.current_page + 1)"
-              >
-                Sau
-              </button>
-            </div>
-          </div>
+          <TablePagination
+            v-if="rowsMeta"
+            :page="rowsMeta.current_page"
+            :last-page="rowsMeta.last_page"
+            hide-when-single-page
+            wrapper-class="px-4 py-3"
+            @update:page="loadRows"
+          />
         </div>
       </div>
     </div>
@@ -187,6 +169,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import TablePagination from '@/components/common/TablePagination.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import { companyService } from '@/services/companyService'
 import type {
   CompanyImportJobListItem,

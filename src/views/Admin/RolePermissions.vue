@@ -2,9 +2,7 @@
   <AdminLayout>
     <div class="space-y-5 sm:space-y-6">
       <ComponentCard title="Quản lý phân quyền">
-        <div v-if="loading" class="flex items-center justify-center py-12">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-        </div>
+        <TableSkeleton v-if="loading" :rows="8" :columns="4" />
 
         <div v-else>
           <div
@@ -198,6 +196,7 @@
 import { onMounted, ref, computed } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import { roleService } from '@/services/roleService'
 import { useAuthStore } from '@/stores/auth'
 import { useMenuStore } from '@/stores/menu'

@@ -1,8 +1,8 @@
 <template>
   <AdminLayout>
-    <form class="mx-auto max-w-[1100px] space-y-6 pb-24" @submit.prevent="handleSubmit">
-      <header class="flex flex-col gap-1.5">
-        <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">
+    <form class="w-full space-y-4 pb-20 3xl:mx-auto 3xl:max-w-[1680px]" @submit.prevent="handleSubmit">
+      <header class="flex flex-col gap-1">
+        <h1 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
           Thêm doanh nghiệp
         </h1>
         <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -15,7 +15,7 @@
         title="Thông tin chung"
         desc="Định danh pháp lý và thông tin liên hệ của doanh nghiệp"
       >
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <div>
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Mã số doanh nghiệp <span class="text-red-500">*</span>
@@ -89,9 +89,9 @@
         title="Địa chỉ và địa bàn hành chính"
         desc="Gõ để tìm trong danh mục; nếu chưa có, chọn “Tạo mới” ngay trong ô"
       >
-        <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
           <!-- Địa giới cũ -->
-          <section class="space-y-4 rounded-xl bg-gray-50 p-4 dark:bg-gray-800/40 sm:p-5">
+          <section class="space-y-3 rounded-xl bg-gray-50 p-3 dark:bg-gray-800/40 sm:p-4">
             <div class="flex items-center gap-2">
               <span class="rounded-md bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
                 Địa giới cũ
@@ -149,7 +149,7 @@
           </section>
 
           <!-- Địa giới mới -->
-          <section class="space-y-4 rounded-xl bg-emerald-50/60 p-4 dark:bg-emerald-950/20 sm:p-5">
+          <section class="space-y-3 rounded-xl bg-emerald-50/60 p-3 dark:bg-emerald-950/20 sm:p-4">
             <div class="flex items-center gap-2">
               <span class="rounded-md bg-emerald-200/80 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">
                 Địa giới mới
@@ -207,7 +207,7 @@
           </section>
         </div>
 
-        <div class="grid grid-cols-1 gap-5 border-t border-gray-100 pt-5 dark:border-gray-800 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-3 border-t border-gray-100 pt-3 dark:border-gray-800 sm:grid-cols-2">
           <div>
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Kinh độ (long)
@@ -241,7 +241,7 @@
         title="Đăng ký và trạng thái"
         desc="Thông tin giấy phép, vốn và tình trạng hoạt động"
       >
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <div>
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Ngày cấp
@@ -321,7 +321,7 @@
         title="Đại diện và sở hữu"
         desc="Người đại diện theo pháp luật, chủ sở hữu và cổ đông"
       >
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <div>
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Người đại diện theo pháp luật
@@ -377,7 +377,7 @@
         title="Ngành nghề kinh doanh"
         desc="Chọn theo mã VSIC; ngành đầu tiên hiển thị kèm nút xem toàn bộ khi danh sách dài"
       >
-        <div class="grid grid-cols-1 gap-5">
+        <div class="grid grid-cols-1 gap-3">
           <div class="max-w-xl">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Ngành nghề kinh doanh chính
@@ -421,7 +421,7 @@
 
         <div
           v-if="form.dsThanhVienGopVon.length === 0"
-          class="flex flex-col items-center gap-3 rounded-xl border border-dashed border-gray-300 px-6 py-10 text-center dark:border-gray-700"
+          class="flex flex-col items-center gap-2 rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center dark:border-gray-700"
         >
           <p class="text-sm text-gray-500 dark:text-gray-400">
             Chưa có thành viên góp vốn nào.
@@ -545,10 +545,10 @@ import AdministrativeCatalogSelect from '@/components/forms/FormElements/Adminis
 import IndustryCategorySelect from '@/components/forms/FormElements/IndustryCategorySelect.vue'
 
 const inputClass =
-  'dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs transition placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800'
+  'dark:bg-dark-900 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 shadow-theme-xs transition placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800'
 
 const selectClass =
-  'dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs transition focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800'
+  'dark:bg-dark-900 h-10 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-3 py-2 pr-10 text-sm text-gray-800 shadow-theme-xs transition focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800'
 
 const SelectChevron = defineComponent({
   name: 'SelectChevron',

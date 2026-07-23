@@ -46,8 +46,8 @@
           </button>
         </div>
 
-        <div v-if="newLoading" class="flex items-center justify-center py-10">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
+        <div v-if="newLoading">
+          <TableSkeleton :rows="6" :columns="2" compact />
         </div>
 
         <div v-else class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
@@ -72,11 +72,12 @@
           </table>
         </div>
 
-        <div v-if="newTotalPages > 1" class="mt-4 flex items-center justify-end gap-2 text-sm">
-          <button type="button" class="rounded border border-gray-300 px-3 py-1 disabled:opacity-40 dark:border-gray-600" :disabled="newPage <= 1" @click="loadNewUnits(newPage - 1)">Trước</button>
-          <span>{{ newPage }} / {{ newTotalPages }}</span>
-          <button type="button" class="rounded border border-gray-300 px-3 py-1 disabled:opacity-40 dark:border-gray-600" :disabled="newPage >= newTotalPages" @click="loadNewUnits(newPage + 1)">Sau</button>
-        </div>
+        <TablePagination
+          :page="newPage"
+          :last-page="newTotalPages"
+          hide-when-single-page
+          @update:page="loadNewUnits"
+        />
 
         <div v-if="canManage" class="mt-6 space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Import Excel đơn vị hành chính mới</h3>
@@ -142,8 +143,8 @@
           </button>
         </div>
 
-        <div v-if="legacyLoading" class="flex items-center justify-center py-10">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
+        <div v-if="legacyLoading">
+          <TableSkeleton :rows="6" :columns="3" compact />
         </div>
 
         <div v-else class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
@@ -172,11 +173,12 @@
           </table>
         </div>
 
-        <div v-if="legacyTotalPages > 1" class="mt-4 flex items-center justify-end gap-2 text-sm">
-          <button type="button" class="rounded border border-gray-300 px-3 py-1 disabled:opacity-40 dark:border-gray-600" :disabled="legacyPage <= 1" @click="loadLegacyUnits(legacyPage - 1)">Trước</button>
-          <span>{{ legacyPage }} / {{ legacyTotalPages }}</span>
-          <button type="button" class="rounded border border-gray-300 px-3 py-1 disabled:opacity-40 dark:border-gray-600" :disabled="legacyPage >= legacyTotalPages" @click="loadLegacyUnits(legacyPage + 1)">Sau</button>
-        </div>
+        <TablePagination
+          :page="legacyPage"
+          :last-page="legacyTotalPages"
+          hide-when-single-page
+          @update:page="loadLegacyUnits"
+        />
 
         <div v-if="canManage" class="mt-6 space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Import Excel đơn vị hành chính cũ</h3>
@@ -378,8 +380,8 @@
           Bạn chỉ có quyền xem. Cần <strong>feature.cadastral.manage</strong> để thêm / sửa / xoá.
         </div>
 
-        <div v-if="catalogLoading" class="flex items-center justify-center py-10">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
+        <div v-if="catalogLoading">
+          <TableSkeleton :rows="8" :columns="5" compact />
         </div>
 
         <div v-else class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
@@ -444,11 +446,12 @@
           </table>
         </div>
 
-        <div v-if="catalogTotalPages > 1" class="mt-4 flex items-center justify-end gap-2 text-sm">
-          <button type="button" class="rounded border border-gray-300 px-3 py-1 disabled:opacity-40 dark:border-gray-600" :disabled="catalogPage <= 1" @click="loadCatalog(catalogPage - 1)">Trước</button>
-          <span>{{ catalogPage }} / {{ catalogTotalPages }}</span>
-          <button type="button" class="rounded border border-gray-300 px-3 py-1 disabled:opacity-40 dark:border-gray-600" :disabled="catalogPage >= catalogTotalPages" @click="loadCatalog(catalogPage + 1)">Sau</button>
-        </div>
+        <TablePagination
+          :page="catalogPage"
+          :last-page="catalogTotalPages"
+          hide-when-single-page
+          @update:page="loadCatalog"
+        />
 
         <p v-if="actionError && activeTab === 'catalog'" class="mt-4 text-sm text-red-600 dark:text-red-400">{{ actionError }}</p>
       </ComponentCard>
@@ -983,8 +986,8 @@
           </div>
         </div>
 
-        <div v-if="mappingLoading" class="flex items-center justify-center py-10">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
+        <div v-if="mappingLoading">
+          <TableSkeleton :rows="8" :columns="6" compact />
         </div>
 
         <div v-else-if="mappingViewMode === 'groups'" class="space-y-4">
@@ -1067,11 +1070,13 @@
           </table>
         </div>
 
-        <div v-if="mappingViewMode === 'list' && mappingTotalPages > 1" class="mt-4 flex items-center justify-end gap-2 text-sm">
-          <button type="button" class="rounded border border-gray-300 px-3 py-1 disabled:opacity-40 dark:border-gray-600" :disabled="mappingPage <= 1" @click="loadMappings(mappingPage - 1)">Trước</button>
-          <span>{{ mappingPage }} / {{ mappingTotalPages }}</span>
-          <button type="button" class="rounded border border-gray-300 px-3 py-1 disabled:opacity-40 dark:border-gray-600" :disabled="mappingPage >= mappingTotalPages" @click="loadMappings(mappingPage + 1)">Sau</button>
-        </div>
+        <TablePagination
+          v-if="mappingViewMode === 'list'"
+          :page="mappingPage"
+          :last-page="mappingTotalPages"
+          hide-when-single-page
+          @update:page="loadMappings"
+        />
 
         <p v-if="actionError && activeTab === 'mapping'" class="mt-4 text-sm text-red-600 dark:text-red-400">{{ actionError }}</p>
       </ComponentCard>
@@ -1084,6 +1089,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TablePagination from '@/components/common/TablePagination.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import SearchableSelect, { type SearchableSelectOption } from '@/components/forms/FormElements/SearchableSelect.vue'
 import { hanhChinhService } from '@/services/hanhChinhService'
 import { useAuthStore } from '@/stores/auth'

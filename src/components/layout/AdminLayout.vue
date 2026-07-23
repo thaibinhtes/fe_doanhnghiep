@@ -8,7 +8,7 @@
     >
       <app-header class="shrink-0" />
       <div
-        class="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-1 flex-col min-h-0 p-2 sm:p-3 md:p-4"
+        class="flex w-full flex-1 flex-col min-h-0 p-2 sm:p-2.5 md:p-3"
         :class="contentClass"
       >
         <slot></slot>

@@ -37,10 +37,7 @@
           </div>
         </div>
 
-        <!-- Loading -->
-        <div v-if="membersStore.loading" class="py-10 text-center text-sm text-gray-500">
-          Đang tải...
-        </div>
+        <TableSkeleton v-if="membersStore.loading" variant="cards" :rows="6" />
 
         <!-- Error -->
         <div v-else-if="membersStore.error" class="py-10 text-center text-sm text-error-500">
@@ -61,45 +58,15 @@
           />
         </div>
 
-        <!-- Pagination -->
-        <div
-          v-if="membersStore.meta.last_page > 1"
-          class="mt-6 flex flex-col items-stretch gap-3 border-t border-gray-200 pt-4 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <span class="text-center text-sm text-gray-500 dark:text-gray-400 sm:text-left">
-            {{ membersStore.meta.from }}–{{ membersStore.meta.to }} / {{ membersStore.meta.total }}
-            <span class="text-gray-400"> · Trang {{ membersStore.meta.current_page }}/{{ membersStore.meta.last_page }}</span>
-          </span>
-          <div class="flex items-center justify-center gap-1">
-            <button
-              :disabled="membersStore.meta.current_page === 1"
-              @click="changePage(membersStore.meta.current_page - 1)"
-              class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-            >
-              ‹
-            </button>
-            <button
-              v-for="p in membersStore.meta.last_page"
-              :key="p"
-              @click="changePage(p)"
-              :class="[
-                'hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition',
-                p === membersStore.meta.current_page
-                  ? 'bg-brand-500 text-white'
-                  : 'border border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800',
-              ]"
-            >
-              {{ p }}
-            </button>
-            <button
-              :disabled="membersStore.meta.current_page === membersStore.meta.last_page"
-              @click="changePage(membersStore.meta.current_page + 1)"
-              class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-            >
-              ›
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          :page="membersStore.meta.current_page"
+          :last-page="membersStore.meta.last_page"
+          :total="membersStore.meta.total"
+          :from="membersStore.meta.from"
+          :to="membersStore.meta.to"
+          hide-when-single-page
+          @update:page="changePage"
+        />
       </ComponentCard>
     </div>
   </AdminLayout>
@@ -109,6 +76,8 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TablePagination from '@/components/common/TablePagination.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import MemberItem from '@/components/members/MemberItem.vue'
 import { useMembersStore } from '@/stores/members'
 

@@ -102,10 +102,10 @@
 
               <button
                 type="submit"
-                :disabled="auth.loading || captchaLoading || (captchaEnabled && !captchaToken)"
+                :disabled="auth.loading || submitting || captchaLoading || (captchaEnabled && !captchaToken)"
                 class="flex h-12 w-full items-center justify-center rounded-lg bg-brand-600 text-base font-bold text-white shadow-theme-sm transition hover:bg-brand-700 active:translate-y-px disabled:opacity-60"
               >
-                {{ auth.loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
+                {{ auth.loading || submitting ? 'Đang đăng nhập...' : 'Đăng nhập' }}
               </button>
             </div>
           </form>
@@ -146,6 +146,7 @@ const captchaSiteKey = ref('')
 const captchaAction = ref('LOGIN')
 const captchaToken = ref('')
 const captchaRef = ref<InstanceType<typeof RecaptchaEnterprise> | null>(null)
+const submitting = ref(false)
 
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value
@@ -171,6 +172,8 @@ const resetCaptcha = () => {
 }
 
 const handleSubmit = async () => {
+  if (submitting.value || auth.loading) return
+
   formError.value = ''
 
   if (captchaEnabled.value && !captchaToken.value) {
@@ -178,11 +181,18 @@ const handleSubmit = async () => {
     return
   }
 
+  // Token chỉ dùng 1 lần — lấy rồi xóa ngay để tránh double-submit → DUPE.
+  const captchaTokenOnce = captchaToken.value || undefined
+  if (captchaEnabled.value) {
+    captchaToken.value = ''
+  }
+
+  submitting.value = true
   try {
     await auth.login({
       email: email.value.trim(),
       password: password.value,
-      captchaToken: captchaToken.value || undefined,
+      captchaToken: captchaTokenOnce,
     })
 
     const redirect =
@@ -196,6 +206,8 @@ const handleSubmit = async () => {
     if (axiosErr.response?.data?.message) {
       formError.value = axiosErr.response.data.message
     }
+  } finally {
+    submitting.value = false
   }
 }
 

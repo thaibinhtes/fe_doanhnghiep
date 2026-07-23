@@ -1,8 +1,8 @@
 <template>
   <AdminLayout>
-    <form class="mx-auto max-w-[1100px] space-y-6 pb-24" @submit.prevent="handleSubmit">
-      <header class="flex flex-col gap-1.5">
-        <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">
+    <form class="w-full space-y-4 pb-20 3xl:mx-auto 3xl:max-w-[1680px]" @submit.prevent="handleSubmit">
+      <header class="flex flex-col gap-1">
+        <h1 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
           Thêm hợp tác xã
         </h1>
         <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -15,7 +15,7 @@
         title="Thông tin chung"
         desc="Tên, mã số thuế và thông tin hoạt động của hợp tác xã"
       >
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <div class="sm:col-span-2">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Tên hợp tác xã <span class="text-red-500">*</span>
@@ -76,9 +76,9 @@
         title="Địa chỉ và địa bàn hành chính"
         desc="Gõ để tìm trong danh mục; nếu chưa có, chọn “Tạo mới” ngay trong ô"
       >
-        <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
           <!-- Địa giới cũ -->
-          <section class="space-y-4 rounded-xl bg-gray-50 p-4 dark:bg-gray-800/40 sm:p-5">
+          <section class="space-y-3 rounded-xl bg-gray-50 p-3 dark:bg-gray-800/40 sm:p-4">
             <div class="flex items-center gap-2">
               <span class="rounded-md bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
                 Địa giới cũ
@@ -136,7 +136,7 @@
           </section>
 
           <!-- Địa giới mới -->
-          <section class="space-y-4 rounded-xl bg-emerald-50/60 p-4 dark:bg-emerald-950/20 sm:p-5">
+          <section class="space-y-3 rounded-xl bg-emerald-50/60 p-3 dark:bg-emerald-950/20 sm:p-4">
             <div class="flex items-center gap-2">
               <span class="rounded-md bg-emerald-200/80 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">
                 Địa giới mới
@@ -200,7 +200,7 @@
         title="Quy mô và vốn"
         desc="Diện tích, vốn điều lệ và nhân lực của hợp tác xã"
       >
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Diện tích (ha)
@@ -243,7 +243,7 @@
         title="Nhân sự và ghi chú"
         desc="Ban quản trị, danh sách thành viên và ghi chú bổ sung"
       >
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div class="sm:col-span-2 sm:max-w-md">
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Chủ tịch HĐQT
@@ -329,7 +329,7 @@ import AdministrativeCatalogSelect from '@/components/forms/FormElements/Adminis
 import { cooperativeService } from '@/services/cooperativeService'
 
 const inputClass =
-  'dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs transition placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800'
+  'dark:bg-dark-900 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm text-gray-800 shadow-theme-xs transition placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800'
 
 const textareaClass =
   'dark:bg-dark-900 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs transition placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800'

@@ -64,7 +64,7 @@
         </div>
 
         <div class="min-h-0 flex-1 overflow-auto">
-          <div v-if="loading" class="py-12 text-center text-sm text-gray-500">Đang tải...</div>
+          <TableSkeleton v-if="loading" :rows="8" :columns="8" />
           <div v-else-if="items.length === 0" class="py-12 text-center text-sm text-gray-500">
             Không có lịch sử định danh.
           </div>
@@ -111,40 +111,17 @@
           </div>
         </div>
 
-        <div
+        <TablePagination
           v-if="meta.total > 0"
-          class="shrink-0 flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 pt-2 text-sm dark:border-gray-700"
-        >
-          <span class="text-gray-500 dark:text-gray-400">
-            Tổng {{ meta.total }} bản ghi · Trang {{ meta.current_page }}/{{ meta.last_page }}
-          </span>
-          <div class="flex items-center gap-2">
-            <select
-              v-model.number="perPage"
-              class="h-8 rounded-lg border border-gray-300 bg-transparent px-2 text-sm dark:border-gray-700 dark:bg-gray-900"
-            >
-              <option :value="20">20 / trang</option>
-              <option :value="50">50 / trang</option>
-              <option :value="100">100 / trang</option>
-            </select>
-            <button
-              type="button"
-              class="rounded-lg border border-gray-300 px-3 py-1 disabled:opacity-50 dark:border-gray-700"
-              :disabled="page <= 1 || loading"
-              @click="page--"
-            >
-              Trước
-            </button>
-            <button
-              type="button"
-              class="rounded-lg border border-gray-300 px-3 py-1 disabled:opacity-50 dark:border-gray-700"
-              :disabled="page >= meta.last_page || loading"
-              @click="page++"
-            >
-              Sau
-            </button>
-          </div>
-        </div>
+          :page="page"
+          :last-page="meta.last_page"
+          :total="meta.total"
+          :per-page="perPage"
+          :page-size-options="[20, 50, 100]"
+          :disabled="loading"
+          @update:page="(p) => (page = p)"
+          @update:per-page="(size) => (perPage = size)"
+        />
       </ComponentCard>
     </div>
   </AdminLayout>
@@ -154,6 +131,8 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TablePagination from '@/components/common/TablePagination.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import { reportService } from '@/services/reportService'
 import type { IdentityHistoryItem } from '@/types/identityHistory'
 import { IDENTITY_ACTION_OPTIONS, IDENTITY_SOURCE_OPTIONS } from '@/types/identityHistory'

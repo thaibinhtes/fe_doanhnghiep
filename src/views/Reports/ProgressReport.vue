@@ -86,9 +86,7 @@
           </div>
         </div>
 
-        <div v-if="loading" class="flex items-center justify-center py-12">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-        </div>
+        <TableSkeleton v-if="loading" :rows="6" :columns="12" />
 
         <div v-else-if="report" class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
           <table class="min-w-[1400px] w-full border-collapse text-sm">
@@ -171,6 +169,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import { reportService } from '@/services/reportService'
 import { useAuthStore } from '@/stores/auth'
 import type { ProgressReport, ProgressReportMetrics } from '@/types/report'

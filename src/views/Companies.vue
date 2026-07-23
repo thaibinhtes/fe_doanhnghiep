@@ -236,9 +236,7 @@
         </div>
 
         <!-- Mobile: card list -->
-        <div v-if="store.loading" class="flex shrink-0 items-center justify-center py-12 lg:hidden">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-        </div>
+        <TableSkeleton v-if="store.loading" variant="cards" :rows="5" class="lg:hidden" />
         <div
           v-else-if="store.companies.length === 0"
           class="py-10 text-center text-sm text-gray-400 lg:hidden"
@@ -262,12 +260,27 @@
 
         <!-- Desktop: wide table -->
         <div class="hidden min-h-0 flex-1 flex-col lg:flex">
-          <div
+          <TableSkeleton
             v-if="store.loading"
-            class="flex min-h-[240px] flex-1 items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700"
-          >
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-          </div>
+            :rows="10"
+            :columns="[
+              { width: '46px', barClass: 'w-4', headerClass: 'w-4' },
+              { width: '50px', barClass: 'w-6', headerClass: 'w-6' },
+              { width: '140px', barClass: 'w-24' },
+              { width: '220px', barClass: 'w-36' },
+              { width: '220px', barClass: 'w-32' },
+              { width: '220px', barClass: 'w-32' },
+              { width: '150px', barClass: 'w-20' },
+              { width: '150px', barClass: 'w-20' },
+              { width: '170px', barClass: 'w-24' },
+              { width: '170px', barClass: 'w-24' },
+              { width: '170px', barClass: 'w-24' },
+              { width: '170px', barClass: 'w-24' },
+              { width: '140px', barClass: 'w-16' },
+              { width: '130px', barClass: 'w-16' },
+              { width: '130px', barClass: 'w-16' },
+            ]"
+          />
 
           <div
             v-else-if="store.companies.length === 0"
@@ -456,70 +469,14 @@
           </div>
         </div>
 
-        <!-- Total & Pagination -->
-        <div
-          class="flex shrink-0 flex-col items-stretch justify-between gap-2 border-t border-gray-100 pt-2 dark:border-gray-800 sm:flex-row sm:items-center"
-        >
-          <p class="text-center text-sm text-gray-500 dark:text-gray-400 sm:text-left">
-            Tổng số: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ store.total }}</span> bản ghi
-            <span class="lg:hidden text-gray-400"> · Trang {{ store.page }}/{{ store.totalPages || 1 }}</span>
-          </p>
-          <div class="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
-            <label class="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-              <span class="whitespace-nowrap">Hiển thị</span>
-              <select
-                :value="store.perPage"
-                @change="handlePerPageChange"
-                class="h-9 rounded-lg border border-gray-300 bg-white px-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-              >
-                <option v-for="size in pageSizeOptions" :key="size" :value="size">
-                  {{ size }}
-                </option>
-              </select>
-            </label>
-            <button
-              @click="prevPage"
-              :disabled="store.page === 1"
-              :class="[
-                'inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm transition',
-                store.page === 1
-                  ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
-                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
-              ]"
-            >
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </button>
-            <button
-              v-for="page in visiblePages"
-              :key="page"
-              @click="goToPage(page)"
-              :class="[
-                'hidden sm:inline-flex h-9 min-w-[36px] items-center justify-center rounded-lg border px-3 text-sm font-medium transition',
-                store.page === page
-                  ? 'border-brand-500 bg-brand-500 text-white'
-                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
-              ]"
-            >
-              {{ page }}
-            </button>
-            <button
-              @click="nextPage"
-              :disabled="store.page === store.totalPages"
-              :class="[
-                'inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm transition',
-                store.page === store.totalPages
-                  ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
-                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
-              ]"
-            >
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          :page="store.page"
+          :last-page="store.totalPages || 1"
+          :total="store.total"
+          :per-page="store.perPage"
+          @update:page="store.setPage"
+          @update:per-page="store.setPerPage"
+        />
       </ComponentCard>
     </div>
 
@@ -1653,6 +1610,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { useCompaniesStore } from '@/stores/companies'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TablePagination from '@/components/common/TablePagination.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import Modal from '@/components/profile/Modal.vue'
 import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
 import ImportLoadingSkeleton from '@/components/companies/ImportLoadingSkeleton.vue'
@@ -2350,40 +2309,6 @@ function deleteSelectedIdentityImportConfig() {
   )
   selectedIdentityImportConfigId.value = ''
   persistIdentityImportConfigs()
-}
-
-const pageSizeOptions = [15, 25, 50, 100, 200, 300, 400, 500] as const
-
-const visiblePages = computed(() => {
-  const pages: number[] = []
-  const maxVisible = 5
-  let start = Math.max(1, store.page - Math.floor(maxVisible / 2))
-  let end = Math.min(store.totalPages, start + maxVisible - 1)
-  if (end - start + 1 < maxVisible) {
-    start = Math.max(1, end - maxVisible + 1)
-  }
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-  return pages
-})
-
-const goToPage = (page: number) => {
-  store.setPage(page)
-}
-
-const prevPage = () => {
-  if (store.page > 1) store.setPage(store.page - 1)
-}
-
-const nextPage = () => {
-  if (store.page < store.totalPages) store.setPage(store.page + 1)
-}
-
-const handlePerPageChange = (event: Event) => {
-  const value = Number((event.target as HTMLSelectElement).value)
-  if (!Number.isFinite(value) || value <= 0) return
-  store.setPerPage(value)
 }
 
 const resetFilters = () => {

@@ -47,7 +47,7 @@
         <div v-if="store.error" class="shrink-0 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">{{ store.error }}</div>
 
         <div class="min-h-0 flex-1 overflow-auto">
-          <div v-if="store.loading" class="py-12 text-center text-sm text-gray-500">Đang tải...</div>
+          <TableSkeleton v-if="store.loading" variant="both" :rows="8" :columns="12" />
           <div v-else-if="store.cooperatives.length === 0" class="py-12 text-center text-sm text-gray-500">Không có hợp tác xã.</div>
 
           <template v-else>
@@ -123,20 +123,14 @@
           </template>
         </div>
 
-        <div class="shrink-0 flex flex-wrap items-center justify-between gap-2 border-t border-gray-200 pt-2 text-sm dark:border-gray-700">
-          <div class="flex items-center gap-2">
-            <span class="text-gray-500">Hiển thị</span>
-            <select v-model.number="pageSize" class="h-8 rounded-lg border border-gray-300 bg-transparent px-2 text-sm dark:border-gray-700 dark:bg-gray-900">
-              <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
-            </select>
-            <span class="text-gray-500">/ {{ store.total }} bản ghi</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <button type="button" class="rounded-lg border px-2 py-1 disabled:opacity-50" :disabled="store.page <= 1" @click="store.setPage(store.page - 1)">Trước</button>
-            <span class="px-2 text-gray-600 dark:text-gray-300">{{ store.page }} / {{ store.totalPages }}</span>
-            <button type="button" class="rounded-lg border px-2 py-1 disabled:opacity-50" :disabled="store.page >= store.totalPages" @click="store.setPage(store.page + 1)">Sau</button>
-          </div>
-        </div>
+        <TablePagination
+          :page="store.page"
+          :last-page="store.totalPages || 1"
+          :total="store.total"
+          :per-page="store.perPage"
+          @update:page="store.setPage"
+          @update:per-page="store.setPerPage"
+        />
       </ComponentCard>
     </div>
 
@@ -203,6 +197,8 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TablePagination from '@/components/common/TablePagination.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import Modal from '@/components/profile/Modal.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 import CooperativeMobileCard from '@/components/cooperatives/CooperativeMobileCard.vue'
@@ -225,12 +221,6 @@ const canImportCooperatives = computed(
 )
 const hasUnrestrictedOrgScopeFlag = computed(() => hasUnrestrictedOrgScope(auth.user))
 const implicitDonViId = computed(() => auth.user?.donViId ?? null)
-
-const pageSizeOptions = [15, 25, 50, 100, 200, 300, 400, 500]
-const pageSize = computed({
-  get: () => store.perPage,
-  set: (value: number) => store.setPerPage(value),
-})
 
 const filter = reactive({ search: '', phuongXa: '' })
 const filterProvinceCode = ref(DEFAULT_PROVINCE_CODE)

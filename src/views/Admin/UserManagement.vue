@@ -52,9 +52,7 @@
           {{ message }}
         </div>
 
-        <div v-if="loading" class="flex items-center justify-center py-12">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-        </div>
+        <TableSkeleton v-if="loading" :rows="8" :columns="6" />
 
         <div v-else-if="users.length === 0" class="py-12 text-center text-sm text-gray-500">
           Không có người dùng nào.
@@ -184,6 +182,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import Modal from '@/components/profile/Modal.vue'
 import { useAuthStore } from '@/stores/auth'
 import { orgUnitService } from '@/services/orgUnitService'

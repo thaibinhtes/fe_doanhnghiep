@@ -11,6 +11,7 @@ import type {
   TaxCooperativeItem,
   TaxPaginatedResponse,
   TaxUnit,
+  TaxUnitImportPreviewResult,
 } from '@/types/taxManagement'
 
 export const taxManagementService = {
@@ -85,6 +86,22 @@ export const taxManagementService = {
 
   async getTaxUnitImportColumnMap(): Promise<TaxImportConfig> {
     const { data } = await api.get<{ data: TaxImportConfig }>('/tax-units/import-column-map')
+    return data.data
+  },
+
+  async previewTaxUnitsFromExcel(
+    file: File,
+    config?: { startRow?: number; columnMap?: TaxImportColumnMap; limit?: number },
+  ): Promise<TaxUnitImportPreviewResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (config?.startRow !== undefined) formData.append('startRow', String(config.startRow))
+    if (config?.columnMap) formData.append('columnMap', JSON.stringify(config.columnMap))
+    if (config?.limit !== undefined) formData.append('limit', String(config.limit))
+
+    const { data } = await api.post<{ data: TaxUnitImportPreviewResult }>('/tax-units/import-preview', formData, {
+      timeout: 120_000,
+    })
     return data.data
   },
 

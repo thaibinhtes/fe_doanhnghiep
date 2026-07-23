@@ -1,26 +1,26 @@
 <template>
   <AdminLayout>
-    <div class="mx-auto max-w-[1600px] space-y-8">
-      <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="w-full space-y-4">
+      <header class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             Tình hình định danh
           </h1>
-          <p class="mt-2 text-base text-gray-600 dark:text-gray-300">
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
             Xem tổng quan toàn tỉnh và số liệu theo từng địa bàn hành chính.
           </p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
           <span v-if="dashboard" class="text-sm text-gray-500 dark:text-gray-400">
             Cập nhật {{ formatDate(dashboard.generatedAt) }}
           </span>
           <button
             type="button"
-            class="inline-flex h-12 items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 text-base font-semibold text-gray-800 transition hover:bg-gray-50 active:translate-y-px dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
+            class="inline-flex h-10 items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 active:translate-y-px dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
             :disabled="overviewLoading"
             @click="refreshAll"
           >
-            <RefreshCw class="h-5 w-5" :class="{ 'animate-spin': overviewLoading || companyAreasLoading || cooperativeAreasLoading }" />
+            <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': overviewLoading || companyAreasLoading || cooperativeAreasLoading }" />
             Làm mới
           </button>
         </div>
@@ -41,22 +41,23 @@
 
       <template v-else-if="dashboard">
         <!-- Doanh nghiệp -->
-        <section class="space-y-5">
-          <div class="flex items-center gap-3">
-            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
-              <Building2 class="h-6 w-6" />
+        <section class="space-y-3">
+          <div class="flex items-center gap-2.5">
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+              <Building2 class="h-5 w-5" />
             </span>
             <div>
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Doanh nghiệp</h2>
-              <p class="text-base text-gray-600 dark:text-gray-300">Theo trạng thái định danh</p>
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Doanh nghiệp</h2>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Theo trạng thái định danh</p>
             </div>
           </div>
 
-          <div class="grid gap-5 xl:grid-cols-12">
+          <div class="grid gap-3 xl:grid-cols-12">
             <ComponentCard
               title="Toàn tỉnh"
               desc="Tổng quan định danh doanh nghiệp"
               class-name="xl:col-span-4"
+              fullscreenable
             >
               <div class="grid grid-cols-[minmax(0,1fr)_150px] items-center gap-3">
                 <div class="space-y-4">
@@ -81,11 +82,12 @@
               title="Theo địa bàn hành chính"
               desc="Bảng thống kê — bấm vào một dòng để mở danh sách doanh nghiệp"
               class-name="xl:col-span-8"
+              fullscreenable
             >
               <template #header-right>
                 <select
                   v-model="companyAreaKey"
-                  class="h-12 min-w-[220px] rounded-xl border border-gray-300 bg-white px-4 text-base font-medium text-gray-800 outline-none focus:border-brand-500 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                  class="h-10 min-w-[200px] rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-gray-800 outline-none focus:border-brand-500 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                 >
                   <option v-for="option in areaOptions" :key="option.key" :value="option.key">
                     {{ option.label }}
@@ -113,22 +115,23 @@
         </section>
 
         <!-- Hợp tác xã -->
-        <section class="space-y-5 border-t border-gray-200 pt-8 dark:border-gray-800">
-          <div class="flex items-center gap-3">
-            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-              <UsersRound class="h-6 w-6" />
+        <section class="space-y-3 border-t border-gray-200 pt-4 dark:border-gray-800">
+          <div class="flex items-center gap-2.5">
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+              <UsersRound class="h-5 w-5" />
             </span>
             <div>
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Hợp tác xã</h2>
-              <p class="text-base text-gray-600 dark:text-gray-300">Theo liên kết và trạng thái dữ liệu thuế</p>
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Hợp tác xã</h2>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Theo liên kết và trạng thái dữ liệu thuế</p>
             </div>
           </div>
 
-          <div class="grid gap-5 xl:grid-cols-12">
+          <div class="grid gap-3 xl:grid-cols-12">
             <ComponentCard
               title="Toàn tỉnh"
               desc="Tổng quan định danh hợp tác xã"
               class-name="xl:col-span-4"
+              fullscreenable
             >
               <div class="grid grid-cols-[minmax(0,1fr)_150px] items-center gap-3">
                 <div class="space-y-4">
@@ -153,11 +156,12 @@
               title="Theo địa bàn hành chính"
               desc="Bảng thống kê theo danh mục hành chính đã đồng bộ"
               class-name="xl:col-span-8"
+              fullscreenable
             >
               <template #header-right>
                 <select
                   v-model="cooperativeAreaKey"
-                  class="h-12 min-w-[220px] rounded-xl border border-gray-300 bg-white px-4 text-base font-medium text-gray-800 outline-none focus:border-brand-500 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                  class="h-10 min-w-[200px] rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-gray-800 outline-none focus:border-brand-500 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                 >
                   <option v-for="option in areaOptions" :key="option.key" :value="option.key">
                     {{ option.label }}
@@ -213,8 +217,8 @@ const overviewError = ref<string | null>(null)
 const dashboard = ref<DashboardData | null>(null)
 const companySearch = ref('')
 const cooperativeSearch = ref('')
-const companyAreaKey = ref<DashboardAreaKey>('quanHuyenMoi')
-const cooperativeAreaKey = ref<DashboardAreaKey>('quanHuyenMoi')
+const companyAreaKey = ref<DashboardAreaKey>('phuongXaMoi')
+const cooperativeAreaKey = ref<DashboardAreaKey>('phuongXaMoi')
 const companyAreasCache = ref<Partial<Record<DashboardAreaKey, DashboardAreaIdentity[]>>>({})
 const cooperativeAreasCache = ref<Partial<Record<DashboardAreaKey, DashboardAreaIdentity[]>>>({})
 const companyAreasLoading = ref(false)
@@ -225,9 +229,9 @@ let companyAreasRequestId = 0
 let cooperativeAreasRequestId = 0
 
 const defaultAreaOptions: DashboardAreaOption[] = [
+  { key: 'phuongXaMoi', label: 'Phường / Xã / Thị trấn mới' },
   { key: 'quanHuyenMoi', label: 'Quận / Huyện mới' },
   { key: 'quanHuyenCu', label: 'Quận / Huyện cũ' },
-  { key: 'phuongXaMoi', label: 'Phường / Xã / Thị trấn mới' },
   { key: 'phuongXaCu', label: 'Phường / Xã / Thị trấn cũ' },
 ]
 const areaOptions = computed(() => dashboard.value?.areaOptions ?? defaultAreaOptions)
@@ -238,6 +242,15 @@ const cooperativeIdentity = computed<DashboardIdentity>(() =>
 )
 
 const formatNumber = (value: number) => new Intl.NumberFormat('vi-VN').format(value)
+
+const formatIdentifiedRate = (identified: number, total: number) => {
+  if (total <= 0) return '0%'
+  const rate = (identified / total) * 100
+  return `${new Intl.NumberFormat('vi-VN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  }).format(rate)}%`
+}
 
 const formatDate = (iso: string) => {
   try {
@@ -356,27 +369,28 @@ const AreaStatsTable = defineComponent({
       ),
     )
 
-    return () => h('div', { class: 'space-y-4' }, [
+    return () => h('div', { class: 'space-y-3' }, [
       h('div', { class: 'relative' }, [
-        h(Search, { class: 'pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400' }),
+        h(Search, { class: 'pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' }),
         h('input', {
           value: props.search,
           type: 'search',
           placeholder: 'Tìm theo tên địa bàn...',
-          class: 'h-12 w-full rounded-xl border border-gray-300 bg-white pl-12 pr-4 text-base text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-brand-500 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white',
+          class: 'h-10 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-brand-500 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white',
           onInput: (event: Event) => emit('update:search', (event.target as HTMLInputElement).value),
         }),
       ]),
 
-      h('div', { class: 'overflow-x-auto rounded-xl border-2 border-gray-200 dark:border-gray-700' }, [
+      h('div', { class: 'max-h-[320px] overflow-x-auto overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700' }, [
         h('table', { class: 'min-w-full border-collapse text-left' }, [
-          h('thead', { class: 'bg-gray-100 dark:bg-gray-800' }, [
+          h('thead', { class: 'sticky top-0 z-10 bg-gray-100 dark:bg-gray-800' }, [
             h('tr', [
-              h('th', { class: 'border-b-2 border-gray-200 px-4 py-4 text-base font-bold text-gray-800 dark:border-gray-700 dark:text-gray-100' }, 'Tên địa bàn'),
-              h('th', { class: 'border-b-2 border-gray-200 px-4 py-4 text-right text-base font-bold text-emerald-800 dark:border-gray-700 dark:text-emerald-300' }, 'Đã định danh'),
-              h('th', { class: 'border-b-2 border-gray-200 px-4 py-4 text-right text-base font-bold text-gray-700 dark:border-gray-700 dark:text-gray-200' }, 'Chưa định danh'),
-              h('th', { class: 'border-b-2 border-gray-200 px-4 py-4 text-right text-base font-bold text-amber-800 dark:border-gray-700 dark:text-amber-300' }, 'Cần rà soát'),
-              h('th', { class: 'border-b-2 border-gray-200 px-4 py-4 text-right text-base font-bold text-gray-800 dark:border-gray-700 dark:text-gray-100' }, 'Tổng'),
+              h('th', { class: 'border-b border-gray-200 px-3 py-2.5 text-sm font-bold text-gray-800 dark:border-gray-700 dark:text-gray-100' }, 'Tên địa bàn'),
+              h('th', { class: 'border-b border-gray-200 px-3 py-2.5 text-right text-sm font-bold text-emerald-800 dark:border-gray-700 dark:text-emerald-300' }, 'Đã định danh'),
+              h('th', { class: 'border-b border-gray-200 px-3 py-2.5 text-right text-sm font-bold text-emerald-800 dark:border-gray-700 dark:text-emerald-300' }, 'Tỉ lệ đã định danh'),
+              h('th', { class: 'border-b border-gray-200 px-3 py-2.5 text-right text-sm font-bold text-gray-700 dark:border-gray-700 dark:text-gray-200' }, 'Chưa định danh'),
+              h('th', { class: 'border-b border-gray-200 px-3 py-2.5 text-right text-sm font-bold text-amber-800 dark:border-gray-700 dark:text-amber-300' }, 'Cần rà soát'),
+              h('th', { class: 'border-b border-gray-200 px-3 py-2.5 text-right text-sm font-bold text-gray-800 dark:border-gray-700 dark:text-gray-100' }, 'Tổng'),
             ]),
           ]),
           h('tbody', rows.value.length
@@ -392,30 +406,32 @@ const AreaStatsTable = defineComponent({
                 onClick: props.clickable ? () => emit('select', area) : undefined,
                 title: props.clickable ? 'Bấm để xem danh sách doanh nghiệp' : undefined,
               }, [
-                h('td', { class: 'border-b border-gray-200 px-4 py-3.5 text-base font-semibold text-gray-900 dark:border-gray-800 dark:text-white' }, area.areaName),
-                h('td', { class: 'border-b border-gray-200 px-4 py-3.5 text-right text-lg font-bold tabular-nums text-emerald-700 dark:border-gray-800 dark:text-emerald-400' }, formatNumber(area.daDinhDanh)),
-                h('td', { class: 'border-b border-gray-200 px-4 py-3.5 text-right text-lg font-bold tabular-nums text-gray-700 dark:border-gray-800 dark:text-gray-200' }, formatNumber(area.chuaDinhDanh)),
-                h('td', { class: 'border-b border-gray-200 px-4 py-3.5 text-right text-lg font-bold tabular-nums text-amber-700 dark:border-gray-800 dark:text-amber-400' }, formatNumber(area.canRaSoat)),
-                h('td', { class: 'border-b border-gray-200 px-4 py-3.5 text-right text-lg font-bold tabular-nums text-gray-900 dark:border-gray-800 dark:text-white' }, formatNumber(area.total)),
+                h('td', { class: 'border-b border-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 dark:border-gray-800 dark:text-white' }, area.areaName),
+                h('td', { class: 'border-b border-gray-200 px-3 py-2 text-right text-sm font-bold tabular-nums text-emerald-700 dark:border-gray-800 dark:text-emerald-400' }, formatNumber(area.daDinhDanh)),
+                h('td', { class: 'border-b border-gray-200 px-3 py-2 text-right text-sm font-bold tabular-nums text-emerald-700 dark:border-gray-800 dark:text-emerald-400' }, formatIdentifiedRate(area.daDinhDanh, area.total)),
+                h('td', { class: 'border-b border-gray-200 px-3 py-2 text-right text-sm font-bold tabular-nums text-gray-700 dark:border-gray-800 dark:text-gray-200' }, formatNumber(area.chuaDinhDanh)),
+                h('td', { class: 'border-b border-gray-200 px-3 py-2 text-right text-sm font-bold tabular-nums text-amber-700 dark:border-gray-800 dark:text-amber-400' }, formatNumber(area.canRaSoat)),
+                h('td', { class: 'border-b border-gray-200 px-3 py-2 text-right text-sm font-bold tabular-nums text-gray-900 dark:border-gray-800 dark:text-white' }, formatNumber(area.total)),
               ]),
             )
             : [
               h('tr', [
                 h('td', {
-                  colspan: 5,
-                  class: 'px-4 py-10 text-center text-base text-gray-500 dark:text-gray-400',
+                  colspan: 6,
+                  class: 'px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400',
                 }, 'Không tìm thấy địa bàn phù hợp.'),
               ]),
             ],
           ),
           rows.value.length
-            ? h('tfoot', { class: 'bg-gray-100 dark:bg-gray-800' }, [
+            ? h('tfoot', { class: 'sticky bottom-0 z-10 bg-gray-100 dark:bg-gray-800' }, [
               h('tr', [
-                h('td', { class: 'px-4 py-4 text-base font-bold text-gray-900 dark:text-white' }, `Cộng (${formatNumber(rows.value.length)} địa bàn)`),
-                h('td', { class: 'px-4 py-4 text-right text-lg font-bold tabular-nums text-emerald-800 dark:text-emerald-300' }, formatNumber(totals.value.daDinhDanh)),
-                h('td', { class: 'px-4 py-4 text-right text-lg font-bold tabular-nums text-gray-800 dark:text-gray-100' }, formatNumber(totals.value.chuaDinhDanh)),
-                h('td', { class: 'px-4 py-4 text-right text-lg font-bold tabular-nums text-amber-800 dark:text-amber-300' }, formatNumber(totals.value.canRaSoat)),
-                h('td', { class: 'px-4 py-4 text-right text-lg font-bold tabular-nums text-gray-900 dark:text-white' }, formatNumber(totals.value.total)),
+                h('td', { class: 'px-3 py-2.5 text-sm font-bold text-gray-900 dark:text-white' }, `Cộng (${formatNumber(rows.value.length)} địa bàn)`),
+                h('td', { class: 'px-3 py-2.5 text-right text-sm font-bold tabular-nums text-emerald-800 dark:text-emerald-300' }, formatNumber(totals.value.daDinhDanh)),
+                h('td', { class: 'px-3 py-2.5 text-right text-sm font-bold tabular-nums text-emerald-800 dark:text-emerald-300' }, formatIdentifiedRate(totals.value.daDinhDanh, totals.value.total)),
+                h('td', { class: 'px-3 py-2.5 text-right text-sm font-bold tabular-nums text-gray-800 dark:text-gray-100' }, formatNumber(totals.value.chuaDinhDanh)),
+                h('td', { class: 'px-3 py-2.5 text-right text-sm font-bold tabular-nums text-amber-800 dark:text-amber-300' }, formatNumber(totals.value.canRaSoat)),
+                h('td', { class: 'px-3 py-2.5 text-right text-sm font-bold tabular-nums text-gray-900 dark:text-white' }, formatNumber(totals.value.total)),
               ]),
             ])
             : null,
@@ -423,7 +439,7 @@ const AreaStatsTable = defineComponent({
       ]),
 
       props.clickable
-        ? h('p', { class: 'text-sm text-gray-500 dark:text-gray-400' }, 'Mẹo: bấm vào một dòng trong bảng để mở danh sách doanh nghiệp của địa bàn đó.')
+        ? h('p', { class: 'text-xs text-gray-500 dark:text-gray-400' }, 'Mẹo: bấm vào một dòng trong bảng để mở danh sách doanh nghiệp của địa bàn đó.')
         : null,
     ])
   },

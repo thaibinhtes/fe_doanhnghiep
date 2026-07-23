@@ -52,7 +52,7 @@
           </div>
         </div>
 
-        <div v-if="store.loading" class="py-10 text-center text-sm text-gray-500">Đang tải...</div>
+        <TableSkeleton v-if="store.loading" variant="cards" :rows="5" />
         <div v-else-if="store.error" class="py-10 text-center text-sm text-red-500">{{ store.error }}</div>
         <div v-else-if="store.companies.length === 0" class="py-10 text-center text-sm text-gray-400">
           Chưa có công ty nào
@@ -131,6 +131,7 @@
 import { onMounted, ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import Modal from '@/components/profile/Modal.vue'
 import ImportHistoryModal from '@/components/companies/ImportHistoryModal.vue'
 import CompanyIdentityImportPanel from '@/components/companies/CompanyIdentityImportPanel.vue'

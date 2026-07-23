@@ -117,9 +117,7 @@
         <button type="button" class="ml-auto text-neutral-500 hover:text-neutral-700" @click="selectedRow = null">✕</button>
       </div>
 
-      <div v-if="loading" class="flex items-center justify-center py-16">
-        <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-      </div>
+      <TableSkeleton v-if="loading" :rows="10" :columns="6" />
 
       <div v-else-if="displayRows.length === 0" class="py-16 text-center text-sm text-neutral-500">
         Không có dữ liệu.
@@ -267,6 +265,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import Modal from '@/components/ui/Modal.vue'
 import { industryCategoryService } from '@/services/industryCategoryService'
 import { useAuthStore } from '@/stores/auth'

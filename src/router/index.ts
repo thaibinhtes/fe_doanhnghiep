@@ -215,6 +215,12 @@ const router = createRouter({
       meta: { title: 'Lịch sử định danh doanh nghiệp', requiresAuth: true, fillViewport: true },
     },
     {
+      path: '/reports/tax-import-history',
+      name: 'Tax Import History Report',
+      component: () => import('../views/Reports/TaxImportHistoryReport.vue'),
+      meta: { title: 'Lịch sử import đơn vị thuế với trạng thái thuế', requiresAuth: true },
+    },
+    {
       path: '/companies/identity-history',
       redirect: '/reports/identity-history',
     },

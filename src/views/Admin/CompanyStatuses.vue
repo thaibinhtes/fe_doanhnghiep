@@ -69,9 +69,7 @@
           {{ message }}
         </div>
 
-        <div v-if="loading" class="flex items-center justify-center py-12">
-          <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
-        </div>
+        <TableSkeleton v-if="loading" :rows="8" :columns="6" />
 
         <div v-else-if="filteredStatuses.length === 0" class="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
           Không có trạng thái nào phù hợp bộ lọc.
@@ -217,6 +215,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
+import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import Modal from '@/components/ui/Modal.vue'
 import { statusService } from '@/services/statusService'
 import { useAuthStore } from '@/stores/auth'
