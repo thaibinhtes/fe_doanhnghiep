@@ -4,6 +4,13 @@ import type { AuthUser, LoginPayload, LoginResponse } from '@/types/auth'
 const BASE_PATH = '/auth'
 
 export const authService = {
+  async getCaptchaConfig(): Promise<{ enabled: boolean; siteKey: string | null; action: string | null }> {
+    const { data } = await api.get<{
+      data: { enabled: boolean; siteKey: string | null; action: string | null }
+    }>(`${BASE_PATH}/captcha`)
+    return data.data
+  },
+
   async login(payload: LoginPayload): Promise<LoginResponse> {
     const { data } = await api.post<{ data: LoginResponse; message: string }>(
       `${BASE_PATH}/login`,

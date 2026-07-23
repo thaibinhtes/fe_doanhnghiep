@@ -19,16 +19,32 @@
         !isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start',
       ]"
     >
-      <router-link to="/" class="flex items-center">
+      <router-link to="/" class="flex items-center gap-2.5">
+        <span
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-gold-500 bg-brand-600"
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 48 48" class="h-5 w-5">
+            <polygon
+              points="24,8 28.5,19 40,19 30.5,26.5 34,38 24,30.5 14,38 17.5,26.5 8,19 19.5,19"
+              fill="#d4af37"
+            />
+          </svg>
+        </span>
         <span
           v-if="isExpanded || isHovered || isMobileOpen"
-          class="text-sm font-semibold leading-snug text-gray-900 dark:text-white uppercase"
+          class="min-w-0"
         >
-          {{ APP_NAME }}
+          <span class="block text-[11px] font-bold uppercase tracking-wide text-gold-600 dark:text-gold-400">
+            {{ APP_ORG }}
+          </span>
+          <span class="mt-0.5 block text-sm font-bold leading-snug text-brand-700 dark:text-brand-300">
+            {{ APP_SHORT_NAME }}
+          </span>
         </span>
         <span
           v-else
-          class="text-xs font-bold text-gray-900 dark:text-white"
+          class="sr-only"
         >
           {{ APP_SHORT_NAME }}
         </span>
@@ -236,7 +252,7 @@ import { collectNavPaths } from "@/config/menu";
 import { resolveMenuIcon } from "@/config/menuIcons";
 import { useAuthStore } from "@/stores/auth";
 import { useMenuStore } from "@/stores/menu";
-import { APP_NAME, APP_SHORT_NAME } from "@/config/app";
+import { APP_ORG, APP_SHORT_NAME } from "@/config/app";
 
 const route = useRoute();
 const auth = useAuthStore();
