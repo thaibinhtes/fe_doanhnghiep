@@ -2920,16 +2920,19 @@ watch(
   },
 )
 
-onMounted(async () => {
-  orgUnits.value = await orgUnitService.getTree()
-  await Promise.all([
+onMounted(() => {
+  applyHanhChinhAreaFilterFromQuery()
+
+  // Load list ASAP; filters/meta in parallel (don't block first paint).
+  void store.fetchCompanies(currentCompanyFilters())
+  void Promise.all([
+    orgUnitService.getTree().then((tree) => {
+      orgUnits.value = tree
+    }),
     loadStatuses(),
     loadBusinessTypes(),
     loadCompanyImportDocs(),
   ])
-
-  applyHanhChinhAreaFilterFromQuery()
-  store.fetchCompanies(currentCompanyFilters())
 
   onImportCompleted((payload) => {
     if (payload.entity === 'hop-tac-xa' || !payload.result) return
