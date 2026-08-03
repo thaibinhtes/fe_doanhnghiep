@@ -33,6 +33,14 @@ export const taxManagementService = {
     return { data: [], meta: data.meta }
   },
 
+  async getTaxUnitOptions(params: { search?: string; limit?: number } = {}) {
+    const { data } = await api.get<{ data: Array<Pick<TaxUnit, 'id' | 'unitCode' | 'unitName'>> }>(
+      '/tax-units/options',
+      { params },
+    )
+    return data.data ?? []
+  },
+
   async createTaxUnit(payload: { unitCode: string; unitName: string }) {
     const { data } = await api.post<{ data: TaxUnit }>('/tax-units', payload)
     return data.data

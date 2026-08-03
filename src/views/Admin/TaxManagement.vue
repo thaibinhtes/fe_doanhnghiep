@@ -783,8 +783,8 @@ const loadTaxUnits = async (page = 1) => {
 }
 
 const loadTaxUnitOptions = async () => {
-  const response = await taxManagementService.getTaxUnits({ page: 1, perPage: 500 })
-  taxUnitOptions.value = response.data
+  const options = await taxManagementService.getTaxUnitOptions({ limit: 500 })
+  taxUnitOptions.value = options as TaxUnit[]
 }
 
 const saveTaxPaidDate = async (item: TaxCompanyItem) => {
