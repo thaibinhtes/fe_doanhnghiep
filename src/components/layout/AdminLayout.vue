@@ -8,14 +8,11 @@
     >
       <app-header class="shrink-0" />
       <div
-        class="flex w-full flex-1 flex-col min-h-0 p-2 sm:p-2.5 md:p-3"
+        class="flex w-full min-h-0 flex-1 flex-col p-2 sm:p-2.5 md:p-3"
         :class="contentClass"
       >
         <slot></slot>
       </div>
-      <footer class="shrink-0 border-t border-gray-200 bg-white px-4 py-2.5 text-center text-xs text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
-        {{ APP_FOOTER }}
-      </footer>
     </div>
   </div>
 </template>
@@ -27,7 +24,6 @@ import AppSidebar from './AppSidebar.vue'
 import AppHeader from './AppHeader.vue'
 import { useSidebar } from '@/composables/useSidebar'
 import Backdrop from './Backdrop.vue'
-import { APP_FOOTER } from '@/config/app'
 
 const route = useRoute()
 const { isExpanded, isHovered } = useSidebar()

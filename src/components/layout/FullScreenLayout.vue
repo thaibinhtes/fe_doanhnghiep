@@ -7,5 +7,4 @@
 </template>
 
 <script setup lang="ts">
-import { APP_FOOTER } from '@/config/app'
 </script>

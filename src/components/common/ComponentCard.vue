@@ -12,7 +12,7 @@
           'rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]',
           isFullscreen
             ? 'fixed inset-0 z-[100000] flex h-dvh max-h-dvh w-full max-w-[100vw] flex-col overflow-hidden rounded-none border-0 bg-white shadow-2xl dark:bg-gray-950'
-            : 'h-full min-w-0 max-w-full',
+            : 'flex h-full min-h-0 min-w-0 max-w-full flex-col overflow-hidden',
         ]"
       >
         <!-- Card Header -->
@@ -47,10 +47,11 @@
         <div
           :class="[
             bodyClass ?? 'border-t border-gray-100 p-2.5 dark:border-gray-800 sm:p-3',
-            isFullscreen ? 'min-h-0 flex-1 overflow-auto' : '',
+            'min-h-0 flex-1',
+            isFullscreen ? 'overflow-auto' : '',
           ]"
         >
-          <div :class="slotClass ?? 'space-y-3'">
+          <div :class="[slotClass ?? 'space-y-3', slotClass ? 'min-h-0 flex-1' : '']">
             <slot></slot>
           </div>
         </div>

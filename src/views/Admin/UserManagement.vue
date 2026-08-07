@@ -52,7 +52,7 @@
           {{ message }}
         </div>
 
-        <TableSkeleton v-if="loading" :rows="8" :columns="6" />
+        <TableSkeleton v-if="loading" :rows="8" :columns="8" />
 
         <div v-else-if="users.length === 0" class="py-12 text-center text-sm text-gray-500">
           Không có người dùng nào.
@@ -66,6 +66,8 @@
                 <th class="px-3 py-3 font-medium">Email</th>
                 <th class="px-3 py-3 font-medium">Vai trò</th>
                 <th class="px-3 py-3 font-medium">Đơn vị</th>
+                <th class="px-3 py-3 font-medium">Phòng ban</th>
+                <th class="px-3 py-3 font-medium">Chức danh</th>
                 <th class="px-3 py-3 font-medium">Trạng thái</th>
                 <th v-if="canManage" class="px-3 py-3 font-medium">Thao tác</th>
               </tr>
@@ -76,6 +78,8 @@
                 <td class="px-3 py-3">{{ user.email }}</td>
                 <td class="px-3 py-3">{{ user.role?.name ?? '-' }}</td>
                 <td class="px-3 py-3">{{ user.donVi ? `${user.donVi.ma} — ${user.donVi.ten}` : '-' }}</td>
+                <td class="px-3 py-3">{{ user.phongBan?.ten ?? '-' }}</td>
+                <td class="px-3 py-3">{{ user.chucDanh?.trim() ? user.chucDanh : '-' }}</td>
                 <td class="px-3 py-3">
                   <span
                     class="rounded-full px-2 py-1 text-xs"
@@ -157,6 +161,25 @@
               <p class="text-gray-500 dark:text-gray-400">Đơn vị trực thuộc</p>
               <p class="mt-1 font-medium text-gray-800 dark:text-white/90">{{ creatorOrgUnitLabel }}</p>
             </div>
+            <div>
+              <label class="mb-1.5 block text-sm font-medium">Phòng ban</label>
+              <select v-model="form.phongBanId" class="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm dark:border-gray-700 dark:bg-gray-900">
+                <option :value="null">— Không chọn —</option>
+                <option v-for="opt in phongBanOptions" :key="opt.id" :value="opt.id">
+                  {{ opt.ma }} — {{ opt.ten }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="mb-1.5 block text-sm font-medium">Chức danh</label>
+              <input
+                v-model="form.chucDanh"
+                type="text"
+                maxlength="255"
+                placeholder="VD: Chuyên viên"
+                class="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm dark:border-gray-700 dark:bg-gray-900"
+              />
+            </div>
             <div class="sm:col-span-2">
               <label class="inline-flex items-center gap-2 text-sm">
                 <input v-model="form.isActive" type="checkbox" class="rounded border-gray-300" />
@@ -186,10 +209,11 @@ import TableSkeleton from '@/components/common/TableSkeleton.vue'
 import Modal from '@/components/profile/Modal.vue'
 import { useAuthStore } from '@/stores/auth'
 import { orgUnitService } from '@/services/orgUnitService'
+import { phongBanService } from '@/services/phongBanService'
 import { userService } from '@/services/userService'
 import type { OrgUnit } from '@/types/orgUnit'
 import { buildOrgUnitOptions, flattenOrgUnitTree } from '@/types/orgUnit'
-import type { AppUser, UserPayload } from '@/types/user'
+import type { AppUser, PhongBanOption, UserPayload } from '@/types/user'
 import type { RoleItem } from '@/types/auth'
 
 const auth = useAuthStore()
@@ -202,6 +226,7 @@ const deletingId = ref<number | null>(null)
 const users = ref<AppUser[]>([])
 const assignableRoles = ref<RoleItem[]>([])
 const orgUnits = ref<OrgUnit[]>([])
+const phongBanOptions = ref<PhongBanOption[]>([])
 const isModalOpen = ref(false)
 const editingId = ref<number | null>(null)
 
@@ -217,6 +242,8 @@ const form = reactive({
   password: '',
   roleId: null as number | null,
   donViId: null as number | null,
+  phongBanId: null as number | null,
+  chucDanh: '',
   isActive: true,
 })
 
@@ -244,7 +271,12 @@ const loadUsers = async () => {
 }
 
 const loadLookups = async () => {
-  assignableRoles.value = await userService.getAssignableRoles()
+  const [roles, phongBans] = await Promise.all([
+    userService.getAssignableRoles(),
+    phongBanService.getOptions({ limit: 500 }),
+  ])
+  assignableRoles.value = roles
+  phongBanOptions.value = phongBans
   if (isRootUser.value) {
     orgUnits.value = await orgUnitService.getTree()
   }
@@ -262,6 +294,8 @@ const resetForm = () => {
   form.password = ''
   form.roleId = null
   form.donViId = defaultDonViId.value
+  form.phongBanId = null
+  form.chucDanh = ''
   form.isActive = true
 }
 
@@ -289,6 +323,8 @@ const openEdit = (user: AppUser) => {
   form.password = ''
   form.roleId = user.roleId ?? user.role?.id ?? null
   form.donViId = user.donViId ?? user.donVi?.id ?? null
+  form.phongBanId = user.phongBanId ?? user.phongBan?.id ?? null
+  form.chucDanh = user.chucDanh ?? ''
   form.isActive = user.isActive
   isModalOpen.value = true
 }
@@ -303,6 +339,8 @@ const saveUser = async () => {
     name: form.name.trim(),
     email: form.email.trim(),
     roleId: form.roleId,
+    phongBanId: form.phongBanId,
+    chucDanh: form.chucDanh.trim() || null,
     isActive: form.isActive,
     ...(form.password ? { password: form.password } : {}),
   }

@@ -1,6 +1,12 @@
 import type { AuthRole } from './auth'
 import type { OrgUnit } from './orgUnit'
 
+export interface PhongBanOption {
+  id: number
+  ma: string
+  ten: string
+}
+
 export interface AppUser {
   id: number
   name: string
@@ -8,8 +14,11 @@ export interface AppUser {
   isActive: boolean
   roleId?: number | null
   donViId?: number | null
+  phongBanId?: number | null
+  chucDanh?: string | null
   role?: AuthRole | null
   donVi?: OrgUnit | null
+  phongBan?: PhongBanOption | null
   createdAt?: string
 }
 
@@ -19,6 +28,8 @@ export interface UserPayload {
   password?: string
   roleId?: number | null
   donViId?: number | null
+  phongBanId?: number | null
+  chucDanh?: string | null
   isActive?: boolean
 }
 

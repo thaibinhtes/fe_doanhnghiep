@@ -270,6 +270,57 @@ layer(base);
   scrollbar-width: none; /* Firefox */
 }
 
+@utility list-table-scroll {
+  /* Always reserve/show scrollbars so wide tables are discoverable (not macOS overlay-only). */
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(148 163 184) rgb(241 245 249);
+
+  &::-webkit-scrollbar {
+    -webkit-appearance: none;
+    display: block;
+    width: 12px;
+    height: 12px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    background-color: rgb(148 163 184);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(100 116 139);
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: rgb(241 245 249);
+    border-radius: 9999px;
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: rgb(241 245 249);
+  }
+}
+
+.dark .list-table-scroll {
+  scrollbar-color: rgb(71 85 105) rgb(30 41 59);
+}
+
+.dark .list-table-scroll::-webkit-scrollbar-thumb {
+  background-color: rgb(71 85 105);
+}
+
+.dark .list-table-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(100 116 139);
+}
+
+.dark .list-table-scroll::-webkit-scrollbar-track,
+.dark .list-table-scroll::-webkit-scrollbar-corner {
+  background-color: rgb(30 41 59);
+}
+
 @utility custom-scrollbar {
   &::-webkit-scrollbar {
     @apply size-1.5;

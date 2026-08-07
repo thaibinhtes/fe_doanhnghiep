@@ -46,9 +46,17 @@
 
         <div v-if="store.error" class="shrink-0 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">{{ store.error }}</div>
 
-        <div class="min-h-0 flex-1 overflow-auto">
-          <TableSkeleton v-if="store.loading" variant="both" :rows="8" :columns="12" />
-          <div v-else-if="store.cooperatives.length === 0" class="py-12 text-center text-sm text-gray-500">Không có hợp tác xã.</div>
+        <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+          <TableSkeleton
+            v-if="store.loading"
+            fill-height
+            class="min-h-0 flex-1"
+            variant="both"
+            :rows="skeletonRows"
+            :columns="12"
+          />
+          <ListTableScroll v-else>
+          <div v-if="store.cooperatives.length === 0" class="py-12 text-center text-sm text-gray-500">Không có hợp tác xã.</div>
 
           <template v-else>
             <div class="grid gap-3 p-1 lg:hidden">
@@ -121,9 +129,11 @@
             </table>
             </div>
           </template>
+        </ListTableScroll>
         </div>
 
         <TablePagination
+          class="shrink-0"
           :page="store.page"
           :last-page="store.totalPages || 1"
           :total="store.total"
@@ -199,6 +209,7 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import TablePagination from '@/components/common/TablePagination.vue'
 import TableSkeleton from '@/components/common/TableSkeleton.vue'
+import ListTableScroll from '@/components/common/ListTableScroll.vue'
 import Modal from '@/components/profile/Modal.vue'
 import AdministrativeFilter from '@/components/filters/AdministrativeFilter.vue'
 import CooperativeMobileCard from '@/components/cooperatives/CooperativeMobileCard.vue'
@@ -221,6 +232,9 @@ const canImportCooperatives = computed(
 )
 const hasUnrestrictedOrgScopeFlag = computed(() => hasUnrestrictedOrgScope(auth.user))
 const implicitDonViId = computed(() => auth.user?.donViId ?? null)
+
+/** Cap shimmer rows so extreme page sizes stay responsive; fillHeight still stretches the box */
+const skeletonRows = computed(() => Math.min(Math.max(store.perPage || 10, 1), 50))
 
 const filter = reactive({ search: '', phuongXa: '' })
 const filterProvinceCode = ref(DEFAULT_PROVINCE_CODE)

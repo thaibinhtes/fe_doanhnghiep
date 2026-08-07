@@ -5,6 +5,7 @@
     aria-live="polite"
     aria-busy="true"
     :aria-label="ariaLabel"
+    :class="fillHeight ? 'flex h-full min-h-0 flex-1 flex-col' : ''"
   >
     <!-- Mobile / card list -->
     <div
@@ -35,11 +36,18 @@
       class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700"
       :class="[
         variant === 'both' ? 'hidden lg:block' : '',
-        compact ? '' : 'min-h-[240px]',
+        fillHeight
+          ? 'flex h-full min-h-0 flex-1 flex-col'
+          : compact
+            ? ''
+            : 'min-h-[240px]',
         wrapperClass,
       ]"
     >
-      <div class="min-w-full overflow-x-auto">
+      <div
+        class="min-w-full"
+        :class="fillHeight ? 'min-h-0 flex-1 overflow-auto' : 'overflow-x-auto'"
+      >
         <div
           v-if="showHeader"
           class="flex border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
@@ -98,6 +106,8 @@ const props = withDefaults(
     variant?: 'table' | 'cards' | 'both'
     showHeader?: boolean
     compact?: boolean
+    /** Stretch to fill parent flex/height chain (fillViewport list tables) */
+    fillHeight?: boolean
     wrapperClass?: string
     ariaLabel?: string
   }>(),
@@ -107,6 +117,7 @@ const props = withDefaults(
     variant: 'table',
     showHeader: true,
     compact: false,
+    fillHeight: false,
     wrapperClass: '',
     ariaLabel: 'Đang tải dữ liệu bảng',
   },

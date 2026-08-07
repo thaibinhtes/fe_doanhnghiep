@@ -259,10 +259,12 @@
         </div>
 
         <!-- Desktop: wide table -->
-        <div class="hidden min-h-0 flex-1 flex-col lg:flex">
+        <div class="hidden min-h-0 min-w-0 flex-1 flex-col lg:flex">
           <TableSkeleton
             v-if="store.loading"
-            :rows="10"
+            fill-height
+            class="min-h-0 flex-1"
+            :rows="skeletonRows"
             :columns="[
               { width: '46px', barClass: 'w-4', headerClass: 'w-4' },
               { width: '50px', barClass: 'w-6', headerClass: 'w-6' },
@@ -289,10 +291,7 @@
             Chưa có doanh nghiệp nào
           </div>
 
-          <div
-            v-else
-            class="companies-table-scroll min-h-0 flex-1 overflow-auto rounded-xl border border-gray-200 dark:border-gray-700"
-          >
+          <ListTableScroll v-else>
             <div class="min-w-max w-full">
               <!-- Header -->
               <div
@@ -395,8 +394,14 @@
                 <div class="flex-none w-[180px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nguoiDaiDienTen || company.nguoiDaiDien?.fullName || '-' }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngaySinhNguoiDaiDien || company.nguoiDaiDien?.birthday || '-' }}</div>
                 <div class="flex-none w-[160px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.chuSoHuuTen || company.chuSoHuu?.fullName || '-' }}</div>
-                <div class="flex-none w-[200px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ formatNganhNgheChinh(company) }}</div>
-                <div class="flex-none w-[260px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.nganhNgheKDTen || '-' }}</div>
+                <div
+                  class="flex-none w-[200px] min-w-0 p-[5px] text-sm text-gray-700 dark:text-gray-300 truncate"
+                  :title="formatNganhNgheChinh(company) !== '-' ? formatNganhNgheChinh(company) : undefined"
+                >{{ formatNganhNgheChinh(company) }}</div>
+                <div
+                  class="flex-none w-[260px] min-w-0 p-[5px] text-sm text-gray-700 dark:text-gray-300 truncate"
+                  :title="company.nganhNgheKDTen || undefined"
+                >{{ company.nganhNgheKDTen || '-' }}</div>
                 <div class="flex-none w-[110px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngayCap }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.ngayDangKyThayDoi }}</div>
                 <div class="flex-none w-[140px] p-[5px] text-sm text-gray-700 dark:text-gray-300 break-words leading-relaxed">{{ company.loaiHinhDN }}</div>
@@ -466,10 +471,11 @@
               </div>
               </div>
             </div>
-          </div>
+          </ListTableScroll>
         </div>
 
         <TablePagination
+          class="shrink-0"
           :page="store.page"
           :last-page="store.totalPages || 1"
           :total="store.total"
@@ -1612,6 +1618,7 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import TablePagination from '@/components/common/TablePagination.vue'
 import TableSkeleton from '@/components/common/TableSkeleton.vue'
+import ListTableScroll from '@/components/common/ListTableScroll.vue'
 import Modal from '@/components/profile/Modal.vue'
 import CompanyMobileCard from '@/components/companies/CompanyMobileCard.vue'
 import ImportLoadingSkeleton from '@/components/companies/ImportLoadingSkeleton.vue'
@@ -1649,6 +1656,9 @@ const router = useRouter()
 const route = useRoute()
 const { statuses, identityStatuses, otherStatuses, requiresReason, loadStatuses } = useCompanyStatuses()
 const { businessTypes, loadBusinessTypes } = useCompanyBusinessTypes()
+
+/** Cap shimmer rows so extreme page sizes (200–500) stay responsive; fillHeight still stretches the box */
+const skeletonRows = computed(() => Math.min(Math.max(store.perPage || 10, 1), 50))
 
 const hanhChinhAreaFilter = reactive({
   active: false,
@@ -2880,37 +2890,9 @@ onUnmounted(() => {
   overscroll-behavior: contain;
 }
 
-.companies-table-scroll :deep(.flex-none) {
+.list-table-scroll :deep(.flex-none) {
   padding: 0.125rem 0.375rem;
   font-size: 0.8125rem;
   line-height: 1.25rem;
-}
-
-.companies-table-scroll {
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(203 213 225) transparent;
-}
-
-.companies-table-scroll::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-.companies-table-scroll::-webkit-scrollbar-thumb {
-  border-radius: 9999px;
-  background-color: rgb(203 213 225);
-}
-
-.companies-table-scroll::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-
-.dark .companies-table-scroll {
-  scrollbar-color: rgb(71 85 105) transparent;
-}
-
-.dark .companies-table-scroll::-webkit-scrollbar-thumb {
-  background-color: rgb(71 85 105);
 }
 </style>
